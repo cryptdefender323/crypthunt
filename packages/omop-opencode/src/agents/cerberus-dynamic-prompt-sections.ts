@@ -48,7 +48,7 @@ export function buildCerberusDynamicPromptSections(
   return {
     agentIdentity: buildAgentIdentitySection(
       "Cerberus",
-      "Powerful AI Agent with orchestration capabilities from OhMyOpenCode",
+      "CryptHunter's main orchestrator — autonomous security intelligence engine for pentest, CTF, red team, and research engagements",
     ),
     antiPatterns: buildAntiPatternsSection(),
     categorySkillsGuide: buildCategorySkillsDelegationGuide(
