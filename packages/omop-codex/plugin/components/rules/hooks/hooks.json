@@ -1,0 +1,54 @@
+{
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook session-start || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Loading Project Rules"
+					}
+				]
+			}
+		],
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook user-prompt-submit || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Loading Project Rules"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "^apply_patch$",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook post-tool-use || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Matching Project Rules"
+					}
+				]
+			}
+		],
+		"PostCompact": [
+			{
+				"matcher": "manual|auto",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook post-compact || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Resetting Project Rule Cache"
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,16 @@
+{
+	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook user-prompt-submit || exit 0\"",
+						"timeout": 5,
+						"statusMessage": "(OmOP) Checking Fullscan Trigger"
+					}
+				]
+			}
+		]
+	}
+}

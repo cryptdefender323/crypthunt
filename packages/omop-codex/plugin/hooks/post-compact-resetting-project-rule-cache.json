@@ -1,0 +1,17 @@
+{
+	"hooks": {
+		"PostCompact": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${PLUGIN_ROOT}/components/rules/dist/cli.js\" hook post-compact",
+						"timeout": 5,
+						"statusMessage": "(OmOP) Resetting Project Rule Cache"
+					}
+				],
+				"matcher": "manual|auto"
+			}
+		]
+	}
+}

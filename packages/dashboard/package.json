@@ -1,0 +1,28 @@
+{
+  "name": "@omop/dashboard",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "description": "CryptHunter local web dashboard — live engagement status, findings viewer, report viewer, engagement trigger",
+  "main": "./src/index.ts",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "typecheck": "tsgo --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@omop/pentest-core": "*",
+    "@omop/utils": "*",
+    "@opencode-ai/sdk": "1.15.13"
+  },
+  "devDependencies": {
+    "bun-types": "*"
+  }
+}

@@ -1,0 +1,671 @@
+name: publish
+run-name: "${{ format('release {0}', inputs.version || inputs.bump) }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Bump major, minor, or patch"
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+      version:
+        description: "Override version (e.g., 3.0.0-beta.6). Takes precedence over bump."
+        required: false
+        type: string
+      skip_platform:
+        description: "Skip platform binary packages"
+        required: false
+        type: boolean
+        default: false
+      publish_lazycodex:
+        description: "Publish the lazycodex-ai npm alias"
+        required: false
+        type: boolean
+        default: true
+      dry_run:
+        description: "Resolve version and run gates only; skip npm publish and release writes"
+        required: false
+        type: boolean
+        default: false
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  id-token: write
+  actions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-omop
+        with:
+          vendored-install: ci
+
+      - name: Run tests
+        run: bun test
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        env:
+          JOB_SUMMARY_TITLE: Release test gate
+          JOB_SUMMARY_STATUS: ${{ job.status }}
+          JOB_SUMMARY_DETAILS: |
+            - Builds vendored LSP packages before release tests.
+            - Runs the full root `bun test` suite before publishing.
+          JOB_SUMMARY_NEXT: Fix the first failing test or vendored package build before rerunning release.
+        run: GITHUB_STEP_SUMMARY="$GITHUB_STEP_SUMMARY" bash .github/scripts/write-job-summary.sh
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-omop
+        with:
+          vendored: tools
+          vendored-install: ci
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        env:
+          JOB_SUMMARY_TITLE: Release typecheck gate
+          JOB_SUMMARY_STATUS: ${{ job.status }}
+          JOB_SUMMARY_DETAILS: |
+            - Builds vendored LSP tooling.
+            - Runs `bun run typecheck` before any publish job can start.
+          JOB_SUMMARY_NEXT: Start with the first TypeScript diagnostic; release jobs stay blocked until this is green.
+        run: GITHUB_STEP_SUMMARY="$GITHUB_STEP_SUMMARY" bash .github/scripts/write-job-summary.sh
+
+  release-metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      dist_tag: ${{ steps.version.outputs.dist_tag }}
+      previous_lazycodex_version: ${{ steps.version.outputs.previous_lazycodex_version }}
+      base_version: ${{ steps.version.outputs.base_version }}
+      dry_run: ${{ steps.version.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - name: Calculate version from package.json
+        id: version
+        env:
+          RAW_VERSION: ${{ inputs.version }}
+          BUMP: ${{ inputs.bump }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          BASE=$(node -p "require('./package.json').version")
+          echo "base_version=$BASE" >> "$GITHUB_OUTPUT"
+          echo "dry_run=${DRY_RUN}" >> "$GITHUB_OUTPUT"
+
+          OUT=$(BASE="$BASE" BUMP="$BUMP" VERSION="$RAW_VERSION" bun -e '
+            import { resolveReleaseVersion } from "./script/release-manifest.ts";
+            const r = resolveReleaseVersion({
+              baseVersion: process.env.BASE!,
+              bump: (process.env.BUMP as "major" | "minor" | "patch") || "patch",
+              override: process.env.VERSION || undefined,
+            });
+            console.log(JSON.stringify(r));
+          ')
+
+          VERSION=$(printf '%s' "$OUT" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
+          DIST_TAG=$(printf '%s' "$OUT" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).distTag || ''")
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+
+          LAZYCODEX_COMPARE_TAG="${DIST_TAG:-latest}"
+          PREVIOUS_LAZYCODEX_VERSION=$(npm view "lazycodex-ai@${LAZYCODEX_COMPARE_TAG}" version 2>/dev/null || true)
+          echo "previous_lazycodex_version=${PREVIOUS_LAZYCODEX_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Base (package.json): $BASE"
+          echo "Version: $VERSION"
+          echo "Dist tag: ${DIST_TAG:-latest}"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: true (publish jobs will skip writes)"
+          fi
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "## Release metadata"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Result | \`${{ job.status }}\` |"
+            echo "| Base (package.json) | \`${{ steps.version.outputs.base_version || 'n/a' }}\` |"
+            echo "| Version | \`${{ steps.version.outputs.version || 'not calculated' }}\` |"
+            echo "| Dist tag | \`${{ steps.version.outputs.dist_tag || 'latest' }}\` |"
+            echo "| Dry run | \`${{ steps.version.outputs.dry_run || 'false' }}\` |"
+            echo "| Previous LazyCodex | \`${{ steps.version.outputs.previous_lazycodex_version || 'none' }}\` |"
+            echo
+            echo "### What this job checks"
+            echo
+            echo "- Resolves the release version from root package.json (bump or override)."
+            echo "- Computes the npm dist tag and previous LazyCodex comparison version."
+            echo
+            echo "### If this fails"
+            echo
+            echo "Check package.json version, override format, or bump input."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish-main:
+    runs-on: ubuntu-latest
+    needs: [test, typecheck, release-metadata, publish-platform]
+    if: >-
+      always() &&
+      true &&
+      inputs.dry_run != true &&
+      needs.test.result == 'success' &&
+      needs.typecheck.result == 'success' &&
+      needs.release-metadata.result == 'success'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - run: git fetch --force --tags
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Upgrade npm for trusted publishing (>=11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify platform packages are published
+        continue-on-error: true
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          PLATFORMS=(darwin-arm64 darwin-x64 darwin-x64-baseline linux-x64 linux-x64-baseline linux-arm64 linux-x64-musl linux-x64-musl-baseline linux-arm64-musl windows-x64 windows-x64-baseline windows-arm64)
+          FAILED=()
+          for platform in "${PLATFORMS[@]}"; do
+            pkg="oh-my-open-pentest-${platform}"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/${pkg}/${VERSION}")
+            if [ "$STATUS" = "200" ]; then
+              echo "OK   ${pkg}@${VERSION}"
+            else
+              echo "MISS ${pkg}@${VERSION} (HTTP ${STATUS}) - will publish wrapper anyway"
+            fi
+          done
+
+      - name: Check if already published
+        id: check
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/oh-my-open-pentest/${VERSION}")
+          if [ "$STATUS" = "200" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "? oh-my-open-pentest@${VERSION} already published"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check if oh-my-open-pentest already published
+        id: check-openagent
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/oh-my-open-pentest/${VERSION}")
+          if [ "$STATUS" = "200" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "? oh-my-open-pentest@${VERSION} already published"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check if lazycodex-ai already published
+        id: check-lazycodex
+        if: inputs.publish_lazycodex == true
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/lazycodex-ai/${VERSION}")
+          if [ "$STATUS" = "200" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "? lazycodex-ai@${VERSION} already published"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update version
+        if: >-
+          steps.check.outputs.skip != 'true' ||
+          steps.check-openagent.outputs.skip != 'true' ||
+          (inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true')
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
+
+          for platform in darwin-arm64 darwin-x64 darwin-x64-baseline linux-x64 linux-x64-baseline linux-arm64 linux-x64-musl linux-x64-musl-baseline linux-arm64-musl windows-x64 windows-x64-baseline windows-arm64; do
+            package_dir="packages/oh-my-open-pentest-${platform}"
+            jq --arg v "$VERSION" '.version = $v' "${package_dir}/package.json" > tmp.json
+            mv tmp.json "${package_dir}/package.json"
+          done
+
+          jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > tmp.json && mv tmp.json package.json
+
+      - name: Build main package
+        if: >-
+          steps.check.outputs.skip != 'true' ||
+          steps.check-openagent.outputs.skip != 'true' ||
+          (inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true')
+        run: bun run build:lsp-tools-mcp && bun run build:lsp-daemon && bun run build
+
+      # Must run before every publish below: all three packages ship the plugin tree (lazycodex#45).
+      - name: Build Codex plugin components
+        if: >-
+          steps.check.outputs.skip != 'true' ||
+          steps.check-openagent.outputs.skip != 'true' ||
+          (inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true')
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          LAZYCODEX_RELEASE_VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v' packages/omop-codex/plugin/.codex-plugin/plugin.json > tmp.json
+          mv tmp.json packages/omop-codex/plugin/.codex-plugin/plugin.json
+          jq --arg v "$VERSION" '.version = $v' packages/omop-codex/plugin/package.json > tmp.json
+          mv tmp.json packages/omop-codex/plugin/package.json
+          npm --prefix packages/omop-codex/plugin ci
+          bun run --cwd packages/omop-codex/plugin build
+
+      - name: Publish oh-my-open-pentest
+        if: steps.check.outputs.skip != 'true'
+        env:
+          DIST_TAG: ${{ needs.release-metadata.outputs.dist_tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$DIST_TAG" ]; then
+            npm publish --access public --tag "$DIST_TAG" --loglevel verbose
+          else
+            npm publish --access public --tag latest --loglevel verbose
+          fi
+
+      - name: Publish lazycodex-ai
+        if: inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true'
+        env:
+          OMOP_VERSION: ${{ needs.release-metadata.outputs.version }}
+          DIST_TAG: ${{ needs.release-metadata.outputs.dist_tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          jq --arg omo_version "$OMOP_VERSION" '
+            .name = "lazycodex-ai" |
+            .version = $omo_version |
+            .bin = { "lazycodex-ai": "packages/omop-codex/scripts/install-local.mjs", "lazycodex": "packages/omop-codex/scripts/install-local.mjs" } |
+            .files = ["dist/cli", "dist/cli-node", "packages/omop-codex/scripts/install-local.mjs", "packages/omop-codex/scripts/install-dist", "packages/omop-codex/plugin", "packages/omop-codex/plugin/components/start-work-continuation/dist/cli.js", "packages/omop-codex/plugin/components/pentest-loop/dist/cli.js", "packages/omop-codex/plugin/.codex-plugin", "packages/omop-codex/marketplace.json", "packages/omop-codex/lazycodex-repository", "packages/lsp-tools-mcp/package.json", "packages/lsp-tools-mcp/dist", "packages/lsp-daemon/package.json", "packages/lsp-daemon/dist", "packages/git-bash-mcp/dist", "packages/shared-skills"] |
+            .scripts = {} |
+            .dependencies = {} |
+            .devDependencies = {} |
+            .optionalDependencies = {} |
+            .peerDependencies = {}
+          ' package.json > tmp.json && mv tmp.json package.json
+
+          if [ -n "$DIST_TAG" ]; then
+            npm publish --access public --tag "$DIST_TAG" --loglevel verbose
+          else
+            npm publish --access public --tag latest --loglevel verbose
+          fi
+
+      - name: Smoke test published lazycodex-ai
+        if: inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true'
+        env:
+          OMOP_VERSION: ${{ needs.release-metadata.outputs.version }}
+          DIST_TAG: ${{ needs.release-metadata.outputs.dist_tag }}
+        run: |
+          set -euo pipefail
+
+          smoke_lazycodex_package() {
+            package_spec="$1"
+            for attempt in $(seq 1 12); do
+              SMOKE_DIR=$(mktemp -d)
+              export HOME="$SMOKE_DIR/home"
+              export CODEX_HOME="$SMOKE_DIR/codex"
+              export CODEX_LOCAL_BIN_DIR="$SMOKE_DIR/bin"
+              mkdir -p "$HOME" "$CODEX_HOME" "$CODEX_LOCAL_BIN_DIR" "$SMOKE_DIR/cwd"
+              cd "$SMOKE_DIR/cwd"
+
+              if npx_install_output=$(npx -y "$package_spec" --dry-run install --no-tui --codex-autonomous 2>&1) &&
+                 npx_doctor_output=$(npx -y "$package_spec" --dry-run doctor 2>&1) &&
+                 [ "$npx_install_output" = "npx --yes --package oh-my-open-pentest omo install --platform=codex --no-tui --codex-autonomous" ] &&
+                 [ "$npx_doctor_output" = "npx --yes --package oh-my-open-pentest omo doctor" ] &&
+                 npx -y "$package_spec" install --no-tui --codex-autonomous &&
+                 [ -x "$CODEX_LOCAL_BIN_DIR/omo" ] &&
+                 omo_version_output=$("$CODEX_LOCAL_BIN_DIR/omo" --version 2>&1) &&
+                 [ "$omo_version_output" = "$OMOP_VERSION" ] &&
+                 sparkshell_output=$("$CODEX_LOCAL_BIN_DIR/omo" sparkshell echo lazycodex-smoke 2>&1) &&
+                 [ "$sparkshell_output" = "lazycodex-smoke" ]; then
+                echo "$npx_install_output"
+                echo "$npx_doctor_output"
+                echo "omo --version: $omo_version_output"
+                echo "omo sparkshell: $sparkshell_output"
+                cd "$GITHUB_WORKSPACE"
+                rm -rf "$SMOKE_DIR"
+                return 0
+              fi
+
+              cd "$GITHUB_WORKSPACE"
+              rm -rf "$SMOKE_DIR"
+              echo "Waiting for ${package_spec} registry propagation (attempt ${attempt}/12)"
+              sleep 10
+            done
+            echo "::error::Published LazyCodex smoke failed for ${package_spec}"
+            return 1
+          }
+
+          smoke_lazycodex_package "lazycodex-ai@${OMOP_VERSION}"
+          if [ -z "$DIST_TAG" ]; then
+            smoke_lazycodex_package "lazycodex-ai@latest"
+          fi
+
+      - name: Restore package.json after lazycodex-ai publish attempt
+        if: always() && inputs.publish_lazycodex == true && steps.check-lazycodex.outputs.skip != 'true'
+        run: |
+          git checkout -- package.json
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        env:
+          JOB_SUMMARY_TITLE: Wrapper package publish
+          JOB_SUMMARY_STATUS: ${{ job.status }}
+          JOB_SUMMARY_DETAILS: |
+            - Verifies platform packages exist before wrapper publish.
+            - Publishes `oh-my-open-pentest`, `oh-my-open-pentest`, and optionally `lazycodex-ai`.
+            - Smoke-tests the published LazyCodex package when it was published.
+          JOB_SUMMARY_NEXT: Check package existence probes first, then npm publish logs and the LazyCodex smoke section.
+        run: GITHUB_STEP_SUMMARY="$GITHUB_STEP_SUMMARY" bash .github/scripts/write-job-summary.sh
+
+  publish-platform:
+    needs: [test, typecheck, release-metadata]
+    if: >-
+      always() &&
+      true &&
+      inputs.dry_run != true &&
+      inputs.skip_platform != true &&
+      inputs.dry_run != true &&
+      needs.test.result == 'success' &&
+      needs.typecheck.result == 'success' &&
+      needs.release-metadata.result == 'success'
+    uses: ./.github/workflows/publish-platform.yml
+    with:
+      version: ${{ needs.release-metadata.outputs.version }}
+      dist_tag: ${{ needs.release-metadata.outputs.dist_tag }}
+    secrets: inherit
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [release-metadata, publish-main, publish-platform]
+    if: >-
+      always() &&
+      inputs.dry_run != true &&
+      needs.release-metadata.result == 'success' &&
+      needs.publish-main.result != 'failure' &&
+      (inputs.skip_platform == true || needs.publish-platform.result != 'failure')
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - run: git fetch --force --tags
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate changelog
+        run: |
+          bun run script/generate-changelog.ts > /tmp/changelog.md
+          cat /tmp/changelog.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve release state
+        id: release-state
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "release_commit_exists=true" >> "$GITHUB_OUTPUT"
+            git checkout --detach "v${VERSION}"
+            exit 0
+          fi
+
+          echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          RELEASE_SHA=""
+          if [ -n "$RELEASE_REF" ]; then
+            RELEASE_SHA=$(git rev-list --max-count=1 --grep="^release: v${VERSION}$" "origin/${RELEASE_REF}" 2>/dev/null || true)
+          fi
+
+          if [ -n "$RELEASE_SHA" ]; then
+            echo "release_commit_exists=true" >> "$GITHUB_OUTPUT"
+            git checkout --detach "$RELEASE_SHA"
+          else
+            echo "release_commit_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply release version to source tree
+        if: steps.release-state.outputs.release_commit_exists != 'true'
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
+
+          for platform in darwin-arm64 darwin-x64 darwin-x64-baseline linux-x64 linux-x64-baseline linux-arm64 linux-x64-musl linux-x64-musl-baseline linux-arm64-musl windows-x64 windows-x64-baseline windows-arm64; do
+            package_dir="packages/oh-my-open-pentest-${platform}"
+            jq --arg v "$VERSION" '.version = $v' "${package_dir}/package.json" > tmp.json
+            mv tmp.json "${package_dir}/package.json"
+          done
+
+          jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > tmp.json && mv tmp.json package.json
+
+          node packages/omop-codex/plugin/scripts/sync-version.mjs
+          node packages/omop-codex/plugin/scripts/sync-hook-status-messages.mjs
+          bun install --lockfile-only
+
+      - name: Commit version bump
+        if: steps.release-state.outputs.release_commit_exists != 'true'
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add package.json packages/oh-my-open-pentest-*/package.json packages/omop-codex/package.json packages/omop-codex/plugin/package.json packages/omop-codex/plugin/.codex-plugin/plugin.json packages/omop-codex/plugin/components/*/package.json packages/omop-codex/plugin/hooks/hooks.json packages/omop-codex/plugin/components/*/hooks/hooks.json bun.lock
+          git diff --cached --quiet || git commit -m "release: v${VERSION}"
+
+      - name: Create release tag
+        if: steps.release-state.outputs.tag_exists != 'true'
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            echo "Release tag v${VERSION} already exists locally"
+          else
+            git tag "v${VERSION}"
+          fi
+
+      - name: Push release state
+        if: steps.release-state.outputs.tag_exists != 'true'
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          RELEASE_REF: ${{ github.ref_name }}
+          RELEASE_COMMIT_EXISTS: ${{ steps.release-state.outputs.release_commit_exists }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$RELEASE_COMMIT_EXISTS" != "true" ]; then
+            if [ -z "$RELEASE_REF" ]; then
+              echo "::error::Cannot push release commit because github.ref_name is empty."
+              exit 1
+            fi
+            git push origin "HEAD:${RELEASE_REF}"
+          else
+            echo "Release commit already exists on origin/${RELEASE_REF}"
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
+            echo "Release tag v${VERSION} already exists on origin"
+          else
+            git push origin "v${VERSION}"
+          fi
+
+      - name: Checkout LazyCodex marketplace
+        if: needs.release-metadata.outputs.dist_tag == ''
+        uses: actions/checkout@v5
+        with:
+          repository: code-yeongyu/lazycodex
+          path: lazycodex-marketplace
+          token: ${{ secrets.LAZYCODEX_SYNC_TOKEN }}
+          fetch-depth: 0
+
+      - name: Sync LazyCodex Codex marketplace
+        if: needs.release-metadata.outputs.dist_tag == ''
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          LAZYCODEX_RELEASE_VERSION: ${{ needs.release-metadata.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v' packages/omop-codex/plugin/.codex-plugin/plugin.json > tmp.json
+          mv tmp.json packages/omop-codex/plugin/.codex-plugin/plugin.json
+          jq --arg v "$VERSION" '.version = $v' packages/omop-codex/plugin/package.json > tmp.json
+          mv tmp.json packages/omop-codex/plugin/package.json
+          npm --prefix packages/omop-codex/plugin ci
+          bun run build:git-bash-mcp
+          bun run build:lsp-tools-mcp
+          bun run build:lsp-daemon
+          bun run --cwd packages/omop-codex/plugin build
+          bun run script/sync-lazycodex-marketplace.ts "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/lazycodex-marketplace"
+          cd "$GITHUB_WORKSPACE/lazycodex-marketplace"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add .agents/plugins/marketplace.json .github/workflows/pr-source-guidance.yml plugins/omo
+          if git diff --cached --quiet; then
+            echo "LazyCodex marketplace already up to date"
+          else
+            git commit -m "chore: sync Codex marketplace v${VERSION}"
+            git push origin HEAD:main
+          fi
+
+      - name: Resolve LazyCodex release payload
+        id: lazycodex-release-state
+        if: needs.release-metadata.outputs.dist_tag == ''
+        env:
+          PREVIOUS_LAZYCODEX_VERSION: ${{ needs.release-metadata.outputs.previous_lazycodex_version }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$PREVIOUS_LAZYCODEX_VERSION" ]; then
+            echo "No previous lazycodex-ai package found"
+            echo "lazycodex_changed=true" >> "$GITHUB_OUTPUT"
+            echo "previous_lazycodex_version=none" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          STATE_DIR="$(mktemp -d)"
+          trap 'rm -rf "$STATE_DIR"' EXIT
+          PACKAGE_TGZ="$(npm pack "lazycodex-ai@${PREVIOUS_LAZYCODEX_VERSION}" --pack-destination "$STATE_DIR" --silent)"
+          tar -xzf "$STATE_DIR/$PACKAGE_TGZ" -C "$STATE_DIR"
+
+          PREVIOUS_PACKAGE_ROOT="$STATE_DIR/package"
+          PREVIOUS_MARKETPLACE_ROOT="$STATE_DIR/previous-lazycodex"
+          CURRENT_MARKETPLACE_ROOT="$GITHUB_WORKSPACE/lazycodex-marketplace"
+          bun run script/sync-lazycodex-marketplace.ts "$PREVIOUS_PACKAGE_ROOT" "$PREVIOUS_MARKETPLACE_ROOT" --previous-payload
+
+          if diff -qr "$PREVIOUS_MARKETPLACE_ROOT/.agents/plugins/marketplace.json" "$CURRENT_MARKETPLACE_ROOT/.agents/plugins/marketplace.json" &&
+             diff -qr "$PREVIOUS_MARKETPLACE_ROOT/.github/workflows/pr-source-guidance.yml" "$CURRENT_MARKETPLACE_ROOT/.github/workflows/pr-source-guidance.yml" &&
+             diff -qr "$PREVIOUS_MARKETPLACE_ROOT/plugins/omo" "$CURRENT_MARKETPLACE_ROOT/plugins/omo"; then
+            echo "LazyCodex payload unchanged from lazycodex-ai@${PREVIOUS_LAZYCODEX_VERSION}"
+            echo "lazycodex_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "LazyCodex payload changed from lazycodex-ai@${PREVIOUS_LAZYCODEX_VERSION}"
+            echo "lazycodex_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "previous_lazycodex_version=${PREVIOUS_LAZYCODEX_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create LazyCodex GitHub release
+        if: needs.release-metadata.outputs.dist_tag == '' && steps.lazycodex-release-state.outputs.lazycodex_changed == 'true'
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          PREVIOUS_LAZYCODEX_VERSION: ${{ steps.lazycodex-release-state.outputs.previous_lazycodex_version }}
+          GH_TOKEN: ${{ secrets.LAZYCODEX_SYNC_TOKEN }}
+        run: |
+          {
+            printf '%s\n' "Synced Codex Light marketplace payload from oh-my-open-pentest v${VERSION}."
+            printf '%s\n' ""
+            printf '%s\n' "Compared against: lazycodex-ai@${PREVIOUS_LAZYCODEX_VERSION}"
+          } > /tmp/lazycodex-release-notes.md
+
+          gh release view "v${VERSION}" --repo code-yeongyu/lazycodex >/dev/null 2>&1 || \
+            gh release create "v${VERSION}" --repo code-yeongyu/lazycodex --target main --title "v${VERSION}" --notes-file /tmp/lazycodex-release-notes.md
+
+      - name: Create GitHub release
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "v${VERSION}" >/dev/null 2>&1 || \
+            gh release create "v${VERSION}" --title "v${VERSION}" --notes-file /tmp/changelog.md
+
+      - name: Delete draft release
+        run: gh release delete next --yes 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge to master
+        continue-on-error: true
+        env:
+          VERSION: ${{ needs.release-metadata.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git stash --include-untracked || true
+          git checkout master
+          git reset --hard "v${VERSION}"
+          git push -f origin master || echo "::warning::Failed to push to master"
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        env:
+          JOB_SUMMARY_TITLE: Release finalization
+          JOB_SUMMARY_STATUS: ${{ job.status }}
+          JOB_SUMMARY_DETAILS: |
+            - Applies and commits release state when needed.
+            - Creates or reuses the release tag.
+            - Syncs LazyCodex marketplace payload and creates GitHub releases.
+            - Attempts the protected `master` mirror update after release.
+          JOB_SUMMARY_NEXT: Inspect the first failing release-state, marketplace sync, or GitHub release step.
+        run: GITHUB_STEP_SUMMARY="$GITHUB_STEP_SUMMARY" bash .github/scripts/write-job-summary.sh

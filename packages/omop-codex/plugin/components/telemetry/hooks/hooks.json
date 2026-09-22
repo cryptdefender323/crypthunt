@@ -1,0 +1,16 @@
+{
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook session-start || exit 0\"",
+						"timeout": 5,
+						"statusMessage": "(OmOP) Recording Session Telemetry"
+					}
+				]
+			}
+		]
+	}
+}

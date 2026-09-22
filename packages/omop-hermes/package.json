@@ -1,0 +1,32 @@
+{
+  "name": "@omop/omop-hermes",
+  "version": "1.4.0",
+  "type": "module",
+  "private": true,
+  "description": "Hermes Agent harness adapter for oh-my-open-pentest. Vendored Hermes plugin + TypeScript installer.",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.ts"
+    },
+    "./install": {
+      "types": "./src/install/index.ts",
+      "import": "./src/install/index.ts"
+    },
+    "./install/*": {
+      "types": "./src/install/*.ts",
+      "import": "./src/install/*.ts"
+    }
+  },
+  "types": "./index.d.ts",
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "bun test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@omop/utils": "*"
+  },
+  "devDependencies": {
+    "bun-types": "1.3.14"
+  }
+}

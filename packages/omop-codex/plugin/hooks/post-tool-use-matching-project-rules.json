@@ -1,0 +1,17 @@
+{
+	"hooks": {
+		"PostToolUse": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${PLUGIN_ROOT}/components/rules/dist/cli.js\" hook post-tool-use",
+						"timeout": 5,
+						"statusMessage": "(OmOP) Matching Project Rules"
+					}
+				],
+				"matcher": "^apply_patch$"
+			}
+		]
+	}
+}

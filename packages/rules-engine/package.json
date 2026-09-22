@@ -1,0 +1,26 @@
+{
+  "name": "@omop/rules-engine",
+  "version": "1.4.0",
+  "type": "module",
+  "private": true,
+  "description": "Pure TypeScript rule discovery, matching, and nested AGENTS.md context utilities for oh-my-open-pentest.",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.ts"
+    },
+    "./engine": {
+      "types": "./engine.d.ts",
+      "import": "./src/engine/index.ts"
+    }
+  },
+  "types": "./index.d.ts",
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "bun test src/*.test.ts src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@omop/utils": "*",
+    "picomatch": "^4.0.4"
+  }
+}

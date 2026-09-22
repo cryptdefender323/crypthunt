@@ -1,0 +1,28 @@
+{
+	"hooks": {
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/components/start-work-continuation/dist/cli.js\\\" hook stop || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Checking Start-Work Continuation"
+					}
+				]
+			}
+		],
+		"SubagentStop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/components/start-work-continuation/dist/cli.js\\\" hook subagent-stop || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Checking Start-Work Continuation"
+					}
+				]
+			}
+		]
+	}
+}

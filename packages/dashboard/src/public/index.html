@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CryptHunter Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+[x-cloak]{display:none!important}
+body{background:#0a0a0f;color:#e2e8f0;font-family:'JetBrains Mono','Fira Code',monospace}
+.card{background:#0f1117;border:1px solid #1e2535;border-radius:8px}
+.badge{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
+.badge-critical{background:#7f1d1d;color:#fca5a5}
+.badge-high{background:#7c2d12;color:#fdba74}
+.badge-medium{background:#713f12;color:#fde047}
+.badge-low{background:#164e63;color:#67e8f9}
+.badge-info{background:#1e3a5f;color:#93c5fd}
+.badge-solved{background:#14532d;color:#86efac}
+.badge-active{background:#1e3a5f;color:#93c5fd}
+.badge-stuck{background:#7c2d12;color:#fdba74}
+.badge-unknown{background:#1e2535;color:#94a3b8}
+.badge-confirmed{background:#14532d;color:#86efac}
+.badge-investigating{background:#1e3a5f;color:#93c5fd}
+.badge-needs_validation{background:#713f12;color:#fde047}
+.badge-candidate{background:#1e2535;color:#94a3b8}
+.badge-disproven{background:#3b0764;color:#d8b4fe}
+.nav-btn{padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;transition:background .15s}
+.nav-btn.active{background:#1e40af;color:white}
+.nav-btn:not(.active){color:#94a3b8}
+.nav-btn:not(.active):hover{background:#1e2535}
+.input-field{background:#0f1117;border:1px solid #1e2535;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:13px;width:100%;outline:none}
+.input-field:focus{border-color:#3b82f6}
+.input-key{background:#0f1117;border:1px solid #1e2535;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;width:100%;outline:none}
+.input-key:focus{border-color:#3b82f6}
+.btn-primary{background:#1d4ed8;color:white;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{background:#1e2535;color:#94a3b8;padding:4px 10px;border-radius:4px;font-size:12px;cursor:pointer}
+.btn-sm:hover{background:#293548;color:#e2e8f0}
+.dot-active{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.dot-idle{width:8px;height:8px;border-radius:50%;background:#94a3b8}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.progress-bar{height:6px;border-radius:3px;background:#1e2535}
+.progress-fill{height:6px;border-radius:3px;transition:width .4s}
+.toggle-pill{position:relative;display:inline-block;width:36px;height:20px}
+.toggle-pill input{display:none}
+.toggle-track{position:absolute;inset:0;background:#1e2535;border-radius:10px;cursor:pointer;transition:background .2s}
+.toggle-pill input:checked+.toggle-track{background:#1d4ed8}
+.toggle-track::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s}
+.toggle-pill input:checked+.toggle-track::after{transform:translateX(16px)}
+.markdown-body{font-family:system-ui,sans-serif;font-size:14px;line-height:1.7;color:#cbd5e1}
+.markdown-body h1,.markdown-body h2,.markdown-body h3{color:#f1f5f9;margin-top:1.5em;margin-bottom:.5em}
+.markdown-body code{background:#1e2535;padding:2px 6px;border-radius:4px;font-size:12px}
+.markdown-body pre{background:#0f1117;border:1px solid #1e2535;border-radius:6px;padding:12px;overflow-x:auto}
+.markdown-body pre code{background:none;padding:0}
+.markdown-body table{border-collapse:collapse;width:100%;margin:1em 0}
+.markdown-body th{background:#1e2535;padding:8px 12px;text-align:left;font-size:12px}
+.markdown-body td{padding:8px 12px;border-bottom:1px solid #1e2535;font-size:13px}
+.log-entry{font-size:12px;padding:4px 0;border-bottom:1px solid #1a1f2e}
+.scrollable{overflow-y:auto;max-height:400px}
+.hyp-l1{border-left:3px solid #94a3b8}
+.hyp-l2{border-left:3px solid #67e8f9}
+.hyp-l3{border-left:3px solid #fde047}
+.hyp-l4{border-left:3px solid #86efac}
+.hyp-l5{border-left:3px solid #4ade80}
+.hyp-l6{border-left:3px solid #22c55e}
+</style>
+</head>
+<body x-data="dashboard()" x-init="init()" x-cloak>
+<div class="min-h-screen flex flex-col">
+
+  <header class="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="#3b82f6" stroke-width="1.5"/>
+        <path d="M14 5L20 10L20 18L14 22L8 18L8 10Z" stroke="#3b82f6" stroke-width="1.5" fill="#1d4ed820"/>
+        <circle cx="14" cy="14" r="3" fill="#3b82f6"/>
+      </svg>
+      <span class="font-bold text-white text-base tracking-tight">CryptHunter</span>
+      <span class="text-gray-500 text-xs ml-1">Dashboard</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 text-xs text-gray-500">
+        <div :class="connected ? 'dot-active' : 'dot-idle'"></div>
+        <span x-text="connected ? 'Live' : 'Offline'"></span>
+      </div>
+      <div class="text-xs text-gray-600">
+        <span x-text="engagements.length"></span> engagements ·
+        <span x-text="totalFindings"></span> findings
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+
+    <nav class="w-52 border-r border-gray-800 p-3 flex flex-col gap-1 shrink-0">
+      <button @click="tab='overview'" :class="tab==='overview'?'active':''" class="nav-btn text-left w-full">Overview</button>
+      <button @click="tab='engagements';loadEngagements()" :class="tab==='engagements'?'active':''" class="nav-btn text-left w-full">Engagements</button>
+      <button @click="tab='findings';loadAllFindings()" :class="tab==='findings'?'active':''" class="nav-btn text-left w-full">Findings</button>
+      <button @click="tab='attackmodel';loadAttackModel()" :class="tab==='attackmodel'?'active':''" class="nav-btn text-left w-full">Attack Model</button>
+      <button @click="tab='research';loadResearchState()" :class="tab==='research'?'active':''" class="nav-btn text-left w-full">Research State</button>
+      <button @click="tab='report';loadReport()" :class="tab==='report'?'active':''" class="nav-btn text-left w-full">Report Viewer</button>
+      <button @click="tab='sessions';loadSessions()" :class="tab==='sessions'?'active':''" class="nav-btn text-left w-full">Sessions</button>
+      <button @click="tab='ctf';loadCtfChallenges()" :class="tab==='ctf'?'active':''" class="nav-btn text-left w-full text-cyan-400">CTF Workspace</button>
+      <button @click="tab='phantom'" :class="tab==='phantom'?'active':''" class="nav-btn text-left w-full">Phantom C2</button>
+      <div class="flex-1"></div>
+      <button @click="tab='engage'" :class="tab==='engage'?'active':''" class="nav-btn text-left w-full text-blue-400">New Engagement</button>
+      <button @click="tab='settings';loadSettings()" :class="tab==='settings'?'active':''" class="nav-btn text-left w-full text-gray-400">Settings</button>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto p-6">
+
+      <!-- OVERVIEW -->
+      <div x-show="tab==='overview'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Overview</h2>
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="card p-4"><div class="text-2xl font-bold text-white" x-text="engagements.length"></div><div class="text-xs text-gray-500 mt-1">Engagements</div></div>
+          <div class="card p-4"><div class="text-2xl font-bold text-red-400" x-text="totalFindings"></div><div class="text-xs text-gray-500 mt-1">Total Findings</div></div>
+          <div class="card p-4"><div class="text-2xl font-bold text-orange-400" x-text="criticalCount"></div><div class="text-xs text-gray-500 mt-1">Critical / High</div></div>
+          <div class="card p-4"><div class="text-2xl font-bold text-green-400" x-text="sessions.length"></div><div class="text-xs text-gray-500 mt-1">Active Sessions</div></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Recent Engagements</div>
+            <template x-if="engagements.length===0"><div class="text-gray-600 text-xs">No engagements found in .omop/</div></template>
+            <template x-for="e in engagements.slice(0,5)" :key="e.id">
+              <div class="flex items-center justify-between py-2 border-b border-gray-800 last:border-0 cursor-pointer hover:text-blue-400" @click="selectEngagement(e);tab='findings'">
+                <div>
+                  <div class="text-sm text-white" x-text="e.name"></div>
+                  <div class="text-xs text-gray-500" x-text="e.mode+' · '+e.target"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400" x-text="e.findingCount+' findings'"></span>
+                  <div :class="e.status==='active'?'dot-active':'dot-idle'"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Severity Distribution</div>
+            <template x-for="sev in ['critical','high','medium','low','info']" :key="sev">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="badge" :class="'badge-'+sev" x-text="sev" style="min-width:60px;text-align:center"></span>
+                <div class="progress-bar flex-1"><div class="progress-fill" :class="severityColor(sev)" :style="'width:'+severityPct(sev)+'%'"></div></div>
+                <span class="text-xs text-gray-400 w-6 text-right" x-text="severityCount(sev)"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENGAGEMENTS -->
+      <div x-show="tab==='engagements'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Engagements</h2>
+        <template x-if="engagements.length===0"><div class="card p-6 text-gray-500 text-sm">No engagements found.</div></template>
+        <div class="space-y-3">
+          <template x-for="e in engagements" :key="e.id">
+            <div class="card p-4 cursor-pointer hover:border-blue-800 transition-colors" @click="selectEngagement(e);tab='findings'">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-white font-medium" x-text="e.name"></div>
+                  <div class="text-xs text-gray-500 mt-1" x-text="e.mode+' · '+e.target"></div>
+                  <div class="text-xs text-gray-600 mt-0.5" x-text="e.scope??'no scope defined'"></div>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400" x-text="e.status"></span>
+                    <div :class="e.status==='active'?'dot-active':'dot-idle'"></div>
+                  </div>
+                  <span class="text-xs text-red-400" x-text="e.findingCount+' findings'"></span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- FINDINGS -->
+      <div x-show="tab==='findings'">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-semibold text-sm uppercase tracking-wider">Findings <span class="text-gray-500 font-normal ml-2" x-text="selectedEngagement?'· '+selectedEngagement.name:'(all)'"></span></h2>
+          <div class="flex gap-2">
+            <template x-for="sev in ['critical','high','medium','low','info']" :key="sev">
+              <button @click="toggleSevFilter(sev)" :class="sevFilter.includes(sev)?'badge badge-'+sev:'badge bg-gray-800 text-gray-500'" x-text="sev" class="cursor-pointer"></button>
+            </template>
+          </div>
+        </div>
+        <template x-if="filteredFindings.length===0"><div class="card p-6 text-gray-500 text-sm">No findings match the current filter.</div></template>
+        <div class="space-y-2">
+          <template x-for="f in filteredFindings" :key="f.id">
+            <div class="card p-4">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="badge" :class="'badge-'+f.severity" x-text="f.severity"></span>
+                <span class="text-white text-sm font-medium" x-text="f.title"></span>
+              </div>
+              <div class="flex gap-3 text-xs text-gray-500">
+                <span x-show="f.host" x-text="'host: '+f.host"></span>
+                <span x-show="f.confidence" x-text="'confidence: '+f.confidence"></span>
+                <span x-show="f.validationLevel" x-text="'L'+f.validationLevel"></span>
+                <span x-show="f.source" x-text="f.source"></span>
+              </div>
+              <div x-show="f.evidence" class="mt-2 text-xs text-gray-400 bg-gray-900 rounded px-3 py-1.5" x-text="f.evidence"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- ATTACK MODEL -->
+      <div x-show="tab==='attackmodel'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Attack Model</h2>
+        <template x-if="!attackModel"><div class="card p-6 text-gray-500 text-sm">No attack model data. Run an engagement first.</div></template>
+        <template x-if="attackModel">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card p-4">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Technologies</div>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="t in attackModel.signals.techs" :key="t"><span class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded" x-text="t"></span></template>
+                <span x-show="!attackModel.signals.techs.length" class="text-gray-600 text-xs">none yet</span>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Open Ports</div>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="p in attackModel.signals.ports" :key="p"><span class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded font-mono" x-text="p"></span></template>
+                <span x-show="!attackModel.signals.ports.length" class="text-gray-600 text-xs">none yet</span>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Hypotheses</div>
+              <div class="flex gap-4 text-sm">
+                <div><span class="text-yellow-400 font-bold" x-text="attackModel.openHypotheses.length"></span> <span class="text-gray-500">open</span></div>
+                <div><span class="text-green-400 font-bold" x-text="attackModel.confirmed.length"></span> <span class="text-gray-500">confirmed</span></div>
+                <div><span class="text-gray-400 font-bold" x-text="attackModel.rejected.length"></span> <span class="text-gray-500">rejected</span></div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Chain Candidates</div>
+              <span class="text-white font-bold text-2xl" x-text="attackModel.chainCandidateCount"></span>
+              <span class="text-gray-500 text-xs ml-1">active chains</span>
+            </div>
+            <div class="card p-4 col-span-2">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Vulnerability Keywords</div>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="k in attackModel.signals.vulnKeywords" :key="k"><span class="bg-red-900 text-red-200 text-xs px-2 py-0.5 rounded" x-text="k"></span></template>
+                <span x-show="!attackModel.signals.vulnKeywords.length" class="text-gray-600 text-xs">none yet</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- RESEARCH STATE -->
+      <div x-show="tab==='research'">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-semibold text-sm uppercase tracking-wider">Research State</h2>
+          <button @click="loadResearchState()" class="btn-sm">Refresh</button>
+        </div>
+        <template x-if="!researchState"><div class="card p-6 text-gray-500 text-sm">No research state found. Start an engagement to see live investigation data.</div></template>
+        <template x-if="researchState">
+          <div class="space-y-4">
+            <div class="card p-4 flex items-center justify-between">
+              <div>
+                <span class="text-white font-medium" x-text="researchState.objective||'No objective set'"></span>
+                <span class="text-gray-500 text-xs ml-2" x-text="'['+researchState.role+']'"></span>
+              </div>
+              <span x-show="researchState.updatedAt" class="text-gray-600 text-xs" x-text="'updated '+timeAgo(researchState.updatedAt)"></span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div class="card p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Task Graph</div>
+                <div class="flex justify-between text-xs mb-2">
+                  <span class="text-gray-400">Progress</span>
+                  <span class="text-green-400 font-bold" x-text="researchState.taskGraph.complete+' / '+researchState.taskGraph.total"></span>
+                </div>
+                <div class="progress-bar mb-2"><div class="progress-fill bg-green-500" :style="'width:'+taskPct()+'%'"></div></div>
+                <div class="flex gap-3 text-xs text-gray-500">
+                  <span x-text="researchState.taskGraph.active+' active'"></span>
+                  <span x-text="researchState.taskGraph.blocked+' blocked'"></span>
+                  <span x-text="researchState.taskGraph.pending+' pending'"></span>
+                </div>
+              </div>
+
+              <div class="card p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Quality Metrics</div>
+                <div class="space-y-1.5">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-400">Evidence completeness</span>
+                    <span :class="researchState.metrics.evidenceCompleteness>=1?'text-green-400':'text-yellow-400'" x-text="Math.round(researchState.metrics.evidenceCompleteness*100)+'%'"></span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-400">Repeated test rate</span>
+                    <span :class="researchState.metrics.repeatedTestRate>0.15?'text-red-400':'text-green-400'" x-text="Math.round(researchState.metrics.repeatedTestRate*100)+'%'"></span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-400">Tool failures</span>
+                    <span class="text-gray-400" x-text="researchState.metrics.toolFailures"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Finding Gate</div>
+                <div class="space-y-1">
+                  <template x-for="row in findingGateRows" :key="row[1]">
+                    <div class="flex justify-between items-center text-xs">
+                      <span class="text-gray-400" x-text="row[0]"></span>
+                      <span :class="row[2]" class="font-bold font-mono" x-text="researchState.findings[row[1]]"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">
+                  Open Hypotheses
+                  <span class="text-gray-600 ml-1" x-text="'('+researchState.hypotheses.open+' total)'"></span>
+                </div>
+                <template x-if="researchState.hypotheses.items.length===0"><div class="text-gray-600 text-xs">No open hypotheses</div></template>
+                <div class="space-y-2">
+                  <template x-for="h in researchState.hypotheses.items" :key="h.id">
+                    <div class="pl-3 py-1.5 text-xs" :class="'hyp-l'+h.evidenceLevel">
+                      <div class="text-gray-300" x-text="h.claim"></div>
+                      <div class="flex gap-2 mt-0.5 text-gray-600">
+                        <span x-text="'L'+h.evidenceLevel"></span>
+                        <span x-text="h.state"></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <div class="card p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Unanswered Questions</div>
+                <template x-if="researchState.unansweredQuestions.length===0"><div class="text-gray-600 text-xs">None</div></template>
+                <div class="space-y-1 mb-3">
+                  <template x-for="(q,i) in researchState.unansweredQuestions.slice(0,8)" :key="i">
+                    <div class="text-xs text-gray-400 flex gap-2"><span class="text-gray-600">?</span><span x-text="q"></span></div>
+                  </template>
+                </div>
+                <div class="border-t border-gray-800 pt-3">
+                  <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Next Actions</div>
+                  <template x-if="researchState.nextActions.length===0"><div class="text-gray-600 text-xs">None queued</div></template>
+                  <div class="space-y-1">
+                    <template x-for="(a,i) in researchState.nextActions.slice(0,5)" :key="i">
+                      <div class="text-xs text-blue-400 flex gap-2"><span class="text-gray-600">→</span><span x-text="a"></span></div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- REPORT -->
+      <div x-show="tab==='report'">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-semibold text-sm uppercase tracking-wider">Report Viewer</h2>
+          <select class="input-field w-48" x-model="reportEngagementId" @change="loadReport()">
+            <option value="">Select engagement…</option>
+            <template x-for="e in engagements" :key="e.id"><option :value="e.id" x-text="e.name"></option></template>
+          </select>
+        </div>
+        <template x-if="!reportMarkdown"><div class="card p-6 text-gray-500 text-sm">No report found for this engagement.</div></template>
+        <template x-if="reportMarkdown"><div class="card p-6 markdown-body" x-html="renderMarkdown(reportMarkdown)"></div></template>
+      </div>
+
+      <!-- SESSIONS -->
+      <div x-show="tab==='sessions'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">OpenCode Sessions</h2>
+        <template x-if="sessions.length===0"><div class="card p-6 text-gray-500 text-sm">No active sessions. OpenCode must be running.</div></template>
+        <div class="space-y-2">
+          <template x-for="s in sessions" :key="s.id">
+            <div class="card p-4 flex items-center justify-between">
+              <div>
+                <div class="text-white text-sm" x-text="s.title??s.id"></div>
+                <div class="text-xs text-gray-500 font-mono mt-0.5" x-text="s.id"></div>
+              </div>
+              <div class="dot-active"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- CTF WORKSPACE -->
+      <div x-show="tab==='ctf'">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-semibold text-sm uppercase tracking-wider">CTF Workspace</h2>
+          <button @click="loadCtfChallenges()" class="btn-sm">Refresh</button>
+        </div>
+        <template x-if="ctfChallenges.length===0">
+          <div class="card p-6">
+            <div class="text-gray-500 text-sm mb-2">No CTF challenges found.</div>
+            <div class="text-gray-600 text-xs">Start a CTF engagement to see challenges here. State is read from <span class="font-mono">.omop/ctf/</span></div>
+          </div>
+        </template>
+        <template x-if="ctfChallenges.length>0">
+          <div class="space-y-4">
+            <div class="grid grid-cols-4 gap-3 mb-2">
+              <div class="card p-3 text-center"><div class="text-xl font-bold text-green-400" x-text="ctfChallenges.filter(c=>c.status==='solved').length"></div><div class="text-xs text-gray-500 mt-0.5">Solved</div></div>
+              <div class="card p-3 text-center"><div class="text-xl font-bold text-blue-400" x-text="ctfChallenges.filter(c=>c.status==='active').length"></div><div class="text-xs text-gray-500 mt-0.5">Active</div></div>
+              <div class="card p-3 text-center"><div class="text-xl font-bold text-orange-400" x-text="ctfChallenges.filter(c=>c.status==='stuck').length"></div><div class="text-xs text-gray-500 mt-0.5">Stuck</div></div>
+              <div class="card p-3 text-center"><div class="text-xl font-bold text-gray-400" x-text="ctfChallenges.length"></div><div class="text-xs text-gray-500 mt-0.5">Total</div></div>
+            </div>
+            <div class="space-y-2">
+              <template x-for="c in ctfChallenges" :key="c.id">
+                <div class="card p-4">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="badge" :class="'badge-'+c.status" x-text="c.status"></span>
+                        <span class="text-white font-medium text-sm" x-text="c.name"></span>
+                        <span class="text-gray-500 text-xs" x-text="c.category"></span>
+                      </div>
+                      <div x-show="c.skill" class="text-xs text-gray-600 mb-1.5" x-text="'skill: '+c.skill"></div>
+                      <div x-show="c.techniques.length>0" class="flex flex-wrap gap-1.5 mb-2">
+                        <template x-for="t in c.techniques" :key="t">
+                          <span class="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded font-mono" x-text="t"></span>
+                        </template>
+                      </div>
+                      <div x-show="c.notes" class="text-xs text-gray-500 bg-gray-900 rounded px-3 py-1.5 mt-1">
+                        <div class="text-gray-600 text-xs mb-0.5">notes</div>
+                        <div x-text="c.notes?.slice(0,200)+(c.notes?.length>200?'…':'')"></div>
+                      </div>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <template x-if="c.flag">
+                        <div class="bg-green-950 border border-green-800 rounded px-3 py-2">
+                          <div class="text-xs text-green-500 mb-0.5 uppercase tracking-wider">Flag</div>
+                          <div class="text-green-300 text-xs font-mono break-all max-w-xs" x-text="c.flag"></div>
+                        </div>
+                      </template>
+                      <template x-if="!c.flag"><div class="text-gray-700 text-xs">no flag yet</div></template>
+                      <div x-show="c.startedAt" class="text-gray-600 text-xs mt-1" x-text="'started '+timeAgo(c.startedAt)"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- PHANTOM C2 -->
+      <div x-show="tab==='phantom'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Phantom C2</h2>
+        <div class="card p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Operator Audit Log</div>
+          <div class="scrollable" x-show="phantomAudit">
+            <template x-for="(line,i) in phantomAuditLines" :key="i">
+              <div class="log-entry font-mono text-gray-400" x-text="line"></div>
+            </template>
+          </div>
+          <div class="text-gray-600 text-xs" x-show="!phantomAudit">No audit log found. Start a red-team engagement with Phantom C2.</div>
+        </div>
+      </div>
+
+      <!-- NEW ENGAGEMENT -->
+      <div x-show="tab==='engage'">
+        <h2 class="text-white font-semibold text-sm mb-4 uppercase tracking-wider">New Engagement</h2>
+        <div class="card p-6 max-w-lg space-y-4">
+          <div>
+            <label class="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Mode</label>
+            <select class="input-field" x-model="newEng.mode">
+              <option value="auto">Auto</option>
+              <option value="red-team">Red Team</option>
+              <option value="bug-bounty">Bug Bounty</option>
+              <option value="offensive">Offensive</option>
+              <option value="ctf">CTF</option>
+              <option value="ctf-pwn">CTF — Pwn</option>
+              <option value="ctf-crypto">CTF — Crypto</option>
+              <option value="ctf-web">CTF — Web</option>
+              <option value="ctf-reversing">CTF — Reversing</option>
+              <option value="ctf-forensics">CTF — Forensics</option>
+              <option value="ctf-misc">CTF — Misc</option>
+              <option value="grey-hat">Grey Hat</option>
+              <option value="forensic">Forensic</option>
+              <option value="blue-team">Blue Team</option>
+              <option value="ad-audit">AD Audit</option>
+              <option value="cloud-pentest">Cloud Pentest</option>
+              <option value="mobile-pentest">Mobile Pentest</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Target</label>
+            <input class="input-field" x-model="newEng.target" placeholder="10.0.0.0/24 · https://target.com · describe CTF challenge"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Message (optional)</label>
+            <textarea class="input-field" x-model="newEng.message" rows="3" placeholder="Leave empty to use default fullscan command"></textarea>
+          </div>
+          <div x-show="newEng.error" class="text-red-400 text-xs p-3 bg-red-950 rounded" x-text="newEng.error"></div>
+          <div x-show="newEng.result" class="text-green-400 text-xs p-3 bg-green-950 rounded">
+            Engagement started · Session: <span class="font-mono" x-text="newEng.result"></span>
+          </div>
+          <button class="btn-primary w-full" :disabled="newEng.loading||!newEng.target" @click="startEngagement()">
+            <span x-show="!newEng.loading">Start Engagement</span>
+            <span x-show="newEng.loading">Starting…</span>
+          </button>
+        </div>
+        <div class="mt-4 text-xs text-gray-600 max-w-lg">Requires OpenCode to be running. The engagement opens in the active OpenCode session.</div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div x-show="tab==='settings'">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-white font-semibold text-sm uppercase tracking-wider">Settings</h2>
+          <div class="flex gap-2 items-center">
+            <span x-show="settings.saved" class="text-green-400 text-xs">Saved</span>
+            <span x-show="settings.error" class="text-red-400 text-xs" x-text="settings.error"></span>
+            <button @click="saveSettings()" :disabled="settings.saving" class="btn-primary">
+              <span x-show="!settings.saving">Save Settings</span>
+              <span x-show="settings.saving">Saving…</span>
+            </button>
+          </div>
+        </div>
+        <template x-if="!settings.data"><div class="card p-6 text-gray-500 text-sm">Loading settings…</div></template>
+        <template x-if="settings.data">
+          <div class="space-y-6">
+            <div class="card p-5">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-4">General</div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs text-gray-500 block mb-1.5">Default Engagement Mode</label>
+                  <select class="input-field" x-model="settings.data.defaultMode">
+                    <option value="auto">auto</option>
+                    <option value="bug-bounty">bug-bounty</option>
+                    <option value="red-team">red-team</option>
+                    <option value="ctf">ctf</option>
+                    <option value="offensive">offensive</option>
+                    <option value="forensic">forensic</option>
+                    <option value="blue-team">blue-team</option>
+                    <option value="ad-audit">ad-audit</option>
+                    <option value="cloud-pentest">cloud-pentest</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-gray-500 block mb-1.5">Preferred Harness (CLI)</label>
+                  <select class="input-field" x-model="settings.data.preferredHarness">
+                    <option value="opencode">OpenCode (recommended)</option>
+                    <option value="codex">Codex CLI (Light edition)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-gray-500 block mb-1.5">CTF Flag Regex</label>
+                  <input class="input-field font-mono" x-model="settings.data.ctfFlagRegex" placeholder="FLAG\{[^}]+\}"/>
+                </div>
+                <div>
+                  <label class="text-xs text-gray-500 block mb-1.5">CTFd URL (auto-submit flags)</label>
+                  <input class="input-field" x-model="settings.data.ctfdUrl" placeholder="https://ctfd.example.com"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">AI Providers — Web Mode</div>
+              <div class="text-xs text-gray-600 mb-4">
+                These providers are used by the web dashboard when triggering engagements directly.
+                The CLI harness (OpenCode / Codex) uses its own provider config — set that via
+                <span class="font-mono text-gray-500">bunx crypthunter install</span>.
+              </div>
+              <div class="space-y-3">
+                <template x-for="(provider, idx) in settings.data.providers" :key="provider.name">
+                  <div class="border border-gray-800 rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                      <label class="toggle-pill">
+                        <input type="checkbox" x-model="provider.enabled"/>
+                        <div class="toggle-track"></div>
+                      </label>
+                      <span class="text-white text-sm font-medium capitalize" x-text="provider.name"></span>
+                      <span class="text-xs text-gray-600" x-text="providerHint(provider.name)"></span>
+                    </div>
+                    <div x-show="provider.enabled" class="grid grid-cols-2 gap-3">
+                      <div x-show="provider.name!=='ollama'">
+                        <label class="text-xs text-gray-600 block mb-1">API Key</label>
+                        <input type="password" class="input-key" x-model="provider.apiKey" :placeholder="apiKeyPlaceholder(provider.name)"/>
+                      </div>
+                      <div x-show="provider.name==='ollama'||provider.name==='custom'">
+                        <label class="text-xs text-gray-600 block mb-1">Base URL</label>
+                        <input class="input-key" x-model="provider.baseUrl" placeholder="http://localhost:11434"/>
+                      </div>
+                      <div>
+                        <label class="text-xs text-gray-600 block mb-1">Model</label>
+                        <input class="input-key" x-model="provider.model" :placeholder="modelPlaceholder(provider.name)"/>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+function dashboard() {
+  return {
+    tab: 'overview',
+    connected: false,
+    engagements: [],
+    allFindings: [],
+    attackModel: null,
+    researchState: null,
+    sessions: [],
+    ctfChallenges: [],
+    reportMarkdown: '',
+    reportEngagementId: '',
+    phantomAudit: '',
+    selectedEngagement: null,
+    sevFilter: ['critical','high','medium','low','info'],
+    newEng: { mode: 'red-team', target: '', message: '', loading: false, error: '', result: '' },
+    settings: { data: null, saving: false, saved: false, error: '' },
+
+    findingGateRows: [
+      ['Candidate',    'candidate',      'text-gray-400'],
+      ['Investigating','investigating',   'text-blue-400'],
+      ['Needs valid.', 'needsValidation', 'text-yellow-400'],
+      ['Ready review', 'readyForReview',  'text-orange-400'],
+      ['Validated',    'validated',       'text-green-400'],
+      ['Disproven',    'disproven',       'text-purple-400'],
+      ['Out of scope', 'outOfScope',      'text-gray-600'],
+    ],
+
+    get totalFindings() { return this.allFindings.length },
+    get criticalCount() { return this.allFindings.filter(f => f.severity==='critical'||f.severity==='high').length },
+    get filteredFindings() { return this.allFindings.filter(f => this.sevFilter.includes(f.severity)) },
+    get phantomAuditLines() { return this.phantomAudit ? this.phantomAudit.split('\n').filter(l=>l.trim()) : [] },
+
+    taskPct() {
+      if (!this.researchState||!this.researchState.taskGraph.total) return 0
+      return Math.round(this.researchState.taskGraph.complete/this.researchState.taskGraph.total*100)
+    },
+    severityCount(sev) { return this.allFindings.filter(f=>f.severity===sev).length },
+    severityPct(sev) {
+      if (!this.totalFindings) return 0
+      return Math.round(this.severityCount(sev)/this.totalFindings*100)
+    },
+    severityColor(sev) {
+      return {critical:'bg-red-600',high:'bg-orange-500',medium:'bg-yellow-500',low:'bg-blue-500',info:'bg-gray-500'}[sev]??'bg-gray-500'
+    },
+    toggleSevFilter(sev) {
+      if (this.sevFilter.includes(sev)) this.sevFilter=this.sevFilter.filter(s=>s!==sev)
+      else this.sevFilter.push(sev)
+    },
+    providerHint(name) {
+      return {anthropic:'best for pentest reasoning',openai:'good for web CTF + code analysis',gemini:'large context — binary analysis',deepseek:'strong for crypto CTF (lattice/math)',groq:'fast inference',ollama:'local — no API key needed',custom:'custom OpenAI-compatible endpoint'}[name]??''
+    },
+    apiKeyPlaceholder(name) {
+      return {anthropic:'sk-ant-...',openai:'sk-...',gemini:'AIza...',deepseek:'sk-...',groq:'gsk_...'}[name]??'API key'
+    },
+    modelPlaceholder(name) {
+      return {anthropic:'claude-opus-4-5',openai:'gpt-4o',gemini:'gemini-2.0-flash',deepseek:'deepseek-reasoner',groq:'llama-3.3-70b-versatile',ollama:'llama3.2',custom:'model-name'}[name]??'model'
+    },
+    timeAgo(ts) {
+      if (!ts) return ''
+      const diff=Math.floor((Date.now()-new Date(ts).getTime())/1000)
+      if (diff<60) return diff+'s ago'
+      if (diff<3600) return Math.floor(diff/60)+'m ago'
+      if (diff<86400) return Math.floor(diff/3600)+'h ago'
+      return Math.floor(diff/86400)+'d ago'
+    },
+    renderMarkdown(md) { return typeof marked!=='undefined'?marked.parse(md):md },
+
+    async init() {
+      await this.loadEngagements()
+      await this.loadAllFindings()
+      await this.loadAttackModel()
+      await this.loadSessions()
+      this.setupSSE()
+    },
+    setupSSE() {
+      const es=new EventSource('/events')
+      es.addEventListener('connected',()=>{this.connected=true})
+      es.addEventListener('refresh',()=>{
+        this.loadEngagements()
+        this.loadAllFindings()
+        this.loadAttackModel()
+        if(this.tab==='research') this.loadResearchState()
+        if(this.tab==='ctf') this.loadCtfChallenges()
+      })
+      es.onerror=()=>{this.connected=false}
+    },
+    async loadEngagements() {
+      const r=await fetch('/api/engagements').catch(()=>null)
+      if(r?.ok) this.engagements=await r.json()
+    },
+    async loadAllFindings() {
+      const all=[]
+      for(const e of this.engagements){
+        const r=await fetch(`/api/engagements/${e.id}/findings`).catch(()=>null)
+        if(r?.ok) all.push(...(await r.json()).map(f=>({...f,engagementName:e.name})))
+      }
+      this.allFindings=all
+    },
+    selectEngagement(e) {
+      this.selectedEngagement=e
+      fetch(`/api/engagements/${e.id}/findings`).then(r=>r.json()).then(f=>{this.allFindings=f})
+    },
+    async loadAttackModel() {
+      const r=await fetch('/api/attack-model').catch(()=>null)
+      if(r?.ok) this.attackModel=await r.json()
+    },
+    async loadSessions() {
+      const r=await fetch('/api/sessions').catch(()=>null)
+      if(r?.ok) this.sessions=await r.json()
+    },
+    async loadReport() {
+      if(!this.reportEngagementId) return
+      const r=await fetch(`/api/engagements/${this.reportEngagementId}/report`).catch(()=>null)
+      if(r?.ok){const d=await r.json();this.reportMarkdown=d.markdown??''}
+    },
+    async loadCtfChallenges() {
+      const r=await fetch('/api/ctf/challenges').catch(()=>null)
+      if(r?.ok) this.ctfChallenges=await r.json()
+    },
+    async loadResearchState() {
+      const r=await fetch('/api/research/state').catch(()=>null)
+      if(r?.ok) this.researchState=await r.json()
+    },
+    async loadSettings() {
+      const r=await fetch('/api/settings').catch(()=>null)
+      if(r?.ok) this.settings.data=await r.json()
+    },
+    async saveSettings() {
+      this.settings.saving=true;this.settings.saved=false;this.settings.error=''
+      const r=await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.settings.data)}).catch(e=>({ok:false,json:async()=>({error:e.message})}))
+      const d=await r.json()
+      if(d.error){this.settings.error=d.error}
+      else{this.settings.saved=true;setTimeout(()=>{this.settings.saved=false},2000)}
+      this.settings.saving=false
+    },
+    async startEngagement() {
+      this.newEng.loading=true;this.newEng.error='';this.newEng.result=''
+      const r=await fetch('/api/engage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:this.newEng.mode,target:this.newEng.target,message:this.newEng.message})}).catch(e=>({ok:false,json:async()=>({error:e.message})}))
+      const d=await r.json()
+      if(d.error) this.newEng.error=d.error
+      else this.newEng.result=d.sessionId??'started'
+      this.newEng.loading=false
+    },
+  }
+}
+</script>
+</body>
+</html>

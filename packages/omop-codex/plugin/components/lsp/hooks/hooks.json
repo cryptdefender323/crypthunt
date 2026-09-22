@@ -1,0 +1,30 @@
+{
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "^(apply_patch|Write|Edit|MultiEdit|multi_edit|write|edit|multiedit)$",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook post-tool-use || exit 0\"",
+						"timeout": 60,
+						"statusMessage": "(OmOP) Checking LSP Diagnostics"
+					}
+				]
+			}
+		],
+		"PostCompact": [
+			{
+				"matcher": "manual|auto",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/dist/cli.js\\\" hook post-compact || exit 0\"",
+						"timeout": 5,
+						"statusMessage": "(OmOP) Resetting LSP Diagnostics Cache"
+					}
+				]
+			}
+		]
+	}
+}

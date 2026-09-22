@@ -1,0 +1,17 @@
+{
+	"hooks": {
+		"SubagentStop": [
+			{
+				"matcher": "^lazycodex-executor$",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cmd /c \"node \\\"${PLUGIN_ROOT}/components/lazycodex-executor-verify/dist/cli.js\\\" hook subagent-stop || exit 0\"",
+						"timeout": 1,
+						"statusMessage": "(OmOP) Verifying LazyCodex Executor Evidence"
+					}
+				]
+			}
+		]
+	}
+}

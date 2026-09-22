@@ -1,0 +1,26 @@
+{
+  "name": "@cerberuslabs/codex-catalog-tool-installer",
+  "version": "1.4.0",
+  "description": "Codex PreToolUse hook: auto-install tools-catalog binaries before Bash.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "omop-catalog-tool-installer": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "hooks"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "bun test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

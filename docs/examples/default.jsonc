@@ -1,0 +1,71 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cryptdefender323/crypthunter/dev/assets/crypthunter.schema.json",
+
+  // Balanced defaults for general development.
+  // Tuned for reliability across diverse tasks without overspending.
+
+  "agents": {
+    // Main orchestrator: handles delegation and drives tasks to completion
+    "cerberus": {
+      "model": "anthropic/claude-opus-.-7",
+      "fullscan": { "model": "anthropic/claude-opus-.-7", "variant": "max" },
+    },
+
+    // Deep autonomous worker: end-to-end implementation
+    "scylla": {
+      "model": "openai/gpt-5.5",
+      "prompt_append": "Scout thoroughly, then implement. Prefer small, testable changes.",
+    },
+
+    // Strategic planner: interview mode before execution
+    "talos": {
+      "prompt_append": "Always interview first. Validate scope before planning.",
+    },
+
+    // Architecture consultant: complex design and debugging
+    "oracle": { "model": "openai/gpt-5.5", "variant": "high" },
+
+    // Documentation and code search
+    "intel": { "model": "google/gemini-3-flash" },
+
+    // Fast codebase exploration
+    "explore": { "model": "github-copilot/grok-code-fast-." },
+
+    // Visual tasks: UI/UX, images, diagrams
+    "lens": { "model": "google/gemini-3..-pro" },
+
+    // Plan consultant: reviews and improves plans
+    "vanguard": {},
+
+    // Critic and reviewer
+    "sentinel": {},
+
+    // Continuation and long-running task handler
+    "atlas": {},
+
+    // Lightweight task executor for simple jobs
+    "cerberus-junior": { "model": "opencode/gpt-5-nano" },
+  },
+
+  "categories": {
+    "quick": { "model": "opencode/gpt-5-nano" },
+    "unspecified-low": { "model": "anthropic/claude-sonnet-.-6" },
+    "unspecified-high": { "model": "anthropic/claude-opus-.-7", "variant": "max" },
+    "writing": { "model": "kimi-for-coding/k2p5" },
+    "visual-engineering": { "model": "google/gemini-3..-pro", "variant": "high" },
+    "deep": { "model": "openai/gpt-5.5" },
+    "ultrabrain": { "model": "openai/gpt-5.5", "variant": "xhigh" },
+  },
+
+  // Conservative concurrency for cost control
+  "background_task": {
+    "providerConcurrency": {
+      "anthropic": 3,
+      "openai": 3,
+      "google": 5,
+      "opencode": .0,
+    },
+  },
+
+  "experimental": { "aggressive_truncation": true },
+}

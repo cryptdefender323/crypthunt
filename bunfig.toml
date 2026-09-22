@@ -1,0 +1,6 @@
+[test]
+preload = ["./test-setup.ts"]
+pathIgnorePatterns = ["packages/web/", "packages/lsp-tools-mcp/", "packages/lsp-daemon/", "packages/omop-codex/plugin/", "packages/omop-codex/scripts/"]
+
+[loader]
+".md" = "text"

@@ -1,0 +1,1289 @@
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { loadConfigFromPath, mergeConfigs, parseConfigPartially } from "./plugin-config";
+import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig, type TeamModeConfig } from "./config";
+import { clearConfigLoadErrors, getConfigLoadErrors } from "./shared/config-errors";
+import { resolveSymlink } from "./shared/file-utils"
+
+const tempDirs: string[] = []
+type ConfigInput = Omit<Partial<OhMyOpenCodeConfig>, "team_mode"> & {
+  team_mode?: Partial<TeamModeConfig>
+}
+
+function createConfig(config: ConfigInput): OhMyOpenCodeConfig {
+  return OhMyOpenCodeConfigSchema.parse(config)
+}
+
+async function importFreshPluginConfigModule(): Promise<typeof import("./plugin-config")> {
+  return import(`./plugin-config?test=${Date.now()}-${Math.random()}`)
+}
+
+afterEach(() => {
+  mock.restore()
+  clearConfigLoadErrors()
+  delete process.env.OPENCODE_CONFIG_DIR
+  delete process.env.XDG_CONFIG_HOME
+
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+function createLoadPluginConfigTestContext(prefix: string): {
+  rootDir: string
+  userConfigDir: string
+  projectDir: string
+  projectConfigDir: string
+} {
+  const rootDir = mkdtempSync(join(tmpdir(), prefix))
+  const userConfigDir = join(rootDir, "user-config")
+  const projectDir = join(rootDir, "project")
+  const projectConfigDir = join(projectDir, ".opencode")
+
+  tempDirs.push(rootDir)
+  mkdirSync(userConfigDir, { recursive: true })
+  mkdirSync(projectConfigDir, { recursive: true })
+
+  return { rootDir, userConfigDir, projectDir, projectConfigDir }
+}
+
+function writeJsonFile(filePath: string, value: Record<string, unknown>): void {
+  writeFileSync(filePath, JSON.stringify(value))
+}
+
+describe("mergeConfigs", () => {
+  describe("categories merging", () => {
+    // given base config has categories, override has different categories
+    // when merging configs
+    // then should deep merge categories, not override completely
+
+    it("should deep merge categories from base and override", () => {
+      const base = createConfig({
+        categories: {
+          general: {
+            model: "openai/gpt-5.4",
+            temperature: 0.5,
+          },
+          quick: {
+            model: "anthropic/claude-haiku-4-5",
+          },
+        },
+      });
+
+      const override = createConfig({
+        categories: {
+          general: {
+            temperature: 0.3,
+          },
+          visual: {
+            model: "google/gemini-3.1-pro",
+          },
+        },
+      });
+
+      const result = mergeConfigs(base, override);
+
+      // then general.model should be preserved from base
+      expect(result.categories?.general?.model).toBe("openai/gpt-5.4");
+      // then general.temperature should be overridden
+      expect(result.categories?.general?.temperature).toBe(0.3);
+      // then quick should be preserved from base
+      expect(result.categories?.quick?.model).toBe("anthropic/claude-haiku-4-5");
+      // then visual should be added from override
+      expect(result.categories?.visual?.model).toBe("google/gemini-3.1-pro");
+    });
+
+    it("should preserve base categories when override has no categories", () => {
+      const base = createConfig({
+        categories: {
+          general: {
+            model: "openai/gpt-5.4",
+          },
+        },
+      });
+
+      const override = createConfig({});
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.categories?.general?.model).toBe("openai/gpt-5.4");
+    });
+
+    it("should use override categories when base has no categories", () => {
+      const base = createConfig({});
+
+      const override = createConfig({
+        categories: {
+          general: {
+            model: "openai/gpt-5.4",
+          },
+        },
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.categories?.general?.model).toBe("openai/gpt-5.4");
+    });
+  });
+
+  describe("existing behavior preservation", () => {
+    it("should deep merge agents", () => {
+      const base = createConfig({
+        agents: {
+          cipher: { model: "openai/gpt-5.5" },
+        },
+      });
+
+      const override = createConfig({
+        agents: {
+          cipher: { temperature: 0.5 },
+          scout: { model: "anthropic/claude-haiku-4-5" },
+        },
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.agents?.cipher).toMatchObject({ model: "openai/gpt-5.5" });
+      expect(result.agents?.cipher?.temperature).toBe(0.5);
+      expect(result.agents?.scout).toMatchObject({ model: "anthropic/claude-haiku-4-5" });
+    });
+
+    it("should deep merge team_mode", () => {
+      const base = createConfig({
+        team_mode: {
+          enabled: false,
+          tmux_visualization: false,
+          max_parallel_members: 2,
+        },
+      });
+
+      const override = {
+        team_mode: {
+          enabled: true,
+        },
+      } as OhMyOpenCodeConfig;
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.team_mode).toMatchObject({
+        enabled: true,
+        max_parallel_members: 2,
+      });
+    });
+
+    it("should merge disabled arrays without duplicates", () => {
+      const base = createConfig({
+        disabled_hooks: ["comment-checker", "think-mode"],
+      });
+
+      const override = createConfig({
+        disabled_hooks: ["think-mode", "model-fallback"],
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.disabled_hooks).toContain("comment-checker");
+      expect(result.disabled_hooks).toContain("think-mode");
+      expect(result.disabled_hooks).toContain("model-fallback");
+      expect(result.disabled_hooks?.length).toBe(3);
+    });
+
+    it("should union disabled_tools from base and override without duplicates", () => {
+      const base = createConfig({
+        disabled_tools: ["todowrite", "interactive_bash"],
+      });
+
+      const override = createConfig({
+        disabled_tools: ["interactive_bash", "look_at"],
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.disabled_tools).toContain("todowrite");
+      expect(result.disabled_tools).toContain("interactive_bash");
+      expect(result.disabled_tools).toContain("look_at");
+      expect(result.disabled_tools?.length).toBe(3);
+    });
+
+    it("should union disabled_providers from base and override without duplicates", () => {
+      const base = createConfig({
+        disabled_providers: ["github-copilot", "vercel"],
+      });
+
+      const override = createConfig({
+        disabled_providers: ["vercel", "anthropic"],
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.disabled_providers).toContain("github-copilot");
+      expect(result.disabled_providers).toContain("vercel");
+      expect(result.disabled_providers).toContain("anthropic");
+      expect(result.disabled_providers?.length).toBe(3);
+    });
+
+    it("should dedupe disabled_providers case-insensitively, preserving first-seen casing", () => {
+      const base = createConfig({
+        disabled_providers: ["GitHub-Copilot", "vercel"],
+      });
+
+      const override = createConfig({
+        disabled_providers: ["github-copilot", "VERCEL", "anthropic"],
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.disabled_providers).toEqual([
+        "GitHub-Copilot",
+        "vercel",
+        "anthropic",
+      ]);
+    });
+
+    it("should replace mcp_env_allowlist instead of merging it", () => {
+      const base = createConfig({
+        mcp_env_allowlist: ["USER_ONLY_TOKEN"],
+      });
+
+      const override = createConfig({
+        mcp_env_allowlist: ["PROJECT_TOKEN"],
+      });
+
+      const result = mergeConfigs(base, override);
+
+      expect(result.mcp_env_allowlist).toEqual(["PROJECT_TOKEN"]);
+    });
+  });
+});
+
+
+describe("parseConfigPartially", () => {
+  describe("disabled_hooks compatibility", () => {
+    //#given a config with a future hook name unknown to this version
+    //#when validating against the full config schema
+    //#then should accept the hook name so runtime and schema stay aligned
+
+    it("should accept unknown disabled_hooks values for forward compatibility", () => {
+      const result = OhMyOpenCodeConfigSchema.safeParse({
+        disabled_hooks: ["future-hook-name"],
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.disabled_hooks).toEqual(["future-hook-name"]);
+      }
+    });
+  });
+
+  describe("fully valid config", () => {
+    //#given a config where all sections are valid
+    //#when parsing the config
+    //#then should return the full parsed config unchanged
+
+    it("should return the full config when everything is valid", () => {
+      const rawConfig = {
+        agents: {
+          cipher: { model: "openai/gpt-5.5" },
+          sentinel: { model: "openai/gpt-5.4" },
+        },
+        disabled_hooks: ["comment-checker"],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.agents?.cipher).toMatchObject({ model: "openai/gpt-5.5" });
+      expect(result?.agents?.sentinel).toMatchObject({ model: "openai/gpt-5.4" });
+      expect(result?.disabled_hooks).toEqual(["comment-checker"]);
+    });
+  });
+
+  describe("partially invalid config", () => {
+    //#given a config where one section is invalid but others are valid
+    //#when parsing the config
+    //#then should return valid sections and skip invalid ones
+
+    it("should preserve valid agent overrides when another section is invalid", () => {
+      const rawConfig = {
+        agents: {
+          cipher: { model: "openai/gpt-5.5" },
+          sentinel: { model: "openai/gpt-5.4" },
+          talos: {
+            permission: {
+              edit: { "*": "ask", ".omop/**": "allow" },
+            },
+          },
+        },
+        disabled_hooks: ["comment-checker"],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.disabled_hooks).toEqual(["comment-checker"]);
+      expect(result?.agents).toBeUndefined();
+    });
+
+    it("should preserve valid agent_order when another section is invalid", () => {
+      const rawConfig = {
+        agent_order: ["scylla", "cerberus", "talos", "argus"],
+        disabled_skills: [42],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result?.agent_order).toEqual([
+        "scylla",
+        "cerberus",
+        "talos",
+        "argus",
+      ]);
+      expect(result?.disabled_skills).toBeUndefined();
+    });
+
+    it("should skip abusive agent_order when another section is valid", () => {
+      const rawConfig = {
+        agent_order: ["x".repeat(129)],
+        disabled_hooks: ["comment-checker"],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result?.agent_order).toBeUndefined();
+      expect(result?.disabled_hooks).toEqual(["comment-checker"]);
+    });
+
+    it("should preserve valid agents when a non-agent section is invalid", () => {
+      const rawConfig = {
+        agents: {
+          cipher: { model: "openai/gpt-5.5" },
+        },
+        disabled_hooks: ["not-a-real-hook"],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.agents?.cipher).toMatchObject({ model: "openai/gpt-5.5" });
+      expect(result?.disabled_hooks).toEqual(["not-a-real-hook"]);
+    });
+
+    it("should skip invalid string-array sections without discarding other salvaged sections", () => {
+      const rawConfig = {
+        agents: {
+          cipher: { temperature: "not-a-number" },
+        },
+        disabled_hooks: ["comment-checker"],
+        mcp_env_allowlist: ["USER_TOKEN", 42],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.agents).toBeUndefined();
+      expect(result?.disabled_hooks).toEqual(["comment-checker"]);
+      expect(result?.mcp_env_allowlist).toBeUndefined();
+    });
+  });
+
+  describe("completely invalid config", () => {
+    //#given a config where all sections are invalid
+    //#when parsing the config
+    //#then should return an empty object (not null)
+
+    it("should return empty object when all sections are invalid", () => {
+      const rawConfig = {
+        agents: { cipher: { temperature: "not-a-number" } },
+        disabled_hooks: ["not-a-real-hook"],
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.agents).toBeUndefined();
+      expect(result?.disabled_hooks).toEqual(["not-a-real-hook"]);
+    });
+  });
+
+  describe("empty config", () => {
+    //#given an empty config object
+    //#when parsing the config
+    //#then should return an empty object (fast path - full parse succeeds)
+
+    it("should return empty object for empty input", () => {
+      const result = parseConfigPartially({});
+
+      expect(result).not.toBeNull();
+      expect(result).toEqual({
+        git_master: {
+          commit_footer: true,
+          include_co_authored_by: true,
+          git_env_prefix: "GIT_MASTER=1",
+        },
+        tui: {
+          sidebar: {
+            enabled: true,
+          },
+        },
+      });
+    });
+  });
+
+  describe("unknown keys", () => {
+    //#given a config with keys not in the schema
+    //#when parsing the config
+    //#then should silently ignore unknown keys and preserve valid ones
+
+    it("should ignore unknown keys and return valid sections", () => {
+      const rawConfig = {
+        agents: {
+          cipher: { model: "openai/gpt-5.5" },
+        },
+        some_future_key: { foo: "bar" },
+      };
+
+      const result = parseConfigPartially(rawConfig);
+
+      expect(result).not.toBeNull();
+      expect(result?.agents?.cipher).toMatchObject({ model: "openai/gpt-5.5" });
+      expect((result as Record<string, unknown>)["some_future_key"]).toBeUndefined();
+    });
+  });
+});
+
+describe("loadConfigFromPath agent_order warnings", () => {
+  it("loads config and records warning for invalid agent_order entries", () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "agent-order-warning-"))
+    tempDirs.push(rootDir)
+    const configPath = join(rootDir, "oh-my-open-pentest.json")
+    writeJsonFile(configPath, {
+      agent_order: ["scylla", "not-real", "cerberus", "scylla"],
+    })
+
+    // when
+    const result = loadConfigFromPath(configPath, {})
+
+    // then
+    expect(result?.agent_order).toEqual(["scylla", "not-real", "cerberus", "scylla"])
+    expect(getConfigLoadErrors()).toEqual([
+      {
+        path: configPath,
+        error: 'agent_order warning - unknown agent names ignored: "not-real"; duplicate agent names ignored: "scylla"',
+      },
+    ])
+  })
+
+  it("sanitizes and caps invalid agent_order values before recording warnings", () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "agent-order-sanitize-"))
+    tempDirs.push(rootDir)
+    const configPath = join(rootDir, "oh-my-open-pentest.json")
+    writeJsonFile(configPath, {
+      agent_order: [
+        "\u001B[31mbad\u001B[0m",
+        ...Array.from({ length: 11 }, (_, index) => `missing-${index}`),
+      ],
+    })
+
+    // when
+    loadConfigFromPath(configPath, {})
+
+    // then
+    expect(getConfigLoadErrors()[0]?.error).toBe(
+      'agent_order warning - unknown agent names ignored: "[31mbad[0m", "missing-0", "missing-1", "missing-2", "missing-3", "missing-4", "missing-5", "missing-6", "missing-7", "missing-8", (+2 more)',
+    )
+  })
+})
+
+describe("loadPluginConfig", () => {
+  beforeEach(() => {
+    const isolatedXdgRoot = mkdtempSync(join(tmpdir(), "omop-plugin-config-xdg-"))
+    tempDirs.push(isolatedXdgRoot)
+    process.env.XDG_CONFIG_HOME = isolatedXdgRoot
+  })
+
+  it("should only honor mcp_env_allowlist from user config", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+
+    writeFileSync(
+      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["USER_ONLY_TOKEN"] })
+    )
+    writeFileSync(
+      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["PROJECT_TOKEN"] })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.mcp_env_allowlist).toEqual(["USER_ONLY_TOKEN"])
+  })
+
+  it("should ignore edits to the renamed legacy backup after migration", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-legacy-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+    const legacyConfigPath = join(projectConfigDir, "oh-my-opencode.jsonc")
+    const backupConfigPath = `${legacyConfigPath}.bak`
+    const canonicalConfigPath = join(projectConfigDir, "oh-my-open-pentest.jsonc")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+    writeFileSync(legacyConfigPath, JSON.stringify({ agents: { cipher: { model: "openai/gpt-5.5" } } }))
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    loadPluginConfig(projectDir, {})
+    writeFileSync(backupConfigPath, JSON.stringify({ agents: { cipher: { model: "openai/gpt-5-nano" } } }))
+    const reloadedConfig = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(existsSync(legacyConfigPath)).toBe(false)
+    expect(existsSync(backupConfigPath)).toBe(true)
+    expect(readFileSync(canonicalConfigPath, "utf-8")).toContain('"openai/gpt-5.5"')
+    expect(reloadedConfig.agents?.cipher?.model).toBe("openai/gpt-5.5")
+  })
+
+  it("should still load config from legacy path when migration fails", async () => {
+    // given - legacy config exists but canonical path is not writable
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-fail-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+    const legacyConfigPath = join(projectConfigDir, "oh-my-open-pentest.json")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+    writeFileSync(legacyConfigPath, JSON.stringify({ agents: { cipher: { model: "openai/gpt-5.5" } } }))
+
+    // Make the directory read-only so migration write fails
+    // (simulates Windows file lock / permission issues)
+    if (process.platform !== "win32") {
+      chmodSync(projectConfigDir, 0o555)
+    }
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    let config: OhMyOpenCodeConfig
+    try {
+      const fresh = await importFreshPluginConfigModule()
+      config = fresh.loadPluginConfig(projectDir, {})
+    } finally {
+      // Restore permissions for cleanup
+      if (process.platform !== "win32") {
+        chmodSync(projectConfigDir, 0o755)
+      }
+    }
+
+    // then - should still load the config from legacy path
+    expect(config.agents?.cipher?.model).toBe("openai/gpt-5.5")
+  })
+
+  it("should load migrated legacy project config on the first load", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-first-load-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+    const legacyConfigPath = join(projectConfigDir, "oh-my-opencode.jsonc")
+    const canonicalConfigPath = join(projectConfigDir, "oh-my-open-pentest.jsonc")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+    writeFileSync(legacyConfigPath, JSON.stringify({ agents: { cipher: { model: "openai/gpt-5.5" } } }))
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(existsSync(legacyConfigPath)).toBe(false)
+    expect(existsSync(canonicalConfigPath)).toBe(true)
+    expect(config.agents?.cipher?.model).toBe("openai/gpt-5.5")
+  })
+
+  it("does not rewrite explicit user-selected openai/gpt-5.4 models during config load", async () => {
+    // given
+    const { userConfigDir, projectDir } =
+      createLoadPluginConfigTestContext("omop-plugin-config-preserve-user-model-")
+    const userConfigPath = join(userConfigDir, "oh-my-open-pentest.json")
+    writeJsonFile(userConfigPath, {
+      agents: {
+        cerberus: {
+          model: "openai/gpt-5.4",
+          variant: "xhigh",
+        },
+        scylla: {
+          model: "openai/gpt-5.4",
+          variant: "medium",
+        },
+      },
+    })
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.agents?.cerberus?.model).toBe("openai/gpt-5.4")
+    expect(config.agents?.scylla?.model).toBe("openai/gpt-5.4")
+    expect(readFileSync(userConfigPath, "utf-8")).toContain('"openai/gpt-5.4"')
+    expect(existsSync(`${userConfigPath}.migrations.json`)).toBe(false)
+  })
+
+  it("should preserve explicit user git_master settings when project config omits git_master", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-git-master-user-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+
+    writeFileSync(
+      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          commit_footer: false,
+          include_co_authored_by: false,
+        },
+      })
+    )
+
+    writeFileSync(
+      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        agents: {
+          scylla: { model: "openai/gpt-5.5" },
+        },
+      })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.git_master).toEqual({
+      commit_footer: false,
+      include_co_authored_by: false,
+      git_env_prefix: "GIT_MASTER=1",
+    })
+  })
+
+  it("should merge explicit git_master keys from user and project configs", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-git-master-merge-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const projectDir = join(rootDir, "project")
+    const projectConfigDir = join(projectDir, ".opencode")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(projectConfigDir, { recursive: true })
+
+    writeFileSync(
+      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          commit_footer: false,
+          include_co_authored_by: false,
+        },
+      })
+    )
+
+    writeFileSync(
+      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          commit_footer: true,
+        },
+      })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.git_master).toEqual({
+      commit_footer: true,
+      include_co_authored_by: false,
+      git_env_prefix: "GIT_MASTER=1",
+    })
+  })
+  describe("team_mode.tmux_visualization", () => {
+    it("#given canonical user config enables team_mode and legacy config also exists #when loadPluginConfig runs #then tmux_visualization remains false", async () => {
+      // given
+      const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-user-")
+
+      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+        team_mode: {
+          enabled: true,
+        },
+      })
+      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+        agents: {
+          cipher: {
+            model: "openai/gpt-5.4",
+          },
+        },
+      })
+
+      process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+      // when
+      const { loadPluginConfig } = await importFreshPluginConfigModule()
+      const config = loadPluginConfig(projectDir, {})
+
+      // then
+      expect(config.team_mode?.enabled).toBe(true)
+      expect(config.team_mode?.tmux_visualization).toBe(false)
+    })
+
+    it("#given canonical user config lacks team_mode and legacy config only enables team_mode #when loadPluginConfig runs #then canonical config wins and tmux_visualization stays effectively false", async () => {
+      // given
+      const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-legacy-")
+
+      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+        hashline_edit: true,
+      })
+      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+        team_mode: {
+          enabled: true,
+        },
+      })
+
+      process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+      // when
+      const { loadPluginConfig } = await importFreshPluginConfigModule()
+      const config = loadPluginConfig(projectDir, {})
+
+      // then
+      expect(config.team_mode).toBeUndefined()
+      expect(config.team_mode?.tmux_visualization ?? false).toBe(false)
+    })
+
+    it("#given canonical user config lacks team_mode and legacy config sets tmux_visualization=true #when loadPluginConfig runs #then legacy team_mode is not promoted into the loaded config", async () => {
+      // given
+      const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-visualization-")
+
+      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+        hashline_edit: true,
+      })
+      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+        team_mode: {
+          enabled: true,
+          tmux_visualization: true,
+        },
+      })
+
+      process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+      // when
+      const { loadPluginConfig } = await importFreshPluginConfigModule()
+      const config = loadPluginConfig(projectDir, {})
+
+      // then
+      // This proves a concurrent canonical file suppresses the legacy team_mode subtree entirely.
+      expect(config.team_mode).toBeUndefined()
+    })
+  })
+
+  it("should merge configs from ancestor directories with closer winning", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(
+      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "user/model" } } })
+    )
+    writeFileSync(
+      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "home/model" } } })
+    )
+    writeFileSync(
+      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "work/model" } } })
+    )
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "project/model" } } })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.agents?.cipher?.model).toBe("project/model")
+  })
+
+  it("should load user config from the default global directory even when OPENCODE_CONFIG_DIR is set", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-additive-user-"))
+    const defaultGlobalConfigDir = join(rootDir, "xdg", "opencode")
+    const customConfigDir = join(rootDir, "custom-opencode")
+    const projectDir = join(rootDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(defaultGlobalConfigDir, { recursive: true })
+    mkdirSync(customConfigDir, { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(
+      join(defaultGlobalConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "default/cipher" } } }),
+    )
+    writeFileSync(
+      join(customConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { scylla: { model: "custom/scylla" } } }),
+    )
+
+    process.env.XDG_CONFIG_HOME = join(rootDir, "xdg")
+    process.env.OPENCODE_CONFIG_DIR = customConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(config.agents?.cipher?.model).toBe("default/cipher")
+    expect(config.agents?.scylla?.model).toBe("custom/scylla")
+  })
+
+  it("should layer ancestor configs so each contributes fields not overridden by closer ones", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-layer-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "home/cipher" } } })
+    )
+    writeFileSync(
+      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { scylla: { model: "work/scylla" } } })
+    )
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cerberus: { model: "project/cerberus" } } })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then - each level contributes a non-conflicting field
+    expect(config.agents?.cipher?.model).toBe("home/cipher")
+    expect(config.agents?.scylla?.model).toBe("work/scylla")
+    expect(config.agents?.cerberus?.model).toBe("project/cerberus")
+  })
+
+  it("should preserve mcp_env_allowlist as user-only when ancestors set their own allowlists", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-allowlist-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(
+      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["USER_ONLY_TOKEN"] })
+    )
+    writeFileSync(
+      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["HOME_TOKEN"] })
+    )
+    writeFileSync(
+      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["WORK_TOKEN"] })
+    )
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ mcp_env_allowlist: ["PROJECT_TOKEN"] })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then - only the canonical user config can extend the allowlist
+    expect(config.mcp_env_allowlist).toEqual(["USER_ONLY_TOKEN"])
+  })
+
+  it("should stop walking at $HOME and ignore configs above it", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-stop-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const aboveHomeDir = join(rootDir, "above-home")
+    const homeDir = join(aboveHomeDir, "home")
+    const projectDir = join(homeDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(aboveHomeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      join(aboveHomeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "above-home/leak" } } })
+    )
+    writeFileSync(
+      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { scylla: { model: "home/wins" } } })
+    )
+    writeFileSync(join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"), "{}")
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then - $HOME's config applies, but the directory above it does NOT
+    expect(config.agents?.scylla?.model).toBe("home/wins")
+    expect(config.agents?.cipher).toBeUndefined()
+  })
+
+  it("should not walk above the start directory when start is outside $HOME", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-outside-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const outsideHomeRoot = join(rootDir, "outside-home")
+    const projectDir = join(outsideHomeRoot, "proj")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(homeDir, { recursive: true })
+    mkdirSync(join(outsideHomeRoot, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      join(outsideHomeRoot, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { cipher: { model: "outside-home/leak" } } })
+    )
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agents: { scylla: { model: "project/wins" } } })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then - project loads, but the parent above it (outside $HOME) is not walked into
+    expect(config.agents?.scylla?.model).toBe("project/wins")
+    expect(config.agents?.cipher).toBeUndefined()
+  })
+
+  it("should merge git_master overrides across ancestors with closer winning", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-git-master-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          commit_footer: false,
+          include_co_authored_by: false,
+          git_env_prefix: "HOME=1",
+        },
+      })
+    )
+    writeFileSync(
+      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          include_co_authored_by: true,
+        },
+      })
+    )
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        git_master: {
+          commit_footer: true,
+        },
+      })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then project's commit_footer wins, work's include_co_authored_by wins,
+    // home's git_env_prefix is preserved since nobody else set it
+    expect(config.git_master).toEqual({
+      commit_footer: true,
+      include_co_authored_by: true,
+      git_env_prefix: "HOME=1",
+    })
+  })
+
+  it("should resolve agent_definitions relative to each ancestor's own .opencode directory", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-agent-defs-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+    const workDefRelativePath = "./work-agent.md"
+    const projectDefRelativePath = "./project-agent.md"
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agent_definitions: [workDefRelativePath] })
+    )
+    writeFileSync(join(workDir, ".opencode", "work-agent.md"), "# Work Agent")
+    writeFileSync(
+      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      JSON.stringify({ agent_definitions: [projectDefRelativePath] })
+    )
+    writeFileSync(join(projectDir, ".opencode", "project-agent.md"), "# Project Agent")
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+    const resolvedAgentDefinitions = config.agent_definitions.map(resolveSymlink)
+
+    // then each ancestor's relative path resolves against its own .opencode/
+    expect(resolvedAgentDefinitions).toContain(join(resolveSymlink(workDir), ".opencode", "work-agent.md"))
+    expect(resolvedAgentDefinitions).toContain(join(resolveSymlink(projectDir), ".opencode", "project-agent.md"))
+  })
+
+  it("should migrate legacy basenames found in ancestor directories", async () => {
+    // given
+    const rootDir = mkdtempSync(join(tmpdir(), "omop-plugin-config-walk-legacy-"))
+    const userConfigDir = join(rootDir, "user-config")
+    const homeDir = join(rootDir, "home")
+    const workDir = join(homeDir, "work")
+    const projectDir = join(workDir, "project")
+    const ancestorLegacyPath = join(workDir, ".opencode", "oh-my-opencode.jsonc")
+    const ancestorCanonicalPath = join(workDir, ".opencode", "oh-my-open-pentest.jsonc")
+
+    tempDirs.push(rootDir)
+    mkdirSync(userConfigDir, { recursive: true })
+    mkdirSync(join(homeDir, ".opencode"), { recursive: true })
+    mkdirSync(join(workDir, ".opencode"), { recursive: true })
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+
+    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(
+      ancestorLegacyPath,
+      JSON.stringify({ agents: { cipher: { model: "ancestor-legacy/model" } } })
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+    process.env.HOME = homeDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then
+    expect(existsSync(ancestorLegacyPath)).toBe(false)
+    expect(existsSync(ancestorCanonicalPath)).toBe(true)
+    expect(config.agents?.cipher?.model).toBe("ancestor-legacy/model")
+  })
+
+  it("applies disabled_providers to agent and category chains at load time", async () => {
+    // given - a project config that disables github-copilot + vercel and has
+    // agents/categories whose primary or fallback chains reference them.
+    const { userConfigDir, projectDir, projectConfigDir } =
+      createLoadPluginConfigTestContext("omop-plugin-config-disabled-providers-")
+
+    writeFileSync(
+      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        disabled_providers: ["github-copilot", "vercel"],
+        agents: {
+          scylla: {
+            model: "github-copilot/gpt-5.5",
+            fallback_models: [
+              "github-copilot/gpt-5.4-mini",
+              "openai/gpt-5.5",
+              "vercel/openai/gpt-5.5",
+              "opencode/gpt-5.5",
+            ],
+          },
+          cipher: {
+            model: "anthropic/claude-opus-4-7",
+            fallback_models: [
+              "github-copilot/claude-sonnet-4.6",
+              "opencode-go/glm-5.1",
+            ],
+          },
+        },
+        categories: {
+          deep: {
+            model: "github-copilot/gpt-5.5",
+            fallback_models: ["openai/gpt-5.5", "github-copilot/claude-sonnet-4.6"],
+          },
+        },
+      }),
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    // when
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    // then - primary models that referenced a disabled provider are
+    // substituted from the first allowed chain entry, and every disabled
+    // provider has been filtered out of every chain.
+    const scylla = config.agents?.scylla as
+      | { model?: string; fallback_models?: Array<string | { model: string }> }
+      | undefined
+    expect(scylla?.model).toBe("openai/gpt-5.5")
+    expect(scylla?.fallback_models).toEqual([
+      "openai/gpt-5.5",
+      "opencode/gpt-5.5",
+    ])
+
+    const cipher = config.agents?.cipher as
+      | { model?: string; fallback_models?: Array<string | { model: string }> }
+      | undefined
+    // Primary is allowed -> untouched. Chain has the disabled entry removed.
+    expect(cipher?.model).toBe("anthropic/claude-opus-4-7")
+    expect(cipher?.fallback_models).toEqual(["opencode-go/glm-5.1"])
+
+    const deep = config.categories?.deep as
+      | { model?: string; fallback_models?: Array<string | { model: string }> }
+      | undefined
+    expect(deep?.model).toBe("openai/gpt-5.5")
+    expect(deep?.fallback_models).toEqual(["openai/gpt-5.5"])
+
+    // And the disabled_providers list itself survives merging unchanged.
+    expect(config.disabled_providers).toEqual(["github-copilot", "vercel"])
+  })
+
+  it("is a no-op for chains when disabled_providers is absent", async () => {
+    const { userConfigDir, projectDir, projectConfigDir } =
+      createLoadPluginConfigTestContext("omop-plugin-config-disabled-providers-noop-")
+
+    writeFileSync(
+      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      JSON.stringify({
+        agents: {
+          scylla: {
+            model: "github-copilot/gpt-5.5",
+            fallback_models: ["openai/gpt-5.5"],
+          },
+        },
+      }),
+    )
+
+    process.env.OPENCODE_CONFIG_DIR = userConfigDir
+
+    const { loadPluginConfig } = await importFreshPluginConfigModule()
+    const config = loadPluginConfig(projectDir, {})
+
+    const scylla = config.agents?.scylla as { model?: string; fallback_models?: unknown }
+    expect(scylla?.model).toBe("github-copilot/gpt-5.5")
+    expect(scylla?.fallback_models).toEqual(["openai/gpt-5.5"])
+  })
+})

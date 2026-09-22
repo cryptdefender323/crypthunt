@@ -1,0 +1,1 @@
+export { createScyllaAgentsMdInjectorHook } from "./hook"

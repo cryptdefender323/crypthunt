@@ -1,0 +1,23 @@
+{
+  "name": "@omop/prompts-core",
+  "version": "1.4.0",
+  "type": "module",
+  "private": true,
+  "description": "Harness-agnostic markdown prompt loading and model-variant routing for oh-my-open-pentest.",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.ts"
+    },
+    "./prompts/fullscan/codex.md": "./prompts/fullscan/codex.md"
+  },
+  "types": "./index.d.ts",
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "bun test src/*.test.ts test/*.test.ts"
+  },
+  "peerDependencies": {
+    "@omop/model-core": "*",
+    "@omop/utils": "*"
+  }
+}

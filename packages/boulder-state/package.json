@@ -1,0 +1,18 @@
+{
+  "name": "@omop/boulder-state",
+  "version": "1.4.0",
+  "type": "module",
+  "private": true,
+  "description": "Pure TypeScript boulder work-tracking state machine for oh-my-open-pentest.",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "types": "./index.d.ts",
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "bun test src/*.test.ts"
+  }
+}

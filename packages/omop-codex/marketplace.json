@@ -1,0 +1,17 @@
+{
+	"name": "cerberuslabs",
+	"interface": {
+		"displayName": "OmOP Labs"
+	},
+	"plugins": [
+		{
+			"name": "omop",
+			"source": "./plugins/omo",
+			"category": "Developer Tools",
+			"policy": {
+				"installation": "AVAILABLE",
+				"authentication": "ON_INSTALL"
+			}
+		}
+	]
+}

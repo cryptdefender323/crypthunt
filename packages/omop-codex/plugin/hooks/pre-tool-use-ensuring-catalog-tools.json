@@ -1,0 +1,17 @@
+{
+	"hooks": {
+		"PreToolUse": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${PLUGIN_ROOT}/components/catalog-tool-installer/dist/cli.js\" hook pre-tool-use",
+						"timeout": 120,
+						"statusMessage": "(OmOP) Ensuring Catalog Tools"
+					}
+				],
+				"matcher": "^Bash$"
+			}
+		]
+	}
+}

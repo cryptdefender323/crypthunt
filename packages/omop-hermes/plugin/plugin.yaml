@@ -1,0 +1,11 @@
+name: omop
+version: 1.4.0
+description: CryptHunter Light for Hermes Agent — fullscan, rules injection, pentest skill bridge
+author: Cerberus Labs / oh-my-open-pentest
+provides_tools:
+  - omop_fullscan_hint
+  - omop_engagement_status
+provides_hooks:
+  - pre_llm_call
+  - on_session_start
+  - post_tool_call
