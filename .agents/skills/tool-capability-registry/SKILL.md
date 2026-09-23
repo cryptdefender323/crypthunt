@@ -4,7 +4,7 @@ description: "Structured capability registry for top 20 security tools. Defines 
 version: 1.0.0
 phase: ["all"]
 category: ["all"]
-tags: ["tool-selection", "capability", "registry", "intelligence", "decision"]
+tags: ["tool-selection", "capability", "registry", "intelligence", "decision"]    
 ---
 
 # Tool Capability Registry — Intelligent Selection Engine
