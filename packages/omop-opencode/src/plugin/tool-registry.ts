@@ -19,6 +19,7 @@ import {
 } from "./tool-registry-gated-tools"
 import { createTeamModeToolsRecord } from "./tool-registry-team-tools"
 export { trimToolsToCap } from "./tool-registry-trimming"
+import { getDisabledToolsForMode } from "@omop/pentest-core"
 import { trimToolsToCap } from "./tool-registry-trimming"
 
 export type ToolRegistryResult = {
@@ -78,6 +79,26 @@ export function createToolRegistry(args: {
   }
 
   const filteredTools: ToolsRecord = filterDisabledTools(allTools, pluginConfig.disabled_tools)
+
+  // Mode-based execution control (Priority 2 gap fix):
+  // Apply per-mode tool suppression on top of config-level disabled_tools.
+  // This makes modes behaviorally distinct — not just advisory prompt context.
+  const defaultMode = (pluginConfig as unknown as { default_mode?: string }).default_mode
+  if (defaultMode && defaultMode !== "auto") {
+    const modeDisabled = getDisabledToolsForMode(defaultMode as Parameters<typeof getDisabledToolsForMode>[0])
+    if (modeDisabled.size > 0) {
+      for (const toolName of modeDisabled) {
+        if (toolName in filteredTools) {
+          // Only suppress if not explicitly in the tools catalog (user may have overridden)
+          delete (filteredTools as Record<string, unknown>)[toolName]
+        }
+      }
+      log("[tool-registry] Applied mode-based tool suppression", {
+        mode: defaultMode,
+        suppressedCount: modeDisabled.size,
+      })
+    }
+  }
 
   const maxTools = pluginConfig.experimental?.max_tools
   if (maxTools) {
