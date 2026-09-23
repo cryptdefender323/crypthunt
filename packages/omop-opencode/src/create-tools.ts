@@ -8,6 +8,9 @@ import type { Managers } from "./create-managers"
 import { createAvailableCategories } from "./plugin/available-categories"
 import { createSkillContext } from "./plugin/skill-context"
 import { createToolRegistry } from "./plugin/tool-registry"
+import { registerPersistenceFs } from "@omop/pentest-core"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
 
 type CreateToolsResult = {
   filteredTools: ToolsRecord
@@ -25,6 +28,36 @@ export async function createTools(args: {
   managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "skillMcpManager" | "modelFallbackControllerAccessor" | "monitorManager">
 }): Promise<CreateToolsResult> {
   const { ctx, pluginConfig, managers } = args
+
+  // Wire persistence fs so AttackModel survives process restarts (Gap #1 fix)
+  const engagementBaseDir = join(ctx.directory, ".omop", "engagement")
+  registerPersistenceFs(
+    {
+      writeFile(path: string, content: string): void {
+        try {
+          writeFileSync(path, content, "utf8")
+        } catch {
+          // Non-fatal — in-memory model is still the source of truth
+        }
+      },
+      readFile(path: string): string | null {
+        try {
+          if (!existsSync(path)) return null
+          return readFileSync(path, "utf8")
+        } catch {
+          return null
+        }
+      },
+      mkdirp(path: string): void {
+        try {
+          mkdirSync(path, { recursive: true })
+        } catch {
+          // Ignore — directory may already exist
+        }
+      },
+    },
+    engagementBaseDir,
+  )
 
   const skillContext = await createSkillContext({
     directory: ctx.directory,
