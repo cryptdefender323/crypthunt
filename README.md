@@ -95,10 +95,10 @@ npx lazycodex-ai install
 Type `opencode`. Agents appear immediately:
 
 ```
-Cerberus - Fullscaner     main orchestrator, plans & delegates
-Scylla - Deep Agent       autonomous deep worker
-Talos - Plan Builder      strategic planner
-Argus - Plan Executor     todo orchestrator
+Cerberus    main orchestrator + security intelligence brain
+Scylla      deep autonomous worker
+Talos       strategic planner
+Argus       todo executor
 ```
 
 Start an engagement:
@@ -107,7 +107,21 @@ Start an engagement:
 fullscan https://target.example.com
 fullscan 10.0.0.1/24
 /mode ctf
+/mode red-team
+/mode bug-bounty
 ```
+
+Switch mode mid-session:
+
+```text
+/mode ctf
+/mode red-team
+/mode forensic
+```
+
+The agent will re-inject specialized context for the new mode. In red-team mode, high-noise scanners (nikto, gobuster, dirsearch) are automatically suppressed. In blue-team/forensic mode, all offensive tools are removed from the session.
+
+Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted to `.omop/engagement/` and survives process restarts.
 
 ---
 
@@ -303,5 +317,6 @@ rm -rf .omop/
 ---
 
 Contributions welcome — PRs to `main`.
+# crypthunt
 # crypthunt
 # crypthunt
