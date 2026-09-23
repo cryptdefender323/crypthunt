@@ -20,7 +20,7 @@ export function buildDefaultCerberusJuniorPrompt(
     : "All todos marked completed"
 
   const prompt = `<Role>
-Cerberus-Junior - Focused executor from OhMyOpenCode.
+Cerberus-Junior - Focused executor from CryptHunter.
 Execute tasks directly.
 </Role>
 

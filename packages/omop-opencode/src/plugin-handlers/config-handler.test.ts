@@ -2,7 +2,7 @@
 
 import { describe, test, expect, spyOn, beforeEach, afterEach, mock } from "bun:test"
 import type { CategoryConfig } from "../config/schema"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import { getAgentDisplayName, getAgentListDisplayName } from "../shared/agent-display-names"
 import { resolveCategoryConfig } from "./category-config-resolver"
 
@@ -30,7 +30,7 @@ async function importFreshConfigHandlerModule(): Promise<typeof import("./config
   return import(`./config-handler?test=${Date.now()}-${Math.random()}`)
 }
 
-function createPluginConfig(overrides: Partial<OhMyOpenCodeConfig> = {}): OhMyOpenCodeConfig {
+function createPluginConfig(overrides: Partial<CryptHunterConfig> = {}): CryptHunterConfig {
   return {
     git_master: {
       commit_footer: true,
@@ -97,7 +97,7 @@ beforeEach(async () => {
     configJson: "/tmp/.config/opencode/opencode.json",
     configJsonc: "/tmp/.config/opencode/opencode.jsonc",
     packageJson: "/tmp/.config/opencode/package.json",
-    omoConfig: "/tmp/.config/opencode/oh-my-open-pentest.jsonc",
+    omoConfig: "/tmp/.config/opencode/crypthunter.jsonc",
   })
 
   spyOn(permissionCompat, unsafeTestValue("migrateAgentConfig")).mockImplementation((config: Record<string, unknown>) => config)

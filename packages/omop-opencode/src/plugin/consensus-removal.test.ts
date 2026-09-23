@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 
-import { OhMyOpenCodeConfigSchema } from "../config"
+import { CryptHunterConfigSchema } from "../config"
 
 function __repoRootFrom(start: string): string {
   let dir = start
@@ -19,7 +19,7 @@ const REPO_ROOT = __repoRootFrom(import.meta.dir)
 describe("#given PR 4703 consensus removal", () => {
   test("#when the generated schema is inspected #then consensus is not exposed to users", () => {
     // given
-    const schemaPath = join(REPO_ROOT, "assets", "oh-my-open-pentest.schema.json")
+    const schemaPath = join(REPO_ROOT, "assets", "crypthunter.schema.json")
     const schemaContent = readFileSync(schemaPath, "utf8")
 
     // when
@@ -31,7 +31,7 @@ describe("#given PR 4703 consensus removal", () => {
 
   test("#when the root config schema is inspected #then consensus is not configurable", () => {
     // given
-    const shapeKeys = Object.keys(OhMyOpenCodeConfigSchema.shape)
+    const shapeKeys = Object.keys(CryptHunterConfigSchema.shape)
 
     // when
     const hasConsensusConfig = shapeKeys.includes("consensus")

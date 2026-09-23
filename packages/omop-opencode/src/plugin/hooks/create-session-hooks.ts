@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig, HookName } from "../../config"
+import type { CryptHunterConfig, HookName } from "../../config"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { ModelFallbackControllerAccessor } from "../../hooks/model-fallback"
 import type { ModelCacheState } from "../../plugin-state"
@@ -69,7 +69,7 @@ export type SessionHooks = {
 
 export function createSessionHooks(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   modelCacheState: ModelCacheState
   backgroundManager: BackgroundManager
   modelFallbackControllerAccessor?: ModelFallbackControllerAccessor

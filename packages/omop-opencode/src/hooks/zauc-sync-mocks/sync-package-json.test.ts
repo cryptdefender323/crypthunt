@@ -20,7 +20,7 @@ function resetTestCache(currentVersion = "3.10.0"): void {
   mkdirSync(CACHE_PACKAGES_DIR, { recursive: true })
   writeFileSync(
     CACHE_PACKAGE_JSON_PATH,
-    JSON.stringify({ dependencies: { "oh-my-open-pentest": currentVersion, other: "1.0.0" } }, null, 2)
+    JSON.stringify({ dependencies: { "crypthunter": currentVersion, other: "1.0.0" } }, null, 2)
   )
 }
 
@@ -33,7 +33,7 @@ function cleanupTestCache(): void {
 function readCachePackageJsonVersion(): string | undefined {
   const content = readFileSync(CACHE_PACKAGE_JSON_PATH, "utf-8")
   const pkg = JSON.parse(content) as { dependencies?: Record<string, string> }
-  return pkg.dependencies?.["oh-my-open-pentest"]
+  return pkg.dependencies?.["crypthunter"]
 }
 
 describe("syncCachePackageJsonToIntent", () => {
@@ -52,7 +52,7 @@ describe("syncCachePackageJsonToIntent", () => {
         const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
         const pluginInfo: PluginEntryInfo = {
-          entry: "oh-my-open-pentest@latest",
+          entry: "crypthunter@latest",
           isPinned: false,
           pinnedVersion: "latest",
           configPath: "/tmp/opencode.json",
@@ -71,7 +71,7 @@ describe("syncCachePackageJsonToIntent", () => {
         const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
         const pluginInfo: PluginEntryInfo = {
-          entry: "oh-my-open-pentest@next",
+          entry: "crypthunter@next",
           isPinned: false,
           pinnedVersion: "next",
           configPath: "/tmp/opencode.json",
@@ -90,7 +90,7 @@ describe("syncCachePackageJsonToIntent", () => {
         const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
         const pluginInfo: PluginEntryInfo = {
-          entry: "oh-my-open-pentest",
+          entry: "crypthunter",
           isPinned: false,
           pinnedVersion: null,
           configPath: "/tmp/opencode.json",
@@ -111,7 +111,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@latest",
+        entry: "crypthunter@latest",
         isPinned: false,
         pinnedVersion: "latest",
         configPath: "/tmp/opencode.json",
@@ -131,7 +131,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@latest",
+        entry: "crypthunter@latest",
         isPinned: false,
         pinnedVersion: "latest",
         configPath: "/tmp/opencode.json",
@@ -157,7 +157,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@latest",
+        entry: "crypthunter@latest",
         isPinned: false,
         pinnedVersion: "latest",
         configPath: "/tmp/opencode.json",
@@ -170,7 +170,7 @@ describe("syncCachePackageJsonToIntent", () => {
 
         const content = readFileSync(join(CACHE_PACKAGES_DIR, "package.json"), "utf-8")
         const pkg = JSON.parse(content) as { dependencies?: Record<string, string> }
-        expect(pkg.dependencies?.["oh-my-open-pentest"]).toBe("latest")
+        expect(pkg.dependencies?.["crypthunter"]).toBe("latest")
         expect(pkg.dependencies?.other).toBe("1.0.0")
     })
   })
@@ -181,7 +181,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@3.10.0",
+        entry: "crypthunter@3.10.0",
         isPinned: true,
         pinnedVersion: "3.10.0",
         configPath: "/tmp/opencode.json",
@@ -200,7 +200,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@latest",
+        entry: "crypthunter@latest",
         isPinned: false,
         pinnedVersion: "latest",
         configPath: "/tmp/opencode.json",
@@ -226,7 +226,7 @@ describe("syncCachePackageJsonToIntent", () => {
       const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
       const pluginInfo: PluginEntryInfo = {
-        entry: "oh-my-open-pentest@latest",
+        entry: "crypthunter@latest",
         isPinned: false,
         pinnedVersion: "latest",
         configPath: "/tmp/opencode.json",
@@ -245,7 +245,7 @@ describe("syncCachePackageJsonToIntent", () => {
       mkdirSync(CACHE_PACKAGES_DIR, { recursive: true })
       writeFileSync(
         join(CACHE_PACKAGES_DIR, "package.json"),
-        JSON.stringify({ dependencies: { "oh-my-open-pentest": "3.10.0" } }, null, 2)
+        JSON.stringify({ dependencies: { "crypthunter": "3.10.0" } }, null, 2)
       )
 
       const fs = await import("node:fs")
@@ -257,7 +257,7 @@ describe("syncCachePackageJsonToIntent", () => {
         const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
         const pluginInfo: PluginEntryInfo = {
-          entry: "oh-my-open-pentest@latest",
+          entry: "crypthunter@latest",
           isPinned: false,
           pinnedVersion: "latest",
           configPath: "/tmp/opencode.json",
@@ -279,7 +279,7 @@ describe("syncCachePackageJsonToIntent", () => {
       mkdirSync(CACHE_PACKAGES_DIR, { recursive: true })
       writeFileSync(
         join(CACHE_PACKAGES_DIR, "package.json"),
-        JSON.stringify({ dependencies: { "oh-my-open-pentest": "3.10.0" } }, null, 2)
+        JSON.stringify({ dependencies: { "crypthunter": "3.10.0" } }, null, 2)
       )
 
       const fs = await import("node:fs")
@@ -303,7 +303,7 @@ describe("syncCachePackageJsonToIntent", () => {
         const { syncCachePackageJsonToIntent } = await importFreshSyncPackageJsonModule()
 
         const pluginInfo: PluginEntryInfo = {
-          entry: "oh-my-open-pentest@latest",
+          entry: "crypthunter@latest",
           isPinned: false,
           pinnedVersion: "latest",
           configPath: "/tmp/opencode.json",

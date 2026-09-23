@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Full OAuth 2.0 authorization flow for MCP servers requiring authentication. Implements PKCE (RFC 7636) and Dynamic Client Registration (DCR, RFC 759.). Used by `bunx oh-my-open-pentest mcp-oauth login`.
+Full OAuth 2.0 authorization flow for MCP servers requiring authentication. Implements PKCE (RFC 7636) and Dynamic Client Registration (DCR, RFC 759.). Used by `bunx crypthunter mcp-oauth login`.
 
 ## AUTHORIZATION FLOW
 
@@ -46,7 +46,7 @@ Fields: `access_token`, `refresh_token`, `expires_at`, `client_id`.
 ## CLI COMMANDS
 
 ```bash
-bunx oh-my-open-pentest mcp-oauth login <server-url>   # Full PKCE flow
-bunx oh-my-open-pentest mcp-oauth logout <server-url>  # Revoke + delete token
-bunx oh-my-open-pentest mcp-oauth status               # List stored tokens
+bunx crypthunter mcp-oauth login <server-url>   # Full PKCE flow
+bunx crypthunter mcp-oauth logout <server-url>  # Revoke + delete token
+bunx crypthunter mcp-oauth status               # List stored tokens
 ```

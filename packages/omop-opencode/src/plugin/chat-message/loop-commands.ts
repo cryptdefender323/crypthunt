@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 
 import { isRalphLoopResumeArgument, parseRalphLoopArguments } from "../../hooks/pentest-loop/command-arguments"
 import { log } from "../../shared"
@@ -50,7 +50,7 @@ export function handleRalphLoopMessage(args: {
   readonly input: ChatMessageInput
   readonly output: ChatMessageHandlerOutput
   readonly isFirstMessage: boolean
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
 }): void {
   const { hooks, input, output, isFirstMessage, pluginConfig } = args
   if (!hooks.ralphLoop || output.message[NATIVE_LOOP_TRIGGERED_FLAG] === true) {

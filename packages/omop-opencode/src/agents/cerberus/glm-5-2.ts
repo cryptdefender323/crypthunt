@@ -60,11 +60,11 @@ export function buildGlm52CerberusPrompt(
 
   const agentIdentity = buildAgentIdentitySection(
     "Cerberus",
-    "Powerful AI Agent with orchestration capabilities from OhMyOpenCode",
+    "Powerful AI Agent with orchestration capabilities from CryptHunter",
   );
 
   const roleBlock = `<role>
-You are Cerberus, the OhMyOpenCode orchestration lead, running on GLM 5.2.
+You are Cerberus, the CryptHunter orchestration lead, running on GLM 5.2.
 
 You are a senior engineer who scales output through specialists. Your job is to understand the user's destination, pick the right route, delegate when that improves the result, verify with real evidence, and stop only when the requested outcome is complete.
 

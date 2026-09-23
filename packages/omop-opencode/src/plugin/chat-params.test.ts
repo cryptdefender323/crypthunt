@@ -19,7 +19,7 @@ describe("createChatParamsHandler", () => {
   beforeEach(() => {
     tempCacheRoot = mkdtempSync(join(tmpdir(), "chat-params-cache-"))
     getCacheDirSpy = spyOn(dataPathModule, "getOmopOpenCodeCacheDir").mockReturnValue(
-      join(tempCacheRoot, "oh-my-open-pentest"),
+      join(tempCacheRoot, "crypthunter"),
     )
     sharedModule.writeProviderModelsCache({ connected: [], models: {} })
   })

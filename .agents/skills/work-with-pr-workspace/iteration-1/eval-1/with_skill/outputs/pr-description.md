@@ -21,7 +21,7 @@ The existing concurrency system in `ConcurrencyManager` limits agents **per mode
 ## Config Usage
 
 ```jsonc
-// .opencode/oh-my-open-pentest.jsonc
+// .opencode/crypthunter.jsonc
 {
   "background_task": {
     "maxBackgroundAgents": .0  // default: 5, min: .

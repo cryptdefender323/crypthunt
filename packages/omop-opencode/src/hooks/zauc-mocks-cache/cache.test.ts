@@ -9,9 +9,9 @@ const TEST_USER_CONFIG_DIR = "/tmp/opencode-config"
 
 function testInvalidatePackage(packageName?: string): boolean {
   return invalidatePackage(packageName, {
-    acceptedPackageNames: ["oh-my-open-pentest", "oh-my-open-pentest"],
+    acceptedPackageNames: ["crypthunter", "crypthunter"],
     cacheDir: TEST_OPENCODE_CACHE_DIR,
-    defaultPackageName: "oh-my-open-pentest",
+    defaultPackageName: "crypthunter",
     userConfigDir: TEST_USER_CONFIG_DIR,
   })
 }
@@ -21,10 +21,10 @@ function resetTestCache(): void {
     rmSync(TEST_CACHE_DIR, { recursive: true, force: true })
   }
 
-  mkdirSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "oh-my-open-pentest"), { recursive: true })
+  mkdirSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "crypthunter"), { recursive: true })
   writeFileSync(
     join(TEST_OPENCODE_CACHE_DIR, "package.json"),
-    JSON.stringify({ dependencies: { "oh-my-open-pentest": "latest", other: "1.0.0" } }, null, 2)
+    JSON.stringify({ dependencies: { "crypthunter": "latest", other: "1.0.0" } }, null, 2)
   )
   writeFileSync(
     join(TEST_OPENCODE_CACHE_DIR, "bun.lock"),
@@ -32,12 +32,12 @@ function resetTestCache(): void {
       {
         workspaces: {
           "": {
-            dependencies: { "oh-my-open-pentest": "latest", other: "1.0.0" },
+            dependencies: { "crypthunter": "latest", other: "1.0.0" },
           },
         },
         packages: {
-          "oh-my-open-pentest": {},
-          "oh-my-open-pentest": {},
+          "crypthunter": {},
+          "crypthunter": {},
           "some-other-package": {},
           other: {},
         },
@@ -47,8 +47,8 @@ function resetTestCache(): void {
     )
   )
   writeFileSync(
-    join(TEST_OPENCODE_CACHE_DIR, "node_modules", "oh-my-open-pentest", "package.json"),
-    '{"name":"oh-my-open-pentest"}'
+    join(TEST_OPENCODE_CACHE_DIR, "node_modules", "crypthunter", "package.json"),
+    '{"name":"crypthunter"}'
   )
 }
 
@@ -64,16 +64,16 @@ describe("invalidatePackage", () => {
   })
 
   it("invalidates the installed package from the OpenCode cache directory", async () => {
-    const rootSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "oh-my-open-pentest@latest")
-    const rootAcceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "oh-my-open-pentest@latest")
-    const packagesSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "packages", "oh-my-open-pentest@latest")
-    const packagesAcceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "packages", "oh-my-open-pentest@latest")
+    const rootSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "crypthunter@latest")
+    const rootAcceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "crypthunter@latest")
+    const packagesSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "packages", "crypthunter@latest")
+    const packagesAcceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "packages", "crypthunter@latest")
     const otherSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "packages", "other@latest")
-    mkdirSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "oh-my-open-pentest"), { recursive: true })
-    mkdirSync(join(rootSpecifierDir, "node_modules", "oh-my-open-pentest"), { recursive: true })
-    mkdirSync(join(rootAcceptedSpecifierDir, "node_modules", "oh-my-open-pentest"), { recursive: true })
-    mkdirSync(join(packagesSpecifierDir, "node_modules", "oh-my-open-pentest"), { recursive: true })
-    mkdirSync(join(packagesAcceptedSpecifierDir, "node_modules", "oh-my-open-pentest"), { recursive: true })
+    mkdirSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "crypthunter"), { recursive: true })
+    mkdirSync(join(rootSpecifierDir, "node_modules", "crypthunter"), { recursive: true })
+    mkdirSync(join(rootAcceptedSpecifierDir, "node_modules", "crypthunter"), { recursive: true })
+    mkdirSync(join(packagesSpecifierDir, "node_modules", "crypthunter"), { recursive: true })
+    mkdirSync(join(packagesAcceptedSpecifierDir, "node_modules", "crypthunter"), { recursive: true })
     mkdirSync(otherSpecifierDir, { recursive: true })
 
     const result = testInvalidatePackage()
@@ -84,28 +84,28 @@ describe("invalidatePackage", () => {
     expect(existsSync(packagesSpecifierDir)).toBe(false)
     expect(existsSync(packagesAcceptedSpecifierDir)).toBe(false)
     expect(existsSync(otherSpecifierDir)).toBe(true)
-    expect(existsSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "oh-my-open-pentest"))).toBe(false)
-    expect(existsSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "oh-my-open-pentest"))).toBe(false)
+    expect(existsSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "crypthunter"))).toBe(false)
+    expect(existsSync(join(TEST_OPENCODE_CACHE_DIR, "node_modules", "crypthunter"))).toBe(false)
 
     const packageJson = JSON.parse(readFileSync(join(TEST_OPENCODE_CACHE_DIR, "package.json"), "utf-8")) as {
       dependencies?: Record<string, string>
     }
-    expect(packageJson.dependencies?.["oh-my-open-pentest"]).toBe("latest")
+    expect(packageJson.dependencies?.["crypthunter"]).toBe("latest")
     expect(packageJson.dependencies?.other).toBe("1.0.0")
 
     const bunLock = JSON.parse(readFileSync(join(TEST_OPENCODE_CACHE_DIR, "bun.lock"), "utf-8")) as {
       workspaces?: { ""?: { dependencies?: Record<string, string> } }
       packages?: Record<string, unknown>
     }
-    expect(bunLock.workspaces?.[""]?.dependencies?.["oh-my-open-pentest"]).toBe("latest")
+    expect(bunLock.workspaces?.[""]?.dependencies?.["crypthunter"]).toBe("latest")
     expect(bunLock.workspaces?.[""]?.dependencies?.other).toBe("1.0.0")
-    expect(bunLock.packages?.["oh-my-open-pentest"]).toBeUndefined()
-    expect(bunLock.packages?.["oh-my-open-pentest"]).toBeUndefined()
+    expect(bunLock.packages?.["crypthunter"]).toBeUndefined()
+    expect(bunLock.packages?.["crypthunter"]).toBeUndefined()
     expect(bunLock.packages?.["some-other-package"]).toEqual({})
     expect(bunLock.packages?.other).toEqual({})
 
     const explicitSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "some-other-package@latest")
-    const acceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "oh-my-open-pentest@beta")
+    const acceptedSpecifierDir = join(TEST_OPENCODE_CACHE_DIR, "crypthunter@beta")
     mkdirSync(explicitSpecifierDir, { recursive: true })
     mkdirSync(acceptedSpecifierDir, { recursive: true })
 

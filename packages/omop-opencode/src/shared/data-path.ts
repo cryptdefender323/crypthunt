@@ -52,8 +52,8 @@ export function getCacheDir(): string {
 }
 
 /**
- * Returns the oh-my-open-pentest cache directory.
- * All platforms: ~/.cache/oh-my-open-pentest
+ * Returns the crypthunter cache directory.
+ * All platforms: ~/.cache/crypthunter
  */
 export function getOmopOpenCodeCacheDir(): string {
   return path.join(getCacheDir(), CACHE_DIR_NAME)

@@ -30,7 +30,7 @@ describe("model-resolution-config", () => {
       mkdirSync(testConfigDir, { recursive: true })
       process.env.OPENCODE_CONFIG_DIR = testConfigDir
       writeFileSync(
-        join(testConfigDir, "oh-my-open-pentest.json"),
+        join(testConfigDir, "crypthunter.json"),
         JSON.stringify({ agents: { argus: { model: "opencode-go/kimi-k2.6" } } }, null, 2) + "\n",
         "utf-8",
       )

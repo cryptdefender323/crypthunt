@@ -69,7 +69,7 @@ Called from `src/plugin-handlers/plugin-components-loader.ts` during Phase 2 of 
 
 ## ERROR ISOLATION
 
-Each plugin loads in isolation — if one fails (bad manifest, missing file, syntax error), others still load. Errors surface as warnings in `bunx oh-my-open-pentest doctor`.
+Each plugin loads in isolation — if one fails (bad manifest, missing file, syntax error), others still load. Errors surface as warnings in `bunx crypthunter doctor`.
 
 ## RELATED
 

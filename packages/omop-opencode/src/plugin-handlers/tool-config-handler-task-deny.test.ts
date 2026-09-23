@@ -1,8 +1,8 @@
 /// <reference types="bun-types" />
 
 import { describe, expect, it } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../config"
-import { OhMyOpenCodeConfigSchema } from "../config"
+import type { CryptHunterConfig } from "../config"
+import { CryptHunterConfigSchema } from "../config"
 import { applyToolConfig } from "./tool-config-handler"
 
 type TestAgent = {
@@ -26,7 +26,7 @@ const TASK_ALLOWED_AGENT_NAMES = [
 
 function createParams(agentNames: readonly string[]): {
   readonly config: Record<string, unknown>
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly agentResult: Record<string, TestAgent>
 } {
   const agentResult: Record<string, TestAgent> = {}
@@ -36,7 +36,7 @@ function createParams(agentNames: readonly string[]): {
 
   return {
     config: { tools: {}, permission: {} },
-    pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+    pluginConfig: CryptHunterConfigSchema.parse({}),
     agentResult,
   }
 }

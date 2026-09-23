@@ -1,6 +1,6 @@
 import type { AgentConfig } from "@opencode-ai/sdk";
 import { createCerberusJuniorAgentWithOverrides } from "../agents/cerberus-junior";
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import {
   getAgentConfigKey,
   getAgentDisplayName,
@@ -19,7 +19,7 @@ type BuiltinAgentMap = Record<string, AgentConfig | undefined>;
 
 type AssembleAgentConfigParams = {
   config: Record<string, unknown>;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   builtinAgents: BuiltinAgentMap;
   sources: AgentSources;
   currentModel: string | undefined;

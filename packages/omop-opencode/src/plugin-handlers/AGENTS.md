@@ -88,9 +88,9 @@ PRs attempting any of the forbidden patterns will be rejected.
 ## MULTI-LEVEL CONFIG MERGE
 
 ```
-User (~/.config/opencode/oh-my-open-pentest.jsonc)
+User (~/.config/opencode/crypthunter.jsonc)
   ↓ deepMerge
-Project (.opencode/oh-my-open-pentest.jsonc)
+Project (.opencode/crypthunter.jsonc)
   ↓ Zod defaults
 Final Config
 ```

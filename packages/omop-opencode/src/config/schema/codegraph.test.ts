@@ -2,9 +2,9 @@
 
 import { describe, expect, test } from "bun:test"
 
-import { OhMyOpenCodeConfigSchema } from "./oh-my-open-pentest-config"
+import { CryptHunterConfigSchema } from "./crypthunter-config"
 
-describe("OhMyOpenCodeConfigSchema codegraph", () => {
+describe("CryptHunterConfigSchema codegraph", () => {
   describe("#given the codegraph section is present without overrides", () => {
     test("#when parsed #then codegraph is enabled by default", () => {
       // given
@@ -13,7 +13,7 @@ describe("OhMyOpenCodeConfigSchema codegraph", () => {
       }
 
       // when
-      const result = OhMyOpenCodeConfigSchema.parse(input)
+      const result = CryptHunterConfigSchema.parse(input)
 
       // then
       expect(result.codegraph).toEqual({
@@ -33,7 +33,7 @@ describe("OhMyOpenCodeConfigSchema codegraph", () => {
       }
 
       // when
-      const result = OhMyOpenCodeConfigSchema.parse(input)
+      const result = CryptHunterConfigSchema.parse(input)
 
       // then
       expect(result.codegraph).toEqual({
@@ -57,7 +57,7 @@ describe("OhMyOpenCodeConfigSchema codegraph", () => {
       }
 
       // when
-      const result = OhMyOpenCodeConfigSchema.parse(input)
+      const result = CryptHunterConfigSchema.parse(input)
 
       // then
       expect(result.codegraph).toEqual(input.codegraph)
@@ -74,7 +74,7 @@ describe("OhMyOpenCodeConfigSchema codegraph", () => {
       }
 
       // when
-      const result = OhMyOpenCodeConfigSchema.safeParse(input)
+      const result = CryptHunterConfigSchema.safeParse(input)
 
       // then
       expect(result.success).toBe(false)

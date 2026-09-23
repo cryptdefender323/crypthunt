@@ -1,11 +1,11 @@
 /// <reference types="bun-types" />
 
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig } from "../../config"
+import { CryptHunterConfigSchema, type CryptHunterConfig } from "../../config"
 import { resolveRunAgent } from "./agent-resolver"
 
-const createConfig = (overrides: Partial<OhMyOpenCodeConfig> = {}): OhMyOpenCodeConfig =>
-  OhMyOpenCodeConfigSchema.parse(overrides)
+const createConfig = (overrides: Partial<CryptHunterConfig> = {}): CryptHunterConfig =>
+  CryptHunterConfigSchema.parse(overrides)
 
 describe("resolveRunAgent", () => {
   let consoleLogSpy: ReturnType<typeof spyOn>

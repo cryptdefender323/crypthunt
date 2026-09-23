@@ -82,12 +82,12 @@ describe("createLegacyPluginToastHook", () => {
       mockCheckForLegacyPluginEntry.mockReturnValue({
         hasLegacyEntry: true,
         hasCanonicalEntry: false,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
       })
       mockAutoMigrate.mockReturnValue({
         migrated: true,
-        from: "oh-my-open-pentest",
-        to: "oh-my-open-pentest",
+        from: "crypthunter",
+        to: "crypthunter",
         configPath: "/tmp/opencode.json",
       })
       const hook = createLegacyPluginToastHook(createMockCtx(), {
@@ -112,7 +112,7 @@ describe("createLegacyPluginToastHook", () => {
       mockCheckForLegacyPluginEntry.mockReturnValue({
         hasLegacyEntry: true,
         hasCanonicalEntry: false,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
       })
       mockAutoMigrate.mockReturnValue({
         migrated: false,
@@ -142,12 +142,12 @@ describe("createLegacyPluginToastHook", () => {
       mockCheckForLegacyPluginEntry.mockReturnValue({
         hasLegacyEntry: true,
         hasCanonicalEntry: false,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
       })
       mockAutoMigrate.mockReturnValue({
         migrated: true,
-        from: "oh-my-open-pentest",
-        to: "oh-my-open-pentest",
+        from: "crypthunter",
+        to: "crypthunter",
         configPath: "/tmp/opencode.json",
       })
       const hook = createLegacyPluginToastHook(createMockCtx(), {
@@ -171,7 +171,7 @@ describe("createLegacyPluginToastHook", () => {
       mockCheckForLegacyPluginEntry.mockReturnValue({
         hasLegacyEntry: true,
         hasCanonicalEntry: false,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
       })
       const hook = createLegacyPluginToastHook(createMockCtx(), {
         checkForLegacyPluginEntry: mockCheckForLegacyPluginEntry,
@@ -193,7 +193,7 @@ describe("createLegacyPluginToastHook", () => {
       mockCheckForLegacyPluginEntry.mockReturnValue({
         hasLegacyEntry: true,
         hasCanonicalEntry: false,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
       })
       const hook = createLegacyPluginToastHook(createMockCtx(), {
         checkForLegacyPluginEntry: mockCheckForLegacyPluginEntry,

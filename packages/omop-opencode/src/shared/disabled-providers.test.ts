@@ -9,7 +9,7 @@ import {
   isProviderDisabled,
 } from "./disabled-providers"
 import { clearConfigLoadErrors, getConfigLoadErrors } from "./config-errors"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 
 beforeEach(() => {
   clearConfigLoadErrors()
@@ -94,7 +94,7 @@ describe("applyDisabledProviders", () => {
           fallback_models: ["github-copilot/gpt-5.4-mini", "openai/gpt-5.5"],
         },
       },
-    } as unknown as OhMyOpenCodeConfig
+    } as unknown as CryptHunterConfig
 
     applyDisabledProviders(config)
     const agents = config.agents as Record<string, { model?: string; fallback_models?: unknown }>
@@ -120,7 +120,7 @@ describe("applyDisabledProviders", () => {
           fallback_models: [{ model: "github-copilot/claude-sonnet-4.6" }, "opencode-go/glm-5.1"],
         },
       },
-    } as unknown as OhMyOpenCodeConfig
+    } as unknown as CryptHunterConfig
 
     applyDisabledProviders(config)
 
@@ -144,7 +144,7 @@ describe("applyDisabledProviders", () => {
           fallback_models: ["github-copilot/gpt-5.4-mini", { model: "github-copilot/gemini-3" }],
         },
       },
-    } as unknown as OhMyOpenCodeConfig
+    } as unknown as CryptHunterConfig
 
     applyDisabledProviders(config)
 
@@ -173,7 +173,7 @@ describe("applyDisabledProviders", () => {
           ],
         },
       },
-    } as unknown as OhMyOpenCodeConfig
+    } as unknown as CryptHunterConfig
 
     applyDisabledProviders(config)
 
@@ -191,7 +191,7 @@ describe("applyDisabledProviders", () => {
           fallback_models: ["openai/gpt-5.5", "github-copilot/claude-sonnet-4.6"],
         },
       },
-    } as unknown as OhMyOpenCodeConfig
+    } as unknown as CryptHunterConfig
 
     applyDisabledProviders(config)
 

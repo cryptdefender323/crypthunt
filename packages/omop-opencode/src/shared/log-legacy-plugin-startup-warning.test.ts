@@ -48,7 +48,7 @@ describe("logLegacyPluginStartupWarning", () => {
       //#given
       mockCheckForLegacyPluginEntry.mockReturnValue(createLegacyPluginCheckResult({
         hasLegacyEntry: true,
-        legacyEntries: ["oh-my-open-pentest", "oh-my-open-pentest@3.13.1"],
+        legacyEntries: ["crypthunter", "crypthunter@3.13.1"],
         configPath: "/tmp/opencode.json",
       }))
       const { logLegacyPluginStartupWarning } = await importFreshStartupWarningModule()
@@ -65,8 +65,8 @@ describe("logLegacyPluginStartupWarning", () => {
       expect(mockLog).toHaveBeenCalledWith(
         "[legacy-migration] Legacy plugin entry detected in OpenCode config",
         {
-          legacyEntries: ["oh-my-open-pentest", "oh-my-open-pentest@3.13.1"],
-          suggestedEntries: ["oh-my-open-pentest", "oh-my-open-pentest@3.13.1"],
+          legacyEntries: ["crypthunter", "crypthunter@3.13.1"],
+          suggestedEntries: ["crypthunter", "crypthunter@3.13.1"],
           hasCanonicalEntry: false,
         },
       )
@@ -76,7 +76,7 @@ describe("logLegacyPluginStartupWarning", () => {
       //#given
       mockCheckForLegacyPluginEntry.mockReturnValue(createLegacyPluginCheckResult({
         hasLegacyEntry: true,
-        legacyEntries: ["oh-my-open-pentest@latest"],
+        legacyEntries: ["crypthunter@latest"],
         configPath: "/tmp/opencode.json",
       }))
       const { logLegacyPluginStartupWarning } = await importFreshStartupWarningModule()
@@ -91,15 +91,15 @@ describe("logLegacyPluginStartupWarning", () => {
       //#then
       expect(consoleWarnSpy).toHaveBeenCalled()
       const firstCall = consoleWarnSpy.mock.calls[0]?.[0] as string
-      expect(firstCall).toContain("oh-my-open-pentest")
-      expect(firstCall).toContain("oh-my-open-pentest")
+      expect(firstCall).toContain("crypthunter")
+      expect(firstCall).toContain("crypthunter")
     })
 
     it("#then attempts auto-migration of the opencode.json", async () => {
       //#given
       mockCheckForLegacyPluginEntry.mockReturnValue(createLegacyPluginCheckResult({
         hasLegacyEntry: true,
-        legacyEntries: ["oh-my-open-pentest"],
+        legacyEntries: ["crypthunter"],
         configPath: "/tmp/opencode.json",
       }))
       const { logLegacyPluginStartupWarning } = await importFreshStartupWarningModule()
@@ -139,7 +139,7 @@ describe("logLegacyPluginStartupWarning", () => {
       //#given
       mockCheckForLegacyPluginEntry.mockReturnValue(createLegacyPluginCheckResult({
         hasLegacyEntry: true,
-        legacyEntries: ["oh-my-open-pentest@latest"],
+        legacyEntries: ["crypthunter@latest"],
         configPath: "/tmp/opencode.json",
       }))
       mockMigrateLegacyPluginEntry.mockReturnValue(true)

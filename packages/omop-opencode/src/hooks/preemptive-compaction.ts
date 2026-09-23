@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import { isCompactionAgent } from "../shared/compaction-marker"
 import { resolveMessageEventSessionID, resolveSessionEventID } from "../shared/event-session-id"
 import type { ContextLimitModelCacheState } from "../shared/context-limit-resolver"
@@ -13,7 +13,7 @@ import type {
 
 export function createPreemptiveCompactionHook(
   ctx: PreemptiveCompactionContext,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
   modelCacheState?: ContextLimitModelCacheState,
 ) {
   const compactionInProgress = new Set<string>()

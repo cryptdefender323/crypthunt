@@ -133,7 +133,7 @@ export function createCerberusJuniorAgentWithOverrides(
 
   const base: AgentConfig = {
     description: override?.description ??
-      "Focused task executor. Same discipline, no delegation. (Cerberus-Junior - OhMyOpenCode)",
+      "Focused task executor. Same discipline, no delegation. (Cerberus-Junior - CryptHunter)",
     mode: MODE,
     model,
     temperature,

@@ -19,10 +19,10 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
     //                Npm.add() installs the plugin)
     const cacheDir = "/cache/packages"
     const configDir = "/config"
-    const sandboxDir = "/cache/packages/oh-my-open-pentest@^4.2"
+    const sandboxDir = "/cache/packages/crypthunter@^4.2"
 
     const findPluginEntry = mock(() => ({
-      entry: "oh-my-open-pentest@^4.2",
+      entry: "crypthunter@^4.2",
       pinnedVersion: "^4.2",
       isPinned: false,
       configPath: "/project/opencode.json",
@@ -70,7 +70,7 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
 
     // when
     const autoUpdate = true
-    await runner(createCtx(), autoUpdate, (_isUpdate, latest) => `OhMyOpenCode Updated! v${latest}`)
+    await runner(createCtx(), autoUpdate, (_isUpdate, latest) => `CryptHunter Updated! v${latest}`)
 
     // then — install must NOT have run (we cannot reliably update a sandbox
     // OpenCode owns), and the user must see the truthful "update available"
@@ -86,7 +86,7 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
     const configDir = "/config"
 
     const findPluginEntry = mock(() => ({
-      entry: "oh-my-open-pentest",
+      entry: "crypthunter",
       pinnedVersion: null,
       isPinned: false,
       configPath: "/project/opencode.json",
@@ -125,7 +125,7 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
     } as Parameters<typeof createBackgroundUpdateCheckRunner>[0])
 
     // when
-    await runner(createCtx(), /* autoUpdate */ true, (_isUpdate, latest) => `OhMyOpenCode Updated! v${latest}`)
+    await runner(createCtx(), /* autoUpdate */ true, (_isUpdate, latest) => `CryptHunter Updated! v${latest}`)
 
     // then — non-sandbox path keeps the legacy install flow.
     expect(runBunInstallWithDetails).toHaveBeenCalled()
@@ -140,7 +140,7 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
     const nonError = Symbol("install failed")
 
     const findPluginEntry = mock(() => ({
-      entry: "oh-my-open-pentest",
+      entry: "crypthunter",
       pinnedVersion: null,
       isPinned: false,
       configPath: "/project/opencode.json",
@@ -180,7 +180,7 @@ describe("createBackgroundUpdateCheckRunner — OpenCode-managed sandbox (#4318)
     } as Parameters<typeof createBackgroundUpdateCheckRunner>[0])
 
     // when
-    await runner(createCtx(), /* autoUpdate */ true, (_isUpdate, latest) => `OhMyOpenCode Updated! v${latest}`)
+    await runner(createCtx(), /* autoUpdate */ true, (_isUpdate, latest) => `CryptHunter Updated! v${latest}`)
 
     // then
     expect(runBunInstallWithDetails).toHaveBeenCalled()

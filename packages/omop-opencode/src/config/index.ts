@@ -1,9 +1,9 @@
 export {
-  CryptHunterConfigSchema as OhMyOpenCodeConfigSchema,
+  CryptHunterConfigSchema as CryptHunterConfigSchema,
 } from "./schema"
 
 export type {
-  CryptHunterConfig as OhMyOpenCodeConfig,
+  CryptHunterConfig as CryptHunterConfig,
   AgentOverrideConfig,
   AgentOverrides,
   I18nConfig,

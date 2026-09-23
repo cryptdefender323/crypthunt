@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import { applyAgentVariant, resolveAgentVariant, resolveVariantForModel } from "./agent-variant"
 
 describe("resolveAgentVariant", () => {
   test("returns undefined when agent name missing", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
 
     // when
     const variant = resolveAgentVariant(config)
@@ -20,7 +20,7 @@ describe("resolveAgentVariant", () => {
       agents: {
         cerberus: { variant: "low" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
 
     // when
     const variant = resolveAgentVariant(config, "cerberus")
@@ -38,7 +38,7 @@ describe("resolveAgentVariant", () => {
       categories: {
         ultrabrain: { model: "openai/gpt-5.5", variant: "xhigh" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
 
     // when
     const variant = resolveAgentVariant(config, "cerberus")
@@ -55,7 +55,7 @@ describe("applyAgentVariant", () => {
       agents: {
         cerberus: { variant: "low" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
     const message: { variant?: string } = {}
 
     // when
@@ -71,7 +71,7 @@ describe("applyAgentVariant", () => {
       agents: {
         cerberus: { variant: "low" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
     const message = { variant: "max" }
 
     // when
@@ -90,7 +90,7 @@ describe("resolveVariantForModel", () => {
       agents: {
         cerberus: { variant: "high" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
     const model = { providerID: "anthropic", modelID: "claude-opus-4-7" }
 
     // when
@@ -102,7 +102,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns correct variant for anthropic provider", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "anthropic", modelID: "claude-opus-4-7" }
 
     // when
@@ -114,7 +114,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns correct variant for openai provider (scylla agent)", () => {
     // #given scylla has openai/gpt-5.5 with variant "medium" in its chain
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "openai", modelID: "gpt-5.5" }
 
     // #when
@@ -126,7 +126,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns medium for openai/gpt-5.5 in cerberus chain", () => {
     // #given openai/gpt-5.5 is now in cerberus fallback chain with variant medium
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "openai", modelID: "gpt-5.5" }
 
     // when
@@ -138,7 +138,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns undefined for provider not in chain", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "unknown-provider", modelID: "some-model" }
 
     // when
@@ -150,7 +150,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns undefined for unknown agent", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "anthropic", modelID: "claude-opus-4-7" }
 
     // when
@@ -162,7 +162,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns variant for zai-coding-plan provider without variant", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "zai-coding-plan", modelID: "glm-5" }
 
     // when
@@ -178,7 +178,7 @@ describe("resolveVariantForModel", () => {
       agents: {
         "custom-agent": { category: "ultrabrain" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
     const model = { providerID: "openai", modelID: "gpt-5.5" }
 
     // when
@@ -190,7 +190,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns correct variant for cipher agent with openai", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "openai", modelID: "gpt-5.5" }
 
     // when
@@ -202,7 +202,7 @@ describe("resolveVariantForModel", () => {
 
   test("returns correct variant for cipher agent with anthropic", () => {
     // given
-    const config = {} as OhMyOpenCodeConfig
+    const config = {} as CryptHunterConfig
     const model = { providerID: "anthropic", modelID: "claude-opus-4-7" }
 
     // when

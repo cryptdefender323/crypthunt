@@ -19,7 +19,7 @@ describe("detectCurrentConfig - single package detection", () => {
   beforeEach(() => {
     testConfigDir = join(tmpdir(), `omop-detect-config-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     testConfigPath = join(testConfigDir, "opencode.json")
-    testOmoConfigPath = join(testConfigDir, "oh-my-open-pentest.json")
+    testOmoConfigPath = join(testConfigDir, "crypthunter.json")
 
     mkdirSync(testConfigDir, { recursive: true })
     process.env.OPENCODE_CONFIG_DIR = testConfigDir
@@ -34,7 +34,7 @@ describe("detectCurrentConfig - single package detection", () => {
 
   it("detects both legacy and canonical plugin entries", () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest", "oh-my-open-pentest@3.11.0"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter", "crypthunter@3.11.0"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = detectCurrentConfig()
@@ -45,7 +45,7 @@ describe("detectCurrentConfig - single package detection", () => {
 
   it("returns false when plugin not present with similar name", () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest-extra"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter-extra"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = detectCurrentConfig()
@@ -56,7 +56,7 @@ describe("detectCurrentConfig - single package detection", () => {
 
   it("detects OpenCode Go from the existing omo config", () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter"] }, null, 2) + "\n", "utf-8")
     writeFileSync(testOmoConfigPath, JSON.stringify({ agents: { argus: { model: "opencode-go/kimi-k2.6" } } }, null, 2) + "\n", "utf-8")
 
     // when
@@ -69,11 +69,11 @@ describe("detectCurrentConfig - single package detection", () => {
 
   it("uses default provider detection when omo config reading throws a non-Error value", () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter"] }, null, 2) + "\n", "utf-8")
     writeFileSync(testOmoConfigPath, "{}\n", "utf-8")
     const originalReadFileSync = fs.readFileSync
     const readFileSyncSpy = spyOn(fs, "readFileSync").mockImplementation((filePath, options) => {
-      if (String(filePath).endsWith("oh-my-open-pentest.json")) {
+      if (String(filePath).endsWith("crypthunter.json")) {
         throw "read failed"
       }
       return originalReadFileSync(filePath, options)
@@ -123,12 +123,12 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest"])
+    expect(savedConfig.plugin).toEqual(["crypthunter"])
   })
 
   it("upgrades a bare legacy plugin entry to canonical", async () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.11.0")
@@ -136,13 +136,13 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest"])
+    expect(savedConfig.plugin).toEqual(["crypthunter"])
   })
 
   it("updates a version-pinned legacy entry to the requested version", async () => {
     // given
-    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("oh-my-open-pentest@3.16.0")
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest@3.15.0"] }, null, 2) + "\n", "utf-8")
+    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("crypthunter@3.16.0")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter@3.15.0"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.16.0")
@@ -150,13 +150,13 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest@3.16.0"])
+    expect(savedConfig.plugin).toEqual(["crypthunter@3.16.0"])
     getPluginNameWithVersionSpy.mockRestore()
   })
 
   it("removes stale legacy entry when canonical and legacy entries both exist", async () => {
     // given
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest", "oh-my-open-pentest"] }, null, 2) + "\n", "utf-8")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter", "crypthunter"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.11.0")
@@ -164,13 +164,13 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest"])
+    expect(savedConfig.plugin).toEqual(["crypthunter"])
   })
 
   it("preserves a canonical entry when the same version is re-installed", async () => {
     // given
-    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("oh-my-open-pentest@3.10.0")
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest@3.10.0"] }, null, 2) + "\n", "utf-8")
+    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("crypthunter@3.10.0")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter@3.10.0"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.10.0")
@@ -178,14 +178,14 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest@3.10.0"])
+    expect(savedConfig.plugin).toEqual(["crypthunter@3.10.0"])
     getPluginNameWithVersionSpy.mockRestore()
   })
 
   it("blocks a downgrade for a version-pinned canonical entry", async () => {
     // given
-    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("oh-my-open-pentest@3.15.0")
-    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-open-pentest@3.16.0"] }, null, 2) + "\n", "utf-8")
+    const getPluginNameWithVersionSpy = spyOn(pluginNameWithVersion, "getPluginNameWithVersion").mockResolvedValue("crypthunter@3.15.0")
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: ["crypthunter@3.16.0"] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.15.0")
@@ -195,14 +195,14 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     expect(result.error).toContain("Downgrade")
 
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-open-pentest@3.16.0"])
+    expect(savedConfig.plugin).toEqual(["crypthunter@3.16.0"])
     getPluginNameWithVersionSpy.mockRestore()
   })
 
   it("rewrites quoted jsonc plugin field in place", async () => {
     // given
     testConfigPath = join(testConfigDir, "opencode.jsonc")
-    writeFileSync(testConfigPath, '{\n  "plugin": ["oh-my-opencode"]\n}\n', "utf-8")
+    writeFileSync(testConfigPath, '{\n  "plugin": ["crypthunter"]\n}\n', "utf-8")
 
     // when
     const result = await addPluginToOpenCodeConfig("3.11.0")
@@ -210,8 +210,8 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedContent = readFileSync(testConfigPath, "utf-8")
-    expect(savedContent.includes('"plugin": [\n    "oh-my-open-pentest"\n  ]')).toBe(true)
-    expect(savedContent.includes("oh-my-opencode")).toBe(false)
+    expect(savedContent.includes('"plugin": [\n    "crypthunter"\n  ]')).toBe(true)
+    expect(savedContent.includes("crypthunter")).toBe(false)
   })
 
   it("mirrors an existing source plugin entry into profile configs", async () => {

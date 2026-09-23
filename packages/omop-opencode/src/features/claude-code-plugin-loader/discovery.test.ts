@@ -99,7 +99,7 @@ describe("discoverInstalledPlugins", () => {
       JSON.stringify({
         version: 2,
         plugins: {
-          "file:///D:/configs/user-configs/.config/opencode/node_modules/oh-my-open-pentest@latest": [
+          "file:///D:/configs/user-configs/.config/opencode/node_modules/crypthunter@latest": [
             {
               scope: "user",
               installPath,
@@ -123,7 +123,7 @@ describe("discoverInstalledPlugins", () => {
     //#then
     expect(discovered.errors).toHaveLength(0)
     expect(discovered.plugins).toHaveLength(1)
-    expect(discovered.plugins[0]?.name).toBe("oh-my-open-pentest")
+    expect(discovered.plugins[0]?.name).toBe("crypthunter")
   })
 
   it("derives canonical package name from npm plugin keys", async () => {
@@ -137,7 +137,7 @@ describe("discoverInstalledPlugins", () => {
       JSON.stringify({
         version: 2,
         plugins: {
-          "oh-my-open-pentest@3.13.1": [
+          "crypthunter@3.13.1": [
             {
               scope: "user",
               installPath,
@@ -161,7 +161,7 @@ describe("discoverInstalledPlugins", () => {
     //#then
     expect(discovered.errors).toHaveLength(0)
     expect(discovered.plugins).toHaveLength(1)
-    expect(discovered.plugins[0]?.name).toBe("oh-my-open-pentest")
+    expect(discovered.plugins[0]?.name).toBe("crypthunter")
   })
 
   describe("#given project-scoped entries in v1 format", () => {

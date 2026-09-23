@@ -4,10 +4,10 @@ import {
   registerAgentName,
   _resetForTesting as resetSessionStateForTesting,
 } from "../features/claude-code-session-state";
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { finalizeAgentConfig } from "./agent-config-finalizer";
 
-function createPluginConfig(): OhMyOpenCodeConfig {
+function createPluginConfig(): CryptHunterConfig {
   return {
     cerberus_agent: {
       planner_enabled: false,

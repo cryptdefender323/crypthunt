@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test"
-import { OhMyOpenCodeConfigSchema } from "./oh-my-open-pentest-config"
+import { CryptHunterConfigSchema } from "./crypthunter-config"
 
-describe("OhMyOpenCodeConfigSchema team_mode", () => {
+describe("CryptHunterConfigSchema team_mode", () => {
   it("accepts team_mode when provided", () => {
     // given
     const rawConfig = {
@@ -12,7 +12,7 @@ describe("OhMyOpenCodeConfigSchema team_mode", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig)
+    const result = CryptHunterConfigSchema.safeParse(rawConfig)
 
     // then
     expect(result.success).toBe(true)
@@ -29,7 +29,7 @@ describe("OhMyOpenCodeConfigSchema team_mode", () => {
     const rawConfig = {}
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig)
+    const result = CryptHunterConfigSchema.safeParse(rawConfig)
 
     // then
     expect(result.success).toBe(true)
@@ -39,13 +39,13 @@ describe("OhMyOpenCodeConfigSchema team_mode", () => {
   })
 })
 
-describe("OhMyOpenCodeConfigSchema tui", () => {
+describe("CryptHunterConfigSchema tui", () => {
   it("defaults the TUI sidebar to enabled", () => {
     // given
     const rawConfig = {}
 
     // when
-    const result = OhMyOpenCodeConfigSchema.parse(rawConfig)
+    const result = CryptHunterConfigSchema.parse(rawConfig)
 
     // then
     expect(result.tui?.sidebar.enabled).toBe(true)
@@ -62,14 +62,14 @@ describe("OhMyOpenCodeConfigSchema tui", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.parse(rawConfig)
+    const result = CryptHunterConfigSchema.parse(rawConfig)
 
     // then
     expect(result.tui?.sidebar.enabled).toBe(false)
   })
 })
 
-describe("OhMyOpenCodeConfigSchema agent_order", () => {
+describe("CryptHunterConfigSchema agent_order", () => {
   it("accepts string agent ordering when provided", () => {
     // given
     const rawConfig = {
@@ -77,7 +77,7 @@ describe("OhMyOpenCodeConfigSchema agent_order", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig)
+    const result = CryptHunterConfigSchema.safeParse(rawConfig)
 
     // then
     expect(result.success).toBe(true)
@@ -96,7 +96,7 @@ describe("OhMyOpenCodeConfigSchema agent_order", () => {
     const rawConfig = {}
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig)
+    const result = CryptHunterConfigSchema.safeParse(rawConfig)
 
     // then
     expect(result.success).toBe(true)
@@ -111,10 +111,10 @@ describe("OhMyOpenCodeConfigSchema agent_order", () => {
     const tooManyNames = Array.from({ length: 65 }, (_, index) => `agent-${index}`)
 
     // when
-    const tooLongResult = OhMyOpenCodeConfigSchema.safeParse({
+    const tooLongResult = CryptHunterConfigSchema.safeParse({
       agent_order: [tooLongName],
     })
-    const tooManyResult = OhMyOpenCodeConfigSchema.safeParse({
+    const tooManyResult = CryptHunterConfigSchema.safeParse({
       agent_order: tooManyNames,
     })
 

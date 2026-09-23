@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Installs the `omo` plugin into `~/.codex/` for the Codex CLI Light edition. This directory is now an OpenCode CLI adapter shim over the canonical installer source in [`packages/omop-codex/src/install/`](../../../../../packages/omop-codex/src/install). Entry: `runCodexInstaller()` in `install-codex.ts`. Triggered by `bunx oh-my-open-pentest install --platform=codex` (alias `npx lazycodex-ai install`).
+Installs the `omo` plugin into `~/.codex/` for the Codex CLI Light edition. This directory is now an OpenCode CLI adapter shim over the canonical installer source in [`packages/omop-codex/src/install/`](../../../../../packages/omop-codex/src/install). Entry: `runCodexInstaller()` in `install-codex.ts`. Triggered by `bunx crypthunter install --platform=codex` (alias `npx lazycodex-ai install`).
 
 ## KEY FILES
 

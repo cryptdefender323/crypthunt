@@ -108,7 +108,7 @@ export function createPluginModule(overrides: Partial<PluginModuleDeps> = {}): P
   const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
     deps.installAgentSortShim()
     deps.initConfigContext("opencode", null)
-    deps.log("[oh-my-open-pentest] ENTRY - plugin loading", {
+    deps.log("[crypthunter] ENTRY - plugin loading", {
       directory: input.directory,
     })
     deps.logLegacyPluginStartupWarning()
@@ -251,7 +251,7 @@ export function createPluginModule(overrides: Partial<PluginModuleDeps> = {}): P
   }
 
   return {
-    id: "oh-my-open-pentest",
+    id: "crypthunter",
     server: serverPlugin,
   }
 }

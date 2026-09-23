@@ -287,7 +287,7 @@ export function createSentinelAgent(model: string): AgentConfig {
 
   const base = {
     description:
-      "Expert reviewer for evaluating work plans against rigorous clarity, verifiability, and completeness standards. (Sentinel - OhMyOpenCode)",
+      "Expert reviewer for evaluating work plans against rigorous clarity, verifiability, and completeness standards. (Sentinel - CryptHunter)",
     mode: MODE,
     model,
     temperature: 0.1,

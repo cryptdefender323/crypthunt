@@ -1,6 +1,6 @@
 import { getModelResolutionInfoWithOverrides } from "../../cli/doctor/checks/model-resolution"
 import type { OmoConfig } from "../../cli/doctor/checks/model-resolution-types"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import { validatePluginConfig } from "../../config/validate"
 import type { RosterRow } from "./state-types"
 
@@ -50,7 +50,7 @@ function pickCategoryModelConfig(category: CategoryModelConfig): CategoryModelCo
   return picked
 }
 
-function toModelResolutionConfig(config: OhMyOpenCodeConfig): OmoConfig {
+function toModelResolutionConfig(config: CryptHunterConfig): OmoConfig {
   const agents: Record<string, AgentModelConfig> = {}
   const categories: Record<string, CategoryModelConfig> = {}
 

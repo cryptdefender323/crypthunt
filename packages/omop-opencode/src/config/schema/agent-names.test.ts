@@ -1,9 +1,9 @@
 /// <reference path="../../../../../bun-test.d.ts" />
 
 import { describe, expect, test } from "bun:test"
-import { OhMyOpenCodeConfigSchema } from "./oh-my-open-pentest-config"
+import { CryptHunterConfigSchema } from "./crypthunter-config"
 
-describe("OhMyOpenCodeConfigSchema disabled_skills", () => {
+describe("CryptHunterConfigSchema disabled_skills", () => {
   test("accepts review-work, shared aliases, and runtime security skills", () => {
     // given
     const config = {
@@ -20,7 +20,7 @@ describe("OhMyOpenCodeConfigSchema disabled_skills", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)

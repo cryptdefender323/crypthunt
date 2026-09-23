@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { unsafeTestValue } from "../../../../test-support/unsafe-test-value"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import { readBoulderState } from "../features/boulder-state"
 import { _resetForTesting, getSessionAgent, registerAgentName, setMainSession, subagentSessions, updateSessionAgent } from "../features/claude-code-session-state"
 import { createAutoSlashCommandHook } from "../hooks/auto-slash-command"
@@ -64,7 +64,7 @@ function createMockHandlerArgs(overrides?: {
     ctx: unsafeTestValue<PluginContext>({
       client: { tui: { showToast: async () => {} } },
     }),
-    pluginConfig: unsafeTestValue<OhMyOpenCodeConfig>((overrides?.pluginConfig ?? {})),
+    pluginConfig: unsafeTestValue<CryptHunterConfig>((overrides?.pluginConfig ?? {})),
     firstMessageVariantGate: {
       shouldOverride: () => overrides?.shouldOverride ?? false,
       markApplied: (sessionID: string) => { appliedSessions.push(sessionID) },

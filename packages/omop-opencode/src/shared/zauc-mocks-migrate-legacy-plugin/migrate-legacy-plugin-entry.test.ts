@@ -25,36 +25,36 @@ describe("migrateLegacyPluginEntry", () => {
     rmSync(testDir, { recursive: true, force: true })
   })
 
-  describe("#given opencode.json contains oh-my-opencode plugin entry", () => {
+  describe("#given opencode.json contains crypthunter plugin entry", () => {
     describe("#when migrating the config", () => {
-      it("#then replaces oh-my-opencode with oh-my-open-pentest", async () => {
+      it("#then replaces crypthunter with crypthunter", async () => {
         const configPath = join(testDir, "opencode.json")
-        writeFileSync(configPath, JSON.stringify({ plugin: ["oh-my-opencode@latest"] }, null, 2))
+        writeFileSync(configPath, JSON.stringify({ plugin: ["crypthunter@latest"] }, null, 2))
         const { migrateLegacyPluginEntry } = await importFreshMigrationModule()
 
         const result = migrateLegacyPluginEntry(configPath)
 
         expect(result).toBe(true)
         const content = readFileSync(configPath, "utf-8")
-        expect(content).toContain("oh-my-open-pentest@latest")
-        expect(content).not.toContain("oh-my-opencode")
+        expect(content).toContain("crypthunter@latest")
+        expect(content).not.toContain("crypthunter")
       })
     })
   })
 
-  describe("#given opencode.json contains bare oh-my-opencode entry", () => {
+  describe("#given opencode.json contains bare crypthunter entry", () => {
     describe("#when migrating the config", () => {
-      it("#then replaces with oh-my-open-pentest", async () => {
+      it("#then replaces with crypthunter", async () => {
         const configPath = join(testDir, "opencode.json")
-        writeFileSync(configPath, JSON.stringify({ plugin: ["oh-my-opencode"] }, null, 2))
+        writeFileSync(configPath, JSON.stringify({ plugin: ["crypthunter"] }, null, 2))
         const { migrateLegacyPluginEntry } = await importFreshMigrationModule()
 
         const result = migrateLegacyPluginEntry(configPath)
 
         expect(result).toBe(true)
         const content = readFileSync(configPath, "utf-8")
-        expect(content).toContain('"oh-my-open-pentest"')
-        expect(content).not.toContain("oh-my-opencode")
+        expect(content).toContain('"crypthunter"')
+        expect(content).not.toContain("crypthunter")
       })
     })
   })
@@ -63,7 +63,7 @@ describe("migrateLegacyPluginEntry", () => {
     describe("#when migrating the config", () => {
       it("#then keeps the original config untouched and writes the migrated content to a sibling temp file", async () => {
         const configPath = join(testDir, "opencode.json")
-        const originalContent = JSON.stringify({ plugin: ["oh-my-opencode@latest"] }, null, 2)
+        const originalContent = JSON.stringify({ plugin: ["crypthunter@latest"] }, null, 2)
         const tempPath = `${configPath}.tmp`
         writeFileSync(configPath, originalContent)
 
@@ -79,8 +79,8 @@ describe("migrateLegacyPluginEntry", () => {
 
           expect(result).toBe(false)
           expect(readFileSync(configPath, "utf-8")).toBe(originalContent)
-          expect(readFileSync(tempPath, "utf-8")).toContain("oh-my-open-pentest@latest")
-          expect(readFileSync(tempPath, "utf-8")).not.toContain("oh-my-opencode")
+          expect(readFileSync(tempPath, "utf-8")).toContain("crypthunter@latest")
+          expect(readFileSync(tempPath, "utf-8")).not.toContain("crypthunter")
         } finally {
           renameSyncSpy.mockRestore()
         }
@@ -92,7 +92,7 @@ describe("migrateLegacyPluginEntry", () => {
     describe("#when opening the temp file descriptor", () => {
       it("#then uses r+ mode to satisfy FlushFileBuffers requirements on Windows", async () => {
         const configPath = join(testDir, "opencode.json")
-        writeFileSync(configPath, JSON.stringify({ plugin: ["oh-my-opencode@latest"] }, null, 2))
+        writeFileSync(configPath, JSON.stringify({ plugin: ["crypthunter@latest"] }, null, 2))
 
         const fs = await import("node:fs")
         const originalOpenSync = fs.openSync
@@ -120,27 +120,27 @@ describe("migrateLegacyPluginEntry", () => {
     })
   })
 
-  describe("#given opencode.json contains pinned oh-my-opencode version", () => {
+  describe("#given opencode.json contains pinned crypthunter version", () => {
     describe("#when migrating the config", () => {
       it("#then preserves the version pin", async () => {
         const configPath = join(testDir, "opencode.json")
-        writeFileSync(configPath, JSON.stringify({ plugin: ["oh-my-opencode@3.11.0"] }, null, 2))
+        writeFileSync(configPath, JSON.stringify({ plugin: ["crypthunter@3.11.0"] }, null, 2))
         const { migrateLegacyPluginEntry } = await importFreshMigrationModule()
 
         const result = migrateLegacyPluginEntry(configPath)
 
         expect(result).toBe(true)
         const content = readFileSync(configPath, "utf-8")
-        expect(content).toContain("oh-my-open-pentest@3.11.0")
+        expect(content).toContain("crypthunter@3.11.0")
       })
     })
   })
 
-  describe("#given opencode.json already uses oh-my-open-pentest", () => {
+  describe("#given opencode.json already uses crypthunter", () => {
     describe("#when checking for migration", () => {
       it("#then returns false and does not modify the file", async () => {
         const configPath = join(testDir, "opencode.json")
-        const original = JSON.stringify({ plugin: ["oh-my-open-pentest@latest"] }, null, 2)
+        const original = JSON.stringify({ plugin: ["crypthunter@latest"] }, null, 2)
         writeFileSync(configPath, original)
         const { migrateLegacyPluginEntry } = await importFreshMigrationModule()
 
@@ -156,14 +156,14 @@ describe("migrateLegacyPluginEntry", () => {
     describe("#when migrating the config", () => {
       it("#then removes the legacy entry instead of duplicating the canonical one", async () => {
         const configPath = join(testDir, "opencode.json")
-        writeFileSync(configPath, JSON.stringify({ plugin: ["oh-my-opencode", "oh-my-open-pentest"] }, null, 2))
+        writeFileSync(configPath, JSON.stringify({ plugin: ["crypthunter", "crypthunter"] }, null, 2))
         const { migrateLegacyPluginEntry } = await importFreshMigrationModule()
 
         const result = migrateLegacyPluginEntry(configPath)
 
         expect(result).toBe(true)
         const saved = JSON.parse(readFileSync(configPath, "utf-8")) as { plugin: string[] }
-        expect(saved.plugin).toEqual(["oh-my-open-pentest"])
+        expect(saved.plugin).toEqual(["crypthunter"])
       })
     })
   })
@@ -176,9 +176,9 @@ describe("migrateLegacyPluginEntry", () => {
           configPath,
           JSON.stringify(
             {
-              plugin: ["oh-my-opencode"],
-              notes: "keep oh-my-opencode in this text field",
-              paths: ["/tmp/oh-my-opencode/cache"],
+              plugin: ["crypthunter"],
+              notes: "keep crypthunter in this text field",
+              paths: ["/tmp/crypthunter/cache"],
             },
             null,
             2,
@@ -194,9 +194,9 @@ describe("migrateLegacyPluginEntry", () => {
           notes: string
           paths: string[]
         }
-        expect(saved.plugin).toEqual(["oh-my-open-pentest"])
-        expect(saved.notes).toBe("keep oh-my-opencode in this text field")
-        expect(saved.paths).toEqual(["/tmp/oh-my-opencode/cache"])
+        expect(saved.plugin).toEqual(["crypthunter"])
+        expect(saved.notes).toBe("keep crypthunter in this text field")
+        expect(saved.paths).toEqual(["/tmp/crypthunter/cache"])
       })
     })
   })
@@ -209,9 +209,9 @@ describe("migrateLegacyPluginEntry", () => {
           configPath,
           `{
   "nested": {
-    "plugin": ["oh-my-open-pentest"]
+    "plugin": ["crypthunter"]
   },
-  "plugin": ["oh-my-opencode@latest"]
+  "plugin": ["crypthunter@latest"]
 }
 `,
         )
@@ -222,10 +222,10 @@ describe("migrateLegacyPluginEntry", () => {
         expect(result).toBe(true)
         const content = readFileSync(configPath, "utf-8")
         expect(content).toContain(`"nested": {
-    "plugin": ["oh-my-open-pentest"]
+    "plugin": ["crypthunter"]
   }`)
         expect(content).toContain(`"plugin": [
-    "oh-my-open-pentest@latest"
+    "crypthunter@latest"
   ]`)
       })
     })

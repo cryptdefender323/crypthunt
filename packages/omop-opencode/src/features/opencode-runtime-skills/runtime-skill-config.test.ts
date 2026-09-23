@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import {
   applyRuntimeSkillSourceConfig,
   selectRuntimeSecuritySkills,
   type OpenCodeSkillHostConfig,
 } from "./runtime-skill-config"
 
-type DisabledSkillName = NonNullable<OhMyOpenCodeConfig["disabled_skills"]>[number]
+type DisabledSkillName = NonNullable<CryptHunterConfig["disabled_skills"]>[number]
 
-function createPluginConfig(disabledSkills?: readonly DisabledSkillName[]): OhMyOpenCodeConfig {
+function createPluginConfig(disabledSkills?: readonly DisabledSkillName[]): CryptHunterConfig {
   return {
     git_master: {
       commit_footer: true,

@@ -1,4 +1,4 @@
-import type { HookName, OhMyOpenCodeConfig } from "../../config"
+import type { HookName, CryptHunterConfig } from "../../config"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { MonitorManager } from "../../features/monitor"
 import type { ModelFallbackControllerAccessor } from "../../hooks/model-fallback"
@@ -11,7 +11,7 @@ import { createTransformHooks } from "./create-transform-hooks"
 
 export function createCoreHooks(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   modelCacheState: ModelCacheState
   backgroundManager: BackgroundManager
   modelFallbackControllerAccessor?: ModelFallbackControllerAccessor

@@ -1,5 +1,5 @@
 ---
-description: Easter egg command - about oh-my-open-pentest
+description: Easter egg command - about crypthunter
 ---
 
 <command-instruction>

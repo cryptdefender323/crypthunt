@@ -38,7 +38,7 @@ These are standard engineering comments, not AI agent memos.
 ## Usage
 
 ```jsonc
-// .opencode/oh-my-open-pentest.jsonc
+// .opencode/crypthunter.jsonc
 {
   "comment_checker": {
     "exclude_patterns": ["^Note:", "^TODO:", "^FIXME:"]

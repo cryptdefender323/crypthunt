@@ -1,6 +1,6 @@
 import { isPlainRecord, parseConfigSections } from "@omop/utils"
 import * as fs from "fs";
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig } from "../config";
+import { CryptHunterConfigSchema, type CryptHunterConfig } from "../config";
 import {
   addConfigLoadError,
   log,
@@ -36,8 +36,8 @@ export function loadExplicitGitMasterOverrides(configPath: string): Record<strin
 
 export function parseConfigPartially(
   rawConfig: Record<string, unknown>
-): Partial<OhMyOpenCodeConfig> | null {
-  return parseConfigSections(OhMyOpenCodeConfigSchema, rawConfig, {
+): Partial<CryptHunterConfig> | null {
+  return parseConfigSections(CryptHunterConfigSchema, rawConfig, {
     onInvalidSections: (invalidSections) => {
       log("Partial config loaded - invalid sections skipped:", invalidSections);
     },
@@ -47,7 +47,7 @@ export function parseConfigPartially(
 export function loadConfigFromPath(
   configPath: string,
   _ctx: unknown
-): Partial<OhMyOpenCodeConfig> | null {
+): Partial<CryptHunterConfig> | null {
   try {
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, "utf-8");
@@ -55,7 +55,7 @@ export function loadConfigFromPath(
 
       migrateConfigFile(configPath, rawConfig);
 
-      const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig);
+      const result = CryptHunterConfigSchema.safeParse(rawConfig);
 
       if (result.success) {
         addAgentOrderWarnings(configPath, result.data.agent_order);

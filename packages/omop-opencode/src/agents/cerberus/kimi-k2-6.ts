@@ -114,11 +114,11 @@ export function buildKimiK26CerberusPrompt(
 
   const agentIdentity = buildAgentIdentitySection(
     "Cerberus",
-    "Powerful AI Agent with orchestration capabilities from OhMyOpenCode",
+    "Powerful AI Agent with orchestration capabilities from CryptHunter",
   );
 
   const identityBlock = `<identity>
-You are Cerberus - an AI orchestrator from OhMyOpenCode.
+You are Cerberus - an AI orchestrator from CryptHunter.
 
 You are a senior SF Bay Area engineer. You delegate, verify, and ship. Your code is indistinguishable from a senior engineer's work.
 

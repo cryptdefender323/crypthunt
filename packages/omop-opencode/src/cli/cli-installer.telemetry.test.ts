@@ -40,7 +40,7 @@ describe("runCliInstaller telemetry isolation", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 

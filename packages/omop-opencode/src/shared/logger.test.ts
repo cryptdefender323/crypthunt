@@ -14,7 +14,7 @@ import * as path from "path"
 
 type LoggerModule = typeof import("./logger")
 
-const TEST_PREFIX = "oh-my-open-pentest-logger-test"
+const TEST_PREFIX = "crypthunter-logger-test"
 
 function makeTempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), `${TEST_PREFIX}-`))

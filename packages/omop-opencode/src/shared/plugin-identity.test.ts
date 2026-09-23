@@ -12,13 +12,13 @@ import {
 
 describe("plugin-identity constants", () => {
   describe("PLUGIN_NAME", () => {
-    it("equals oh-my-open-pentest", () => {
+    it("equals crypthunter", () => {
       // given
 
       // when
 
       // then
-      expect(PLUGIN_NAME).toBe("oh-my-open-pentest")
+      expect(PLUGIN_NAME).toBe("crypthunter")
     })
   })
 
@@ -54,57 +54,57 @@ describe("plugin-identity constants", () => {
   })
 
   describe("CONFIG_BASENAME", () => {
-    it("equals oh-my-open-pentest", () => {
+    it("equals crypthunter", () => {
       // given
 
       // when
 
       // then
-      expect(CONFIG_BASENAME).toBe("oh-my-open-pentest")
+      expect(CONFIG_BASENAME).toBe("crypthunter")
     })
   })
 
   describe("LEGACY_CONFIG_BASENAME", () => {
-    it("equals oh-my-opencode", () => {
+    it("equals crypthunter", () => {
       // given
 
       // when
 
       // then
-      expect(LEGACY_CONFIG_BASENAME).toBe("oh-my-opencode")
+      expect(LEGACY_CONFIG_BASENAME).toBe("crypthunter")
     })
   })
 
   describe("LEGACY_PLUGIN_NAME", () => {
-    it("equals oh-my-opencode", () => {
+    it("equals crypthunter", () => {
       // given
 
       // when
 
       // then
-      expect(LEGACY_PLUGIN_NAME).toBe("oh-my-opencode")
+      expect(LEGACY_PLUGIN_NAME).toBe("crypthunter")
     })
   })
 
   describe("LOG_FILENAME", () => {
-    it("equals oh-my-open-pentest.log", () => {
+    it("equals crypthunter.log", () => {
       // given
 
       // when
 
       // then
-      expect(LOG_FILENAME).toBe("oh-my-open-pentest.log")
+      expect(LOG_FILENAME).toBe("crypthunter.log")
     })
   })
 
   describe("CACHE_DIR_NAME", () => {
-    it("equals oh-my-open-pentest", () => {
+    it("equals crypthunter", () => {
       // given
 
       // when
 
       // then
-      expect(CACHE_DIR_NAME).toBe("oh-my-open-pentest")
+      expect(CACHE_DIR_NAME).toBe("crypthunter")
     })
   })
 })

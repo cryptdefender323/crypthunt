@@ -70,7 +70,7 @@ describe("resolveRoster", () => {
     withIsolatedConfig("overrides", (root) => {
       // given
       const project = join(root, "project")
-      writeJson(join(project, ".opencode", "oh-my-open-pentest.json"), {
+      writeJson(join(project, ".opencode", "crypthunter.json"), {
         agents: {
           cerberus: { model: "provider/family/model-leaf" },
         },
@@ -93,7 +93,7 @@ describe("resolveRoster", () => {
     withIsolatedConfig("malformed", (root) => {
       // given
       const project = join(root, "project")
-      writeJson(join(project, ".opencode", "oh-my-open-pentest.json"), {
+      writeJson(join(project, ".opencode", "crypthunter.json"), {
         agents: { cerberus: { model: 123 } },
       })
 

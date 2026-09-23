@@ -37,7 +37,7 @@ describe("getInstalledLspServers", () => {
     mkdirSync(projectConfigDirectory, { recursive: true })
     createLspDistCli(workspaceDirectory)
     writeFileSync(
-      join(projectConfigDirectory, "oh-my-open-pentest.json"),
+      join(projectConfigDirectory, "crypthunter.json"),
       JSON.stringify({ disabled_mcps: ["lsp"] }),
       "utf-8",
     )
@@ -88,7 +88,7 @@ describe("getInstalledLspServers", () => {
     const userConfigDirectory = createTemporaryDirectory("omop-tools-lsp-user-")
     const workspaceDirectory = createTemporaryDirectory("omop-tools-lsp-malformed-")
     mkdirSync(userConfigDirectory, { recursive: true })
-    writeFileSync(join(userConfigDirectory, "oh-my-open-pentest.json"), "{", "utf-8")
+    writeFileSync(join(userConfigDirectory, "crypthunter.json"), "{", "utf-8")
     clearPluginConfigFileDetectionCache()
 
     const { getInstalledLspServers } = await import(`./tools-lsp?t=${Date.now()}-malformed`)

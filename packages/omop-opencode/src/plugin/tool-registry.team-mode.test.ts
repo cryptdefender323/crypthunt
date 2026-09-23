@@ -7,7 +7,7 @@ import { join } from "node:path"
 
 import { tool } from "@opencode-ai/plugin"
 
-import { OhMyOpenCodeConfigSchema } from "../config"
+import { CryptHunterConfigSchema } from "../config"
 import type { OpencodeClient } from "../tools/delegate-task/types"
 import { createToolRegistry } from "./tool-registry"
 
@@ -34,7 +34,7 @@ async function importFreshPluginConfigModule(): Promise<typeof import("../plugin
 }
 
 function createPluginConfig() {
-  return OhMyOpenCodeConfigSchema.parse({
+  return CryptHunterConfigSchema.parse({
     git_master: {
       commit_footer: false,
       include_co_authored_by: false,
@@ -57,7 +57,7 @@ describe("team-mode tool registry wiring", () => {
     mkdirSync(userConfigDir, { recursive: true })
     mkdirSync(projectDir, { recursive: true })
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.json"),
+      join(userConfigDir, "crypthunter.json"),
       JSON.stringify({ team_mode: { enabled: true } }),
     )
     process.env.OPENCODE_CONFIG_DIR = userConfigDir

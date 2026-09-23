@@ -249,9 +249,9 @@ describe("createPluginModule() — live-server-route wiring", () => {
       const mockInitLiveServerRoute = mock(() => {})
       mockDetectDuplicateOmoPlugin.mockReturnValue({
         detected: true,
-        pluginName: "oh-my-open-pentest",
-        duplicatePlugins: ["oh-my-open-pentest@latest"],
-        allPlugins: ["oh-my-open-pentest@latest"],
+        pluginName: "crypthunter",
+        duplicatePlugins: ["crypthunter@latest"],
+        allPlugins: ["crypthunter@latest"],
       })
       mockGetDuplicateOmoPluginWarning.mockReturnValue("duplicate detected")
       const consoleWarn = mock(() => {})

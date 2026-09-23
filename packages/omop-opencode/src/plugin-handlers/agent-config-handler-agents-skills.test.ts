@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import * as agents from "../agents"
 import * as shared from "../shared"
 import * as cerberusJunior from "../agents/cerberus-junior"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import * as skillLoader from "../features/opencode-skill-loader"
 import { applyAgentConfig } from "./agent-config-handler"
 import type { PluginComponents } from "./plugin-components-loader"
@@ -20,7 +20,7 @@ function createPluginComponents(): PluginComponents {
   }
 }
 
-function createPluginConfig(): OhMyOpenCodeConfig {
+function createPluginConfig(): CryptHunterConfig {
   return {
     cerberus_agent: {
       planner_enabled: false,

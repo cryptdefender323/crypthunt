@@ -54,8 +54,8 @@ serverPlugin(input, options)
 
 ```
 loadPluginConfig(directory, ctx)
-  .. User: ~/.config/opencode/oh-my-open-pentest.jsonc (legacy: oh-my-open-pentest.jsonc)
-  2. Walked configs: <pwd up to $HOME>/.opencode/oh-my-open-pentest.jsonc
+  .. User: ~/.config/opencode/crypthunter.jsonc (legacy: crypthunter.jsonc)
+  2. Walked configs: <pwd up to $HOME>/.opencode/crypthunter.jsonc
   3. mergeConfigs(user, walked)
      - agents/categories/claude_code: deepMerge (recursive, prototype-pollution safe)
      - disabled_*: Set union

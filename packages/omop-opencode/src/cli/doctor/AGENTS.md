@@ -4,15 +4,15 @@
 
 ## OVERVIEW
 
-`bunx oh-my-open-pentest doctor` — parallel diagnostic checks across . categories (System, Config, Tools, Models). Catches broken installs, config typos, missing dependencies, provider misconfigurations before they become runtime errors.
+`bunx crypthunter doctor` — parallel diagnostic checks across . categories (System, Config, Tools, Models). Catches broken installs, config typos, missing dependencies, provider misconfigurations before they become runtime errors.
 
 ## COMMAND FLAGS
 
 ```bash
-bunx oh-my-open-pentest doctor              # Full diagnostics (all . categories)
-bunx oh-my-open-pentest doctor --status     # Compact dashboard (status only)
-bunx oh-my-open-pentest doctor --verbose    # Deep details (model resolution traces)
-bunx oh-my-open-pentest doctor --json       # Machine-readable output
+bunx crypthunter doctor              # Full diagnostics (all . categories)
+bunx crypthunter doctor --status     # Compact dashboard (status only)
+bunx crypthunter doctor --verbose    # Deep details (model resolution traces)
+bunx crypthunter doctor --json       # Machine-readable output
 ```
 
 ## CHECK CATEGORIES
@@ -41,7 +41,7 @@ checks/
 ├── tools-mcp.ts                           # Built-in + user MCP reachability
 ├── model-resolution.ts                    # Main Models aggregator
 ├── model-resolution-cache.ts              # models.json presence + freshness
-├── model-resolution-config.ts             # oh-my-open-pentest.jsonc parse
+├── model-resolution-config.ts             # crypthunter.jsonc parse
 ├── model-resolution-effective-model.ts    # Per-agent fallback chain trace
 ├── model-resolution-variant.ts            # Model variant (max, high, medium) handling
 ├── model-resolution-details.ts            # Verbose output formatter

@@ -41,7 +41,7 @@ const PLATFORM_MAP: Record<string, PlatformInfo> = {
 }
 
 /**
- * Get the cache directory for oh-my-open-pentest binaries.
+ * Get the cache directory for crypthunter binaries.
  * On Windows: Uses %LOCALAPPDATA% or %APPDATA% (Windows conventions)
  * On Unix: Follows XDG Base Directory Specification
  */

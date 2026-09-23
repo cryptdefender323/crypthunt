@@ -25,8 +25,8 @@ describe("getCachedVersion (GH-3257)", () => {
   beforeEach(() => {
     cacheRoot = mkdtempSync(join(tmpdir(), "omop-cached-version-"))
     mockState.candidates = [
-      join(cacheRoot, "node_modules", "oh-my-open-pentest", "package.json"),
-      join(cacheRoot, "node_modules", "oh-my-opencode", "package.json"),
+      join(cacheRoot, "node_modules", "crypthunter", "package.json"),
+      join(cacheRoot, "node_modules", "crypthunter", "package.json"),
     ]
     mockState.walkUpResult = null
   })
@@ -37,33 +37,33 @@ describe("getCachedVersion (GH-3257)", () => {
     mockState.walkUpResult = null
   })
 
-  it("returns the version when the package is installed under oh-my-open-pentest", () => {
-    const pkgDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+  it("returns the version when the package is installed under crypthunter", () => {
+    const pkgDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(pkgDir, { recursive: true })
-    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.16.0" }))
+    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.16.0" }))
 
     expect(getIsolatedCachedVersion()).toBe("3.16.0")
   })
 
-  it("returns the version when the package is installed under oh-my-open-pentest", () => {
-    // GH-3257: npm users who install the aliased `oh-my-open-pentest` package get
-    // node_modules/oh-my-open-pentest/package.json, not the canonical oh-my-open-pentest
+  it("returns the version when the package is installed under crypthunter", () => {
+    // GH-3257: npm users who install the aliased `crypthunter` package get
+    // node_modules/crypthunter/package.json, not the canonical crypthunter
     // path. The cached version resolver must check both.
-    const pkgDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+    const pkgDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(pkgDir, { recursive: true })
-    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.16.0" }))
+    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.16.0" }))
 
     expect(getIsolatedCachedVersion()).toBe("3.16.0")
   })
 
-  it("prefers oh-my-open-pentest when both are installed", () => {
-    const canonicalDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+  it("prefers crypthunter when both are installed", () => {
+    const canonicalDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(canonicalDir, { recursive: true })
-    writeFileSync(join(canonicalDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.16.0" }))
+    writeFileSync(join(canonicalDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.16.0" }))
 
-    const legacyDir = join(cacheRoot, "node_modules", "oh-my-opencode")
+    const legacyDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(legacyDir, { recursive: true })
-    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "oh-my-opencode", version: "3.15.0" }))
+    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.15.0" }))
 
     expect(getIsolatedCachedVersion()).toBe("3.16.0")
   })
@@ -78,15 +78,15 @@ describe("getCachedVersion (GH-3257)", () => {
     // install at <CACHE_DIR>/node_modules/<pkg>/ can drift independently when
     // bun re-resolves "latest". The flat install must NOT take precedence,
     // because that's the path the user is actually running.
-    const sandboxDir = join(cacheRoot, "oh-my-open-pentest@latest", "node_modules", "oh-my-open-pentest")
+    const sandboxDir = join(cacheRoot, "crypthunter@latest", "node_modules", "crypthunter")
     mkdirSync(sandboxDir, { recursive: true })
     const sandboxPkgJson = join(sandboxDir, "package.json")
-    writeFileSync(sandboxPkgJson, JSON.stringify({ name: "oh-my-open-pentest", version: "3.17.5" }))
+    writeFileSync(sandboxPkgJson, JSON.stringify({ name: "crypthunter", version: "3.17.5" }))
     mockState.walkUpResult = sandboxPkgJson
 
-    const flatDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+    const flatDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(flatDir, { recursive: true })
-    writeFileSync(join(flatDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.17.6" }))
+    writeFileSync(join(flatDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.17.6" }))
 
     expect(
       getCachedVersion({
@@ -100,9 +100,9 @@ describe("getCachedVersion (GH-3257)", () => {
 
   it("falls back to installed candidates when module-relative lookup throws a non-Error", () => {
     // given
-    const legacyDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+    const legacyDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(legacyDir, { recursive: true })
-    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.18.0" }))
+    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.18.0" }))
     const nonError = Symbol("module lookup failed")
 
     // when
@@ -121,18 +121,18 @@ describe("getCachedVersion (GH-3257)", () => {
 
   it("tries the next candidate when reading a candidate throws a non-Error", () => {
     // given
-    const canonicalDir = join(cacheRoot, "node_modules", "oh-my-open-pentest")
+    const canonicalDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(canonicalDir, { recursive: true })
-    writeFileSync(join(canonicalDir, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "3.18.0" }))
+    writeFileSync(join(canonicalDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.18.0" }))
 
-    const legacyDir = join(cacheRoot, "node_modules", "oh-my-opencode")
+    const legacyDir = join(cacheRoot, "node_modules", "crypthunter")
     mkdirSync(legacyDir, { recursive: true })
-    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "oh-my-opencode", version: "3.18.1" }))
+    writeFileSync(join(legacyDir, "package.json"), JSON.stringify({ name: "crypthunter", version: "3.18.1" }))
 
     const originalParse = JSON.parse
     const nonError = Symbol("candidate read failed")
     const parseSpy = spyOn(JSON, "parse").mockImplementation((text: string) => {
-      if (String(text).includes("oh-my-open-pentest")) {
+      if (String(text).includes("crypthunter")) {
         throw nonError
       }
       return originalParse(text)

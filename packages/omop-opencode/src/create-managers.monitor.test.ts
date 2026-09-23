@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 
-import { OhMyOpenCodeConfigSchema } from "./config/schema/oh-my-open-pentest-config"
+import { CryptHunterConfigSchema } from "./config/schema/crypthunter-config"
 import { createManagers } from "./create-managers"
 import type { MonitorManager, MonitorManagerEvent, MonitorOutputQuery, MonitorOutputResult, MonitorRecord, MonitorStartOpts } from "./features/monitor"
 import type { createMonitorManager } from "./features/monitor"
@@ -168,7 +168,7 @@ describe("createManagers monitor", () => {
 
   it("#given monitor is enabled #when managers are created #then it returns a monitor manager", () => {
     const ctx = createContext("/tmp/project")
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({ monitor: { enabled: true } })
+    const pluginConfig = CryptHunterConfigSchema.parse({ monitor: { enabled: true } })
 
     const managers = createManagers({
       ctx,
@@ -190,7 +190,7 @@ describe("createManagers monitor", () => {
   it("#given monitor is enabled #when managers are created #then cleanup registration is invoked exactly once", () => {
     createManagers({
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({ monitor: { enabled: true } }),
+      pluginConfig: CryptHunterConfigSchema.parse({ monitor: { enabled: true } }),
       tmuxConfig: createTmuxConfig(),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -203,7 +203,7 @@ describe("createManagers monitor", () => {
   it("#given monitor is enabled #when process cleanup runs #then the monitor manager shuts down once", async () => {
     createManagers({
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({ monitor: { enabled: true } }),
+      pluginConfig: CryptHunterConfigSchema.parse({ monitor: { enabled: true } }),
       tmuxConfig: createTmuxConfig(),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -219,7 +219,7 @@ describe("createManagers monitor", () => {
   it("#given monitor is enabled #when normal background shutdown runs #then the monitor manager shuts down once", async () => {
     const managers = createManagers({
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({ monitor: { enabled: true } }),
+      pluginConfig: CryptHunterConfigSchema.parse({ monitor: { enabled: true } }),
       tmuxConfig: createTmuxConfig(),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,

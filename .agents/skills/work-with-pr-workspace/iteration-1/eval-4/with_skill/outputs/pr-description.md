@@ -29,7 +29,7 @@ Closes #.00
 Enabled by default. Disable with:
 
 ```jsonc
-// .opencode/oh-my-open-pentest.jsonc
+// .opencode/crypthunter.jsonc
 {
   "disabled_mcps": ["arxiv"]
 }

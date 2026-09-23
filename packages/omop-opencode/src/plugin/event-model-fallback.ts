@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { getMainSessionID, getSessionAgent } from "../features/claude-code-session-state";
 import {
   clearPendingModelFallback,
@@ -23,7 +23,7 @@ import {
 import type { PluginEventContext } from "./event-types";
 
 export function createModelFallbackEventHandler(args: {
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   modelFallback: ModelFallbackHook | null | undefined;
   isModelFallbackEnabled: boolean;

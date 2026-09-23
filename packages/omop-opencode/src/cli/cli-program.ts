@@ -155,23 +155,23 @@ program
   .option("--session-id <id>", "Resume existing session instead of creating new one")
   .addHelpText("after", `
 Examples:
-  $ bunx oh-my-open-pentest run "Fix the bug in index.ts"
-  $ bunx oh-my-open-pentest run --agent Cerberus "Implement feature X"
-  $ bunx oh-my-open-pentest run --port 4321 "Fix the bug"
-  $ bunx oh-my-open-pentest run --attach http://127.0.0.1:4321 "Fix the bug"
-  $ bunx oh-my-open-pentest run --json "Fix the bug" | jq .sessionId
-  $ bunx oh-my-open-pentest run --on-complete "notify-send Done" "Fix the bug"
-  $ bunx oh-my-open-pentest run --session-id ses_abc123 "Continue the work"
-  $ bunx oh-my-open-pentest run --model anthropic/claude-sonnet-4 "Fix the bug"
-  $ bunx oh-my-open-pentest run --agent Cerberus --model openai/gpt-5.5 "Implement feature X"
-  $ bunx oh-my-open-pentest run --mode red-team fullscan 10.0.0.1
-  $ bunx oh-my-open-pentest run --mode bug-bounty fullscan https://example.com
-  $ bunx oh-my-open-pentest run --mode ctf "Solve the challenge"
+  $ bunx crypthunter run "Fix the bug in index.ts"
+  $ bunx crypthunter run --agent Cerberus "Implement feature X"
+  $ bunx crypthunter run --port 4321 "Fix the bug"
+  $ bunx crypthunter run --attach http://127.0.0.1:4321 "Fix the bug"
+  $ bunx crypthunter run --json "Fix the bug" | jq .sessionId
+  $ bunx crypthunter run --on-complete "notify-send Done" "Fix the bug"
+  $ bunx crypthunter run --session-id ses_abc123 "Continue the work"
+  $ bunx crypthunter run --model anthropic/claude-sonnet-4 "Fix the bug"
+  $ bunx crypthunter run --agent Cerberus --model openai/gpt-5.5 "Implement feature X"
+  $ bunx crypthunter run --mode red-team fullscan 10.0.0.1
+  $ bunx crypthunter run --mode bug-bounty fullscan https://example.com
+  $ bunx crypthunter run --mode ctf "Solve the challenge"
 
 Agent resolution order:
   1) --agent flag
   2) OPENCODE_DEFAULT_AGENT
-  3) oh-my-open-pentest.json "default_run_agent"
+  3) crypthunter.json "default_run_agent"
   4) Cerberus (fallback)
 
 Available core agents:
@@ -211,9 +211,9 @@ program
   .option("--json", "Output in JSON format for scripting")
   .addHelpText("after", `
 Examples:
-  $ bunx oh-my-open-pentest get-local-version
-  $ bunx oh-my-open-pentest get-local-version --json
-  $ bunx oh-my-open-pentest get-local-version --directory /path/to/project
+  $ bunx crypthunter get-local-version
+  $ bunx crypthunter get-local-version --json
+  $ bunx crypthunter get-local-version --directory /path/to/project
 
 This command shows:
   - Current installed version

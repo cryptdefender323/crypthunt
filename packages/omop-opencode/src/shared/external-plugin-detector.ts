@@ -1,5 +1,5 @@
 /**
- * Detects external plugins that may conflict with oh-my-open-pentest features.
+ * Detects external plugins that may conflict with crypthunter features.
  * Used to prevent crashes from concurrent notification plugins.
  */
 
@@ -8,7 +8,7 @@ import { log } from "./logger"
 import { CONFIG_BASENAME, PLUGIN_NAME } from "./plugin-identity"
 
 /**
- * Known notification plugins that conflict with oh-my-open-pentest's session-notification.
+ * Known notification plugins that conflict with crypthunter's session-notification.
  * Both plugins listen to session.idle and send notifications simultaneously,
  * which can cause crashes on Windows due to resource contention.
  */
@@ -19,7 +19,7 @@ const KNOWN_NOTIFICATION_PLUGINS = [
 ]
 
 /**
- * Known skill plugins that conflict with oh-my-open-pentest's skill loading.
+ * Known skill plugins that conflict with crypthunter's skill loading.
  * Both plugins scan ~/.config/opencode/skills/ and register tools independently,
  * causing "Duplicate tool names detected" warnings and HTTP 400 errors.
  */
@@ -29,10 +29,10 @@ const KNOWN_SKILL_PLUGINS = [
 ]
 
 const OMOP_PACKAGE_PLUGINS = [
-  "oh-my-opencode",
-  "oh-my-open-pentest",
-  "@code-yeongyu/oh-my-opencode",
-  "@code-yeongyu/oh-my-open-pentest",
+  "crypthunter",
+  "crypthunter",
+  "@code-yeongyu/crypthunter",
+  "@code-yeongyu/crypthunter",
 ]
 
 function matchesKnownPlugin(entry: string, knownPlugins: readonly string[]): string | null {
@@ -54,13 +54,13 @@ function isOmoFilePlugin(entry: string): boolean {
   const normalized = entry.toLowerCase().replaceAll("\\", "/")
   if (!normalized.startsWith("file://")) return false
 
-  return /\/(omop?(?:-[^/]*)?|oh-my-opencode|oh-my-open-pentest)\/(src|dist)\/index\.(ts|js)$/.test(normalized)
+  return /\/(omop?(?:-[^/]*)?|crypthunter|crypthunter)\/(src|dist)\/index\.(ts|js)$/.test(normalized)
 }
 
 function matchesOmoPlugin(entry: string): string | null {
   const packageMatch = matchesKnownPlugin(entry, OMOP_PACKAGE_PLUGINS)
   if (packageMatch) return packageMatch
-  if (isOmoFilePlugin(entry)) return "oh-my-open-pentest"
+  if (isOmoFilePlugin(entry)) return "crypthunter"
   return null
 }
 
@@ -140,13 +140,13 @@ export function detectDuplicateOmoPlugin(directory: string): DuplicateOmoPluginR
   const duplicatePlugins = plugins.filter((plugin) => matchesOmoPlugin(plugin) !== null)
 
   if (duplicatePlugins.length > 1) {
-    log("[oh-my-open-pentest] Duplicate OMO plugin entries detected", {
+    log("[crypthunter] Duplicate OMO plugin entries detected", {
       duplicatePlugins,
       allPlugins: plugins,
     })
     return {
       detected: true,
-      pluginName: "oh-my-open-pentest",
+      pluginName: "crypthunter",
       duplicatePlugins,
       allPlugins: plugins,
     }

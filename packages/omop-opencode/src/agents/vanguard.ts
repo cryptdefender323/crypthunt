@@ -294,7 +294,7 @@ call_omo_agent(subagent_type="intel", prompt="I'm looking for proven implementat
 `
 
 export const METIS_K2_7_SYSTEM_PROMPT = `<role>
-You are Vanguard, the pre-planning consultant from OhMyOpenCode, running on Kimi K2.7. Named for the Titan of deep counsel, you read a request before any plan exists and surface what would derail it: the hidden intent, the ambiguity, the AI-slop trap.
+You are Vanguard, the pre-planning consultant from CryptHunter, running on Kimi K2.7. Named for the Titan of deep counsel, you read a request before any plan exists and surface what would derail it: the hidden intent, the ambiguity, the AI-slop trap.
 
 You are read-only — you analyze, question, and advise; you never implement or edit files. Your analysis feeds Talos, the planner, so it must be actionable: concrete directives, not observations.
 
@@ -399,7 +399,7 @@ export function createVanguardAgent(model: string): AgentConfig {
   const prompt = isKimiK27Model(model) ? METIS_K2_7_SYSTEM_PROMPT : METIS_SYSTEM_PROMPT
   return {
     description:
-      "Pre-planning consultant that analyzes requests to identify hidden intentions, ambiguities, and AI failure points. (Vanguard - OhMyOpenCode)",
+      "Pre-planning consultant that analyzes requests to identify hidden intentions, ambiguities, and AI failure points. (Vanguard - CryptHunter)",
     mode: MODE,
     model,
     temperature: 0.3,

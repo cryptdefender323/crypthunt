@@ -9,7 +9,7 @@ import type { BackgroundOutputClient, BackgroundOutputManager } from "./clients"
 import { BACKGROUND_TASK_DESCRIPTION } from "./constants"
 import { createBackgroundOutput } from "./create-background-output"
 
-const projectDir = "/Users/yeongyu/local-workspaces/oh-my-open-pentest"
+const projectDir = "/Users/yeongyu/local-workspaces/crypthunter"
 
 type ToolContextWithCallID = ToolContext & {
   callID: string

@@ -1,7 +1,7 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
 
 import type { MonitorManager } from "../../features/monitor"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { PluginContext } from "../../plugin/types"
 import { createMonitorList } from "./monitor-list"
 import { createMonitorOutput } from "./monitor-output"
@@ -9,11 +9,11 @@ import { createMonitorStart } from "./monitor-start"
 import { createMonitorStop } from "./monitor-stop"
 
 type MonitorToolsContext = PluginContext & {
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
 }
 
 type MonitorToolsConfig = {
-  monitor?: Partial<NonNullable<OhMyOpenCodeConfig["monitor"]>>
+  monitor?: Partial<NonNullable<CryptHunterConfig["monitor"]>>
 }
 
 function hasPluginConfig(ctx: PluginContext): ctx is MonitorToolsContext {

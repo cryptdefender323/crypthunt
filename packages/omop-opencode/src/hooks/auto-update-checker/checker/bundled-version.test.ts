@@ -13,7 +13,7 @@ describe("getBundledVersion (GH-4211)", () => {
     const bundledVersion = getBundledVersion()
 
     // then the banner source matches --version's source
-    expect(rootPackageJson.name).toBe("oh-my-open-pentest")
+    expect(rootPackageJson.name).toBe("crypthunter")
     expect(bundledVersion).toBe(rootPackageJson.version)
   })
 })

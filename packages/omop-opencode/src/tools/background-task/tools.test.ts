@@ -8,7 +8,7 @@ import type { BackgroundCancelClient, BackgroundOutputManager, BackgroundOutputC
 import { consumeToolMetadata, clearPendingStore } from "../../features/tool-metadata-store"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
 
-const projectDir = "/Users/yeongyu/local-workspaces/oh-my-open-pentest"
+const projectDir = "/Users/yeongyu/local-workspaces/crypthunter"
 
 const mockContext: ToolContext = {
   sessionID: "test-session",

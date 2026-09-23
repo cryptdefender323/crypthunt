@@ -11,7 +11,7 @@ import {
   FallbackModelObjectSchema,
   GitMasterConfigSchema,
   HookNameSchema,
-  OhMyOpenCodeConfigSchema,
+  CryptHunterConfigSchema,
 } from "./schema"
 
 describe("disabled_mcps schema", () => {
@@ -22,7 +22,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -38,7 +38,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -54,7 +54,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -70,7 +70,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -86,7 +86,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(false)
@@ -97,7 +97,7 @@ describe("disabled_mcps schema", () => {
     const config = {}
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -113,7 +113,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(false)
@@ -132,7 +132,7 @@ describe("disabled_mcps schema", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -148,7 +148,7 @@ describe("disabled_mcps schema", () => {
   })
 })
 
-describe("OhMyOpenCodeConfigSchema - model_capabilities", () => {
+describe("CryptHunterConfigSchema - model_capabilities", () => {
   test("accepts valid model capabilities config", () => {
     const input = {
       model_capabilities: {
@@ -159,7 +159,7 @@ describe("OhMyOpenCodeConfigSchema - model_capabilities", () => {
       },
     }
 
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     expect(result.success).toBe(true)
     if (result.success) {
@@ -168,7 +168,7 @@ describe("OhMyOpenCodeConfigSchema - model_capabilities", () => {
   })
 
   test("rejects invalid model capabilities config", () => {
-    const result = OhMyOpenCodeConfigSchema.safeParse({
+    const result = CryptHunterConfigSchema.safeParse({
       model_capabilities: {
         refresh_timeout_ms: -1,
         source_url: "not-a-url",
@@ -591,7 +591,7 @@ describe("Cerberus-Junior agent override", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -613,7 +613,7 @@ describe("Cerberus-Junior agent override", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -638,7 +638,7 @@ describe("Cerberus-Junior agent override", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -667,7 +667,7 @@ describe("Cerberus-Junior agent override", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -692,7 +692,7 @@ describe("Cerberus-Junior agent override", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     // then
     expect(result.success).toBe(true)
@@ -787,7 +787,7 @@ describe("BrowserAutomationConfigSchema", () => {
   })
 })
 
-describe("OhMyOpenCodeConfigSchema - browser_automation_engine", () => {
+describe("CryptHunterConfigSchema - browser_automation_engine", () => {
   test("accepts browser_automation_engine config", () => {
     // given
     const input = {
@@ -797,7 +797,7 @@ describe("OhMyOpenCodeConfigSchema - browser_automation_engine", () => {
     }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     // then
     expect(result.success).toBe(true)
@@ -809,7 +809,7 @@ describe("OhMyOpenCodeConfigSchema - browser_automation_engine", () => {
     const input = {}
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     // then
     expect(result.success).toBe(true)
@@ -821,7 +821,7 @@ describe("OhMyOpenCodeConfigSchema - browser_automation_engine", () => {
     const input = { browser_automation_engine: { provider: "playwright-cli" } }
 
     // when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     // then
     expect(result.success).toBe(true)
@@ -829,13 +829,13 @@ describe("OhMyOpenCodeConfigSchema - browser_automation_engine", () => {
   })
 })
 
-describe("OhMyOpenCodeConfigSchema - hashline_edit", () => {
+describe("CryptHunterConfigSchema - hashline_edit", () => {
   test("accepts hashline_edit as true", () => {
     //#given
     const input = { hashline_edit: true }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     //#then
     expect(result.success).toBe(true)
@@ -847,7 +847,7 @@ describe("OhMyOpenCodeConfigSchema - hashline_edit", () => {
     const input = { hashline_edit: false }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     //#then
     expect(result.success).toBe(true)
@@ -859,7 +859,7 @@ describe("OhMyOpenCodeConfigSchema - hashline_edit", () => {
     const input = { auto_update: true }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     //#then
     expect(result.success).toBe(true)
@@ -871,7 +871,7 @@ describe("OhMyOpenCodeConfigSchema - hashline_edit", () => {
     const input = { hashline_edit: "true" }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(input)
+    const result = CryptHunterConfigSchema.safeParse(input)
 
     //#then
     expect(result.success).toBe(false)
@@ -1129,13 +1129,13 @@ describe("GitMasterConfigSchema", () => {
   })
 })
 
-describe("OhMyOpenCodeConfigSchema - git_master defaults (#2040)", () => {
+describe("CryptHunterConfigSchema - git_master defaults (#2040)", () => {
   test("git_master defaults are applied when section is missing from config", () => {
     //#given
     const config = {}
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     //#then
     expect(result.success).toBe(true)
@@ -1157,7 +1157,7 @@ describe("OhMyOpenCodeConfigSchema - git_master defaults (#2040)", () => {
     }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     //#then
     expect(result.success).toBe(true)
@@ -1178,7 +1178,7 @@ describe("skills schema", () => {
     }
 
     //#when
-    const result = OhMyOpenCodeConfigSchema.safeParse(config)
+    const result = CryptHunterConfigSchema.safeParse(config)
 
     //#then
     expect(result.success).toBe(true)

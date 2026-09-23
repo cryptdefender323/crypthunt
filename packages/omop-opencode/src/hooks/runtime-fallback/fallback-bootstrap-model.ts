@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import { HOOK_NAME } from "./constants"
 import { log } from "../../shared/logger"
 import { SessionCategoryRegistry } from "../../shared/session-category-registry"
@@ -9,7 +9,7 @@ type ResolveFallbackBootstrapModelOptions = {
   source: string
   eventModel?: unknown
   resolvedAgent?: string
-  pluginConfig?: OhMyOpenCodeConfig
+  pluginConfig?: CryptHunterConfig
 }
 
 export function resolveFallbackBootstrapModel(

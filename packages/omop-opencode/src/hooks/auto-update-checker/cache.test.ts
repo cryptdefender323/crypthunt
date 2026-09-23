@@ -27,10 +27,10 @@ describe("auto-update cache invalidation", () => {
     writeFileSync(join(cacheDir, "bun.lock"), "{not json", "utf-8")
 
     // when
-    const result = invalidatePackage("oh-my-open-pentest", {
-      acceptedPackageNames: ["oh-my-open-pentest"],
+    const result = invalidatePackage("crypthunter", {
+      acceptedPackageNames: ["crypthunter"],
       cacheDir,
-      defaultPackageName: "oh-my-open-pentest",
+      defaultPackageName: "crypthunter",
       userConfigDir,
     })
 
@@ -47,10 +47,10 @@ describe("auto-update cache invalidation", () => {
     writeFileSync(lockPath, "binary", "utf-8")
 
     // when
-    const result = invalidatePackage("oh-my-open-pentest", {
-      acceptedPackageNames: ["oh-my-open-pentest"],
+    const result = invalidatePackage("crypthunter", {
+      acceptedPackageNames: ["crypthunter"],
       cacheDir,
-      defaultPackageName: "oh-my-open-pentest",
+      defaultPackageName: "crypthunter",
       userConfigDir,
     })
 

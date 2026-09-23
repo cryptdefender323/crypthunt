@@ -38,7 +38,7 @@ describe("formatDoctorFailure", () => {
     const lines = formatDoctorFailure(error)
 
     // then
-    expect(lines.join("\n")).toContain("bunx oh-my-open-pentest doctor --verbose")
-    expect(lines.join("\n")).not.toMatch(/bunx oh-my-open-pentest doctor(?! --verbose)/)
+    expect(lines.join("\n")).toContain("bunx crypthunter doctor --verbose")
+    expect(lines.join("\n")).not.toMatch(/bunx crypthunter doctor(?! --verbose)/)
   })
 })

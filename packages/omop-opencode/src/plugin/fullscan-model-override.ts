@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { AgentOverrides } from "../config/schema/agent-overrides"
 import { getSessionAgent } from "../features/claude-code-session-state"
 import { log } from "../shared"
@@ -58,7 +58,7 @@ function getMessageModel(current: unknown): ModelDescriptor | undefined {
 }
 
 export function resolveFullscanOverride(
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
   inputAgentName: string | undefined,
   output: {
     message: Record<string, unknown>
@@ -146,7 +146,7 @@ function applyResolvedUltraworkOverride(args: {
 }
 
 export function applyFullscanModelOverrideOnMessage(
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
   inputAgentName: string | undefined,
   output: {
     message: Record<string, unknown>

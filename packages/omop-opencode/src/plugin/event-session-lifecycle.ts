@@ -17,7 +17,7 @@ import { clearSessionPromptParams } from "../shared/session-prompt-params-state"
 import { deleteSessionTools } from "../shared/session-tools-store";
 import { dispatchOpenClawEvent } from "../openclaw/runtime-dispatch";
 import { resolveMessageEventSessionID, resolveSessionEventID } from "../shared/event-session-id";
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import type { Managers } from "../create-managers";
 import type { FirstMessageVariantGate, PluginEventContext } from "./event-types";
 
@@ -34,7 +34,7 @@ export function isCompactionAgent(agent: string): boolean {
 }
 
 export async function dispatchOpenClawSessionEvent(args: {
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   managers: Managers;
   rawEvent: string;
@@ -57,7 +57,7 @@ export async function handleSessionCreatedEvent(args: {
   event: { type: string; properties?: unknown };
   props?: Record<string, unknown>;
   tmuxIntegrationEnabled: boolean;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   managers: Managers;
   firstMessageVariantGate: FirstMessageVariantGate;
@@ -86,7 +86,7 @@ export async function handleSessionCreatedEvent(args: {
 export async function handleSessionDeletedEvent(args: {
   props?: Record<string, unknown>;
   tmuxIntegrationEnabled: boolean;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   managers: Managers;
   firstMessageVariantGate: FirstMessageVariantGate;

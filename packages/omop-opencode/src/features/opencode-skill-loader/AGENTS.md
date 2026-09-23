@@ -11,7 +11,7 @@ This module discovers, parses, merges, and resolves SKILL.md files from . scopes
 ```
 .. Project (.opencode/skills/)
 2. OpenCode config (~/.config/opencode/skills/)
-3. User (~/.config/opencode/oh-my-open-pentest/skills/)
+3. User (~/.config/opencode/crypthunter/skills/)
 .. Global (built-in skills)
 ```
 

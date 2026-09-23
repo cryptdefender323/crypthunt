@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test"
-import { OhMyOpenCodeConfigSchema } from "../../config"
+import { CryptHunterConfigSchema } from "../../config"
 import { executeCompact } from "./executor"
 import type { AutoCompactState } from "./types"
 import type { Client } from "./client"
@@ -96,7 +96,7 @@ describe("executeCompact lock management", () => {
   let autoCompactState: AutoCompactState
   let mockClient: MockClient
   let fakeTimeouts: FakeTimeouts
-  let pluginConfig: ReturnType<typeof OhMyOpenCodeConfigSchema.parse>
+  let pluginConfig: ReturnType<typeof CryptHunterConfigSchema.parse>
   const sessionID = "test-session-123"
   const directory = "/test/dir"
   const msg = { providerID: "anthropic", modelID: "claude-opus-4-7" }
@@ -126,7 +126,7 @@ describe("executeCompact lock management", () => {
       },
     }
 
-    pluginConfig = OhMyOpenCodeConfigSchema.parse({})
+    pluginConfig = CryptHunterConfigSchema.parse({})
     fakeTimeouts = createFakeTimeouts()
   })
 

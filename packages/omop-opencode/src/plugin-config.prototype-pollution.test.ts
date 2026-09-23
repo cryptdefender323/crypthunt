@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadPluginConfig, mergeConfigs, parseConfigPartially } from "./plugin-config"
-import { OhMyOpenCodeConfigSchema } from "./config"
+import { CryptHunterConfigSchema } from "./config"
 
 const tempDirs: string[] = []
 
@@ -38,12 +38,12 @@ describe("plugin config prototype pollution guards", () => {
 
   it("#given unsafe nested merge keys #when merging configs #then inherited prototypes are not polluted", () => {
     // given
-    const base = OhMyOpenCodeConfigSchema.parse({
+    const base = CryptHunterConfigSchema.parse({
       agents: {
         cipher: { model: "base/model" },
       },
     })
-    const override = OhMyOpenCodeConfigSchema.parse({
+    const override = CryptHunterConfigSchema.parse({
       agents: JSON.parse('{"__proto__":{"polluted":true},"cipher":{"temperature":0.4}}'),
     })
 
@@ -68,11 +68,11 @@ describe("plugin config prototype pollution guards", () => {
     mkdirSync(userConfigDir, { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       '{"mcp_env_allowlist":["USER_ONLY_TOKEN"],"agents":{"cipher":{"model":"user/model"}}}',
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       '{"__proto__":{"polluted":true},"mcp_env_allowlist":["PROJECT_TOKEN"],"agents":{"cipher":{"temperature":0.2}}}',
     )
 

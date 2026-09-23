@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-37 files. Powers the `oh-my-open-pentest run <message>` command. Connects to OpenCode server, creates/resumes sessions, streams events, and polls for completion.
+37 files. Powers the `crypthunter run <message>` command. Connects to OpenCode server, creates/resumes sessions, streams events, and polls for completion.
 
 ## EXECUTION FLOW
 

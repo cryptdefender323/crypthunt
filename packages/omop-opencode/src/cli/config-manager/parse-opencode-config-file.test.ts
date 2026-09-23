@@ -19,14 +19,14 @@ describe("parseOpenCodeConfigFileWithError", () => {
     const directory = mkdtempSync(join(tmpdir(), "omop-parse-config-"))
     tempDirectories.push(directory)
     const filePath = join(directory, "opencode.json")
-    writeFileSync(filePath, '{"plugin": ["oh-my-open-pentest"]}\n', "utf-8")
+    writeFileSync(filePath, '{"plugin": ["crypthunter"]}\n', "utf-8")
 
     // when
     const result = parseOpenCodeConfigFileWithError(filePath)
 
     // then
     expect(result).toEqual({
-      config: { plugin: ["oh-my-open-pentest"] },
+      config: { plugin: ["crypthunter"] },
     })
   })
 

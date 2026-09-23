@@ -6,7 +6,7 @@
 
 .0 files (~.k LOC excl. tests). Tracks Cerberus's "boulder" — the active work plan being rolled across sessions, worktrees, and subagent task delegations. Named after the Cerberus myth: the boulder must keep rolling until the plan is complete.
 
-Inspected interactively via `bunx oh-my-open-pentest boulder` (see [`src/cli/boulder/`](../../cli/boulder)).
+Inspected interactively via `bunx crypthunter boulder` (see [`src/cli/boulder/`](../../cli/boulder)).
 
 ## SCHEMA (v2)
 

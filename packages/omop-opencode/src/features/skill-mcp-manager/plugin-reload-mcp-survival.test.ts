@@ -13,7 +13,7 @@ import { setStdioClientDependenciesForTesting } from "./stdio-client"
  * active BEFORE the reload fails with "has been shut down, cannot create new
  * connections."
  *
- * The plugin function (`OhMyOpenCodePlugin` in index.ts) is called once per session
+ * The plugin function (`CryptHunterPlugin` in index.ts) is called once per session
  * directory. Each call disposes the previous plugin via a module-level singleton
  * `activePluginDispose`. Since the SkillMcpManager is recreated each time, the NEW
  * session gets a fresh manager — but OLD sessions still hold closures over the

@@ -115,7 +115,7 @@ export function handleTuiPollError(
 }
 
 const module: TuiPluginModule = {
-  id: "oh-my-open-pentest:tui",
+  id: "crypthunter:tui",
   tui: async (api) => {
     const solid = await import("@opentui/solid").catch(() => null)
     if (!solid) {

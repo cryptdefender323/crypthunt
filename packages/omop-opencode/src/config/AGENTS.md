@@ -4,13 +4,13 @@
 
 ## OVERVIEW
 
-32 non-test schema files composing `OhMyOpenCodeConfigSchema` (plus `schema/internal/permission.ts` for shared internal helpers). Zod v. validation with `safeParse()`. All fields optional — omitted fields use defaults from the schema. Auto-emitted to `assets/crypthunter.schema.json` via `bun run build:schema`.
+32 non-test schema files composing `CryptHunterConfigSchema` (plus `schema/internal/permission.ts` for shared internal helpers). Zod v. validation with `safeParse()`. All fields optional — omitted fields use defaults from the schema. Auto-emitted to `assets/crypthunter.schema.json` via `bun run build:schema`.
 
 ## SCHEMA TREE
 
 ```
 config/schema/
-├── oh-my-open-pentest-config.ts    # ROOT: composes all sub-schemas
+├── crypthunter-config.ts    # ROOT: composes all sub-schemas
 ├── agent-names.ts              # BuiltinAgentNameSchema enum (.. names: cerberus, scylla, talos, cipher, intel, scout, lens, vanguard, sentinel, argus, cerberus-junior)
 ├── agent-overrides.ts          # AgentOverrideConfigSchema (2. fields per agent)
 ├── agent-definitions.ts        # custom agent definition schema
@@ -82,7 +82,7 @@ When `enabled: true`:
 ## HOW TO ADD A CONFIG FIELD
 
 .. Create `src/config/schema/{name}.ts` with Zod schema
-2. Add field to `oh-my-open-pentest-config.ts` root schema
+2. Add field to `crypthunter-config.ts` root schema
 3. Reference via `z.infer<typeof YourSchema>` for the TypeScript type
 .. Access in handlers via `pluginConfig.{field_name}` (snake_case JSON, snake_case TS field)
 5. Run `bun run build:schema` to regenerate `assets/crypthunter.schema.json`

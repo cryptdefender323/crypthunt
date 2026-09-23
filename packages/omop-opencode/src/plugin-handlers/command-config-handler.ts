@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import {
   getAgentConfigKey,
   getAgentListDisplayName,
@@ -37,7 +37,7 @@ import type { LoadedSkill } from "../features/opencode-skill-loader/types";
 
 export async function applyCommandConfig(params: {
   config: Record<string, unknown>;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   ctx: { directory: string };
   pluginComponents: PluginComponents;
 }): Promise<void> {

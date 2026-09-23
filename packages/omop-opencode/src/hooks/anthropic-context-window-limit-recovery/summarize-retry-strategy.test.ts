@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { runSummarizeRetryStrategy } from "./summarize-retry-strategy"
 import type { AutoCompactState, ParsedTokenLimitError, RetryState } from "./types"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
 
 type TimeoutCall = {
@@ -75,7 +75,7 @@ describe("runSummarizeRetryStrategy", () => {
       autoCompactState,
       client: client as never,
       directory,
-      pluginConfig: {} as OhMyOpenCodeConfig,
+      pluginConfig: {} as CryptHunterConfig,
     })
 
     //#then
@@ -116,7 +116,7 @@ describe("runSummarizeRetryStrategy", () => {
       autoCompactState,
       client: client as never,
       directory,
-      pluginConfig: {} as OhMyOpenCodeConfig,
+      pluginConfig: {} as CryptHunterConfig,
     })
 
     //#then
@@ -145,7 +145,7 @@ describe("runSummarizeRetryStrategy", () => {
       autoCompactState,
       client: client as never,
       directory,
-      pluginConfig: {} as OhMyOpenCodeConfig,
+      pluginConfig: {} as CryptHunterConfig,
     })
 
     autoCompactState.pendingCompact.delete(sessionID)
@@ -187,7 +187,7 @@ describe("runSummarizeRetryStrategy", () => {
       autoCompactState,
       client: client as never,
       directory,
-      pluginConfig: {} as OhMyOpenCodeConfig,
+      pluginConfig: {} as CryptHunterConfig,
       errorType: "non-empty content",
     })
 

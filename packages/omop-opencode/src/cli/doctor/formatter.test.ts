@@ -109,7 +109,7 @@ describe("formatDoctorOutput", () => {
       const output = stripAnsi(formatDoctorOutput(result, "default"))
 
       //#then
-      expect(output).toContain("System OK (opencode 1.0.200 · oh-my-open-pentest 3.4.0)")
+      expect(output).toContain("System OK (opencode 1.0.200 · crypthunter 3.4.0)")
     })
 
     it("shows issue count and details when issues exist", async () => {

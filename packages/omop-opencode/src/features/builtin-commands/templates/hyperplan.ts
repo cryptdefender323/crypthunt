@@ -14,4 +14,4 @@ Roster contract: call \`team_create\` with category members \`unspecified-low\`,
 $ARGUMENTS
 </user-request>
 
-If team-mode is unavailable (\`team_*\` tools missing), instruct the user to set \`team_mode.enabled: true\` in \`~/.config/opencode/oh-my-open-pentest.jsonc\` and restart opencode.`
+If team-mode is unavailable (\`team_*\` tools missing), instruct the user to set \`team_mode.enabled: true\` in \`~/.config/opencode/crypthunter.jsonc\` and restart opencode.`

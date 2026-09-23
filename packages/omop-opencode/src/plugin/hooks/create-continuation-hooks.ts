@@ -1,4 +1,4 @@
-import type { HookName, OhMyOpenCodeConfig } from "../../config"
+import type { HookName, CryptHunterConfig } from "../../config"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { PluginContext } from "../types"
 
@@ -25,7 +25,7 @@ export type ContinuationHooks = {
 
 export function createContinuationHooks(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   isHookEnabled: (hookName: HookName) => boolean
   safeHookEnabled: boolean
   backgroundManager: BackgroundManager

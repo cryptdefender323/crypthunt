@@ -682,7 +682,7 @@ describe("cerberus-task", () => {
        )
        
        // then proceeds without error - uses fallback chain
-       expect(result).not.toContain("oh-my-open-pentest requires a default model")
+       expect(result).not.toContain("crypthunter requires a default model")
     }, { timeout: 10000 })
 
     test("returns clear error when no model can be resolved", async () => {
@@ -4218,7 +4218,7 @@ describe("cerberus-task", () => {
     }, { timeout: 20000 })
 
     test("agentOverrides model takes priority over matchedAgent.model (#1357)", async () => {
-      // given - user configured cipher to use a specific model in oh-my-open-pentest.json
+      // given - user configured cipher to use a specific model in crypthunter.json
       const { createDelegateTask } = require("./tools")
       let promptBody: CapturedPromptBody = {}
 

@@ -13,7 +13,7 @@ export async function showSpinnerToast(ctx: PluginInput, version: string, messag
     await ctx.client.tui
       .showToast({
         body: {
-          title: `${spinner} OhMyOpenCode ${version}`,
+          title: `${spinner} CryptHunter ${version}`,
           message,
           variant: "info" as const,
           duration: frameInterval + 50,

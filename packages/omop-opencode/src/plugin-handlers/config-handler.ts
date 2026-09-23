@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { applyRuntimeSkillSourceConfig } from "../features/opencode-runtime-skills"
 import { setAdditionalAllowedMcpEnvVars } from "../features/claude-code-mcp-loader";
 import type { ModelCacheState } from "../plugin-state";
@@ -15,7 +15,7 @@ import { clearFormatterCache } from "../tools/hashline-edit/formatter-trigger"
 export { resolveCategoryConfig } from "./category-config-resolver";
 
 function collectTrustedVisionCapableModels(
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
 ): string[] {
   const trusted: string[] = []
   const multimodalLookerOverride = pluginConfig.agents?.["lens"]
@@ -28,7 +28,7 @@ function collectTrustedVisionCapableModels(
 
 export interface ConfigHandlerDeps {
   ctx: { directory: string; client?: unknown };
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   modelCacheState: ModelCacheState;
   runtimeSkillSourceUrl?: string;
 }

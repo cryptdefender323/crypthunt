@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from "bun:test"
 import { tool } from "@opencode-ai/plugin"
 
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig } from "../config"
+import { CryptHunterConfigSchema, type CryptHunterConfig } from "../config"
 import type { MonitorManager } from "../features/monitor"
 import { unsafeTestValue } from "../../../../test-support/unsafe-test-value"
 import { createToolRegistry } from "./tool-registry"
@@ -16,12 +16,12 @@ const fakeTool = tool({
 
 const MONITOR_TOOL_NAMES = ["monitor_start", "monitor_stop", "monitor_list", "monitor_output"] as const
 
-type PluginConfigOverrides = Omit<Partial<OhMyOpenCodeConfig>, "monitor"> & {
-  monitor?: Partial<NonNullable<OhMyOpenCodeConfig["monitor"]>>
+type PluginConfigOverrides = Omit<Partial<CryptHunterConfig>, "monitor"> & {
+  monitor?: Partial<NonNullable<CryptHunterConfig["monitor"]>>
 }
 
-function createPluginConfig(overrides: PluginConfigOverrides = {}): OhMyOpenCodeConfig {
-  return OhMyOpenCodeConfigSchema.parse({
+function createPluginConfig(overrides: PluginConfigOverrides = {}): CryptHunterConfig {
+  return CryptHunterConfigSchema.parse({
     git_master: {
       commit_footer: false,
       include_co_authored_by: false,
@@ -44,7 +44,7 @@ function createMonitorManager(): MonitorManager {
   })
 }
 
-function createRegistry(pluginConfig: OhMyOpenCodeConfig) {
+function createRegistry(pluginConfig: CryptHunterConfig) {
   return createToolRegistry({
     ctx: { directory: "/tmp/monitor", client: {} } as Parameters<typeof createToolRegistry>[0]["ctx"],
     pluginConfig,

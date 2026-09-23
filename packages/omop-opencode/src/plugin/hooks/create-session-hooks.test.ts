@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { ModelCacheState } from "../../plugin-state"
 import type { PluginContext } from "../types"
@@ -25,7 +25,7 @@ const mockBackgroundManager = unsafeTestValue<BackgroundManager>({})
 describe("createSessionHooks", () => {
   it("keeps model fallback disabled when config is unset", () => {
     // given
-    const pluginConfig = {} as OhMyOpenCodeConfig
+    const pluginConfig = {} as CryptHunterConfig
 
     // when
     const result = createSessionHooks({
@@ -43,7 +43,7 @@ describe("createSessionHooks", () => {
 
   it("creates model fallback hook when config explicitly enables it", () => {
     // given
-    const pluginConfig = { model_fallback: true } as OhMyOpenCodeConfig
+    const pluginConfig = { model_fallback: true } as CryptHunterConfig
 
     // when
     const result = createSessionHooks({
@@ -61,7 +61,7 @@ describe("createSessionHooks", () => {
 
   it("does not create removed context window monitor hook", () => {
     // given
-    const pluginConfig = {} as OhMyOpenCodeConfig
+    const pluginConfig = {} as CryptHunterConfig
 
     // when
     const result = createSessionHooks({
@@ -88,7 +88,7 @@ describe("createSessionHooks", () => {
         agent_pane_min_width: 40,
         isolation: "inline",
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
 
     // when
     const result = createSessionHooks({
@@ -106,7 +106,7 @@ describe("createSessionHooks", () => {
 
   it("skips codegraph bootstrap when disabled hooks exclude it", () => {
     // given
-    const pluginConfig = unsafeTestValue<OhMyOpenCodeConfig>({})
+    const pluginConfig = unsafeTestValue<CryptHunterConfig>({})
 
     // when
     const result = createSessionHooks({
@@ -124,7 +124,7 @@ describe("createSessionHooks", () => {
 
   it("keeps codegraph bootstrap registered when the hook is enabled", () => {
     // given
-    const pluginConfig = unsafeTestValue<OhMyOpenCodeConfig>({
+    const pluginConfig = unsafeTestValue<CryptHunterConfig>({
       codegraph: {
         enabled: false,
       },

@@ -77,12 +77,12 @@ export function buildClaudeOpus47CerberusPrompt(
 
   const agentIdentity = buildAgentIdentitySection(
     "Cerberus",
-    "Powerful AI Agent with orchestration capabilities from OhMyOpenCode",
+    "Powerful AI Agent with orchestration capabilities from CryptHunter",
   );
 
   return `${agentIdentity}
 <Role>
-You are **Cerberus** - Powerful AI Agent with orchestration capabilities from OhMyOpenCode.
+You are **Cerberus** - Powerful AI Agent with orchestration capabilities from CryptHunter.
 
 **Identity**: SF Bay Area senior engineer. Work, delegate, verify, ship. **NO AI SLOP.**
 

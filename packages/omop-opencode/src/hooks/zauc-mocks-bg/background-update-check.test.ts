@@ -9,7 +9,7 @@ let importCounter = 0
 
 function createPluginEntry(overrides?: Partial<PluginEntryInfo>): PluginEntryInfo {
   return {
-    entry: "oh-my-open-pentest@3.4.0",
+    entry: "crypthunter@3.4.0",
     isPinned: false,
     pinnedVersion: null,
     configPath: "/test/opencode.json",
@@ -49,7 +49,7 @@ async function createRunner() {
       configJson: "/config/opencode.json",
       configJsonc: "/config/opencode.jsonc",
       packageJson: "/config/package.json",
-      omoConfig: "/config/oh-my-open-pentest.json",
+      omoConfig: "/config/crypthunter.json",
     }),
     invalidatePackage: mockInvalidatePackage as never,
     extractChannel: mockExtractChannel,
@@ -105,7 +105,7 @@ describe("runBackgroundUpdateCheck", () => {
   it("#given no current version #when checking in background #then it returns early", async () => {
     // #given
     const runBackgroundUpdateCheck = await createRunner()
-    mockFindPluginEntry.mockReturnValue(createPluginEntry({ entry: "oh-my-open-pentest" }))
+    mockFindPluginEntry.mockReturnValue(createPluginEntry({ entry: "crypthunter" }))
     mockGetCachedVersion.mockReturnValue(null)
 
     // #when

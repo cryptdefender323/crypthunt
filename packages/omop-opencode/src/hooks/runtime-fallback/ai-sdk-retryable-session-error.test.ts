@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
-import type { OhMyOpenCodeConfig, RuntimeFallbackConfig } from "../../config"
+import type { CryptHunterConfig, RuntimeFallbackConfig } from "../../config"
 import { SessionCategoryRegistry } from "../../shared/session-category-registry"
 import { releaseAllPromptAsyncReservationsForTesting } from "../shared/prompt-async-gate"
 import { createRuntimeFallbackHook } from "./hook"
@@ -22,7 +22,7 @@ describe("runtime-fallback AI SDK retryable session errors", () => {
     }
   }
 
-  function createPluginConfig(): OhMyOpenCodeConfig {
+  function createPluginConfig(): CryptHunterConfig {
     return {
       git_master: {
         commit_footer: true,

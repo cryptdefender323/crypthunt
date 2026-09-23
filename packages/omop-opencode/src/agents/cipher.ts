@@ -418,7 +418,7 @@ export function createCipherAgent(model: string): AgentConfig {
 
   const base = {
     description:
-      "Read-only consultation agent. High-IQ reasoning specialist for vulnerability analysis hard problems and high-difficulty architecture design. (Cipher - OhMyOpenCode)",
+      "Read-only consultation agent. High-IQ reasoning specialist for vulnerability analysis hard problems and high-difficulty architecture design. (Cipher - CryptHunter)",
     mode: MODE,
     model,
     temperature: 0.1,

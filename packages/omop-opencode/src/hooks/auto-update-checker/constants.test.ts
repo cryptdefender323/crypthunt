@@ -19,14 +19,14 @@ describe("auto-update-checker constants", () => {
     const { PACKAGE_NAME } = await import(`./constants?test=${Date.now()}`)
 
     // then
-    expect(PACKAGE_NAME).toBe("oh-my-open-pentest")
+    expect(PACKAGE_NAME).toBe("crypthunter")
   })
 
   it("ACCEPTED_PACKAGE_NAMES contains both the canonical and aliased npm names (GH-3257)", async () => {
     const { ACCEPTED_PACKAGE_NAMES } = await import(`./constants?test=${Date.now()}`)
 
-    expect(ACCEPTED_PACKAGE_NAMES).toContain("oh-my-open-pentest")
-    expect(ACCEPTED_PACKAGE_NAMES).toContain("oh-my-opencode")
+    expect(ACCEPTED_PACKAGE_NAMES).toContain("crypthunter")
+    expect(ACCEPTED_PACKAGE_NAMES).toContain("crypthunter")
   })
 
   it("INSTALLED_PACKAGE_JSON_CANDIDATES covers every accepted package name (GH-3257)", async () => {

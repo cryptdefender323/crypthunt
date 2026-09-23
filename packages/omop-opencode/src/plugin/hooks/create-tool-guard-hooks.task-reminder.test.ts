@@ -1,5 +1,5 @@
 import { describe, expect, it, spyOn } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { ModelCacheState } from "../../plugin-state"
 import type { PluginContext } from "../types"
 import * as hooks from "../../hooks"
@@ -22,7 +22,7 @@ describe("createToolGuardHooks task-reminder", () => {
     // when
     const result = createToolGuardHooks({
       ctx: mockContext,
-      pluginConfig: {} as OhMyOpenCodeConfig,
+      pluginConfig: {} as CryptHunterConfig,
       modelCacheState: mockModelCacheState,
       isHookEnabled: (name) => name === "task-reminder",
       safeHookEnabled: true,

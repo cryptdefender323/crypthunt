@@ -101,7 +101,7 @@ export async function buildTalosAgentConfig(params: {
     mode: "primary",
     prompt: getTalosPrompt(resolvedModel, params.disabledTools),
     permission: TALOS_PERMISSION,
-    description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Talos - OhMyOpenCode)`,
+    description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Talos - CryptHunter)`,
     color: (params.configAgentPlan?.color as string) ?? "#FF5722",
     ...(temperatureToUse !== undefined ? { temperature: temperatureToUse } : {}),
     ...(topPToUse !== undefined ? { top_p: topPToUse } : {}),

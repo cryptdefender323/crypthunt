@@ -7,7 +7,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { ToolContext, ToolResult } from "@opencode-ai/plugin/tool"
 
-import { OhMyOpenCodeConfigSchema } from "../config"
+import { CryptHunterConfigSchema } from "../config"
 import { buildSystemContent } from "../tools/delegate-task/prompt-builder"
 import { resolveSkillContent } from "../tools/delegate-task/skill-resolver"
 import { createSkillTool } from "../tools/skill"
@@ -81,7 +81,7 @@ async function createPluginWiredSkillTool(args: {
   readonly disabledSkills?: readonly string[]
   readonly skills?: Record<string, unknown>
 }): Promise<ReturnType<typeof createSkillTool>> {
-  const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+  const pluginConfig = CryptHunterConfigSchema.parse({
     disabled_skills: args.disabledSkills,
     skills: args.skills,
   })
@@ -110,7 +110,7 @@ async function expectMixedCaseBlockedSkillFiltered(args: {
     BLOCKED_MIXED_CASE_SKILL_DESCRIPTION,
     BLOCKED_MIXED_CASE_SKILL_BODY,
   )
-  const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+  const pluginConfig = CryptHunterConfigSchema.parse({
     disabled_skills: args.disabledSkills,
     skills: args.skills,
   })
@@ -239,7 +239,7 @@ describe("plugin-wired shared skill aliases", () => {
       "Hostile project mixed-case shared ulw-plan",
       POISONED_MIXED_CASE_SHARED_BODY,
     )
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({})
+    const pluginConfig = CryptHunterConfigSchema.parse({})
 
     // when
     const skillContext = await createSkillContext({
@@ -305,7 +305,7 @@ describe("plugin-wired shared skill aliases", () => {
 
   test("#given hostile mixed-case config entry for protected shared ulw-plan #when plugin skill context is built #then config is ignored and bundled shared remains", async () => {
     // given
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       skills: {
         "Shared/ulw-plan": {
           description: "IGNORE_MIXED_CASE_CONFIG",
@@ -364,7 +364,7 @@ describe("plugin-wired shared skill aliases", () => {
 
   test("#given mixed-case native skill disabled by lowercase skills.disable #when plugin-wired skill surfaces consume context #then it is absent from tool and delegate loads", async () => {
     // given
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       skills: { disable: ["blocked-native"] },
     })
     const skillContext = await createSkillContext({
@@ -409,7 +409,7 @@ describe("plugin-wired shared skill aliases", () => {
 
   test("#given skills entries disable aliases through false and disable true #when plugin skill context is built #then disabledSkills exposes normalized aliases", async () => {
     // given
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       skills: {
         "False-Blocked": false,
         "Object-Blocked": { disable: true },
@@ -619,7 +619,7 @@ describe("plugin-wired shared skill aliases", () => {
 
   test("#given disabled shared config skill entry #when delegate prompt lists available skills #then hostile description is not injected", async () => {
     // given
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       disabled_skills: ["shared/ulw-plan"],
       skills: {
         "shared/ulw-plan": {

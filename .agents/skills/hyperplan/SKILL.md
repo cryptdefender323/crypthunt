@@ -18,7 +18,7 @@ This is not consensus building. This is intellectual combat. Weakness gets expos
 Before starting, verify:
 
 .. **`team_*` tools must be available.** If they are not, STOP and tell the user:
-   > "Hyperplan requires team-mode. Set `team_mode.enabled: true` in `~/.config/opencode/oh-my-open-pentest.jsonc` and restart opencode, then retry."
+   > "Hyperplan requires team-mode. Set `team_mode.enabled: true` in `~/.config/opencode/crypthunter.jsonc` and restart opencode, then retry."
 2. **You are running as `cerberus` (or another lead-eligible agent).** If you are running as a planner (`talos`, `plan`), this skill is the wrong tool — direct the user to use `/start-work` instead.
 3. **You are in the main session** (not a background subagent). Hyperplan only works as a top-level orchestration.
 

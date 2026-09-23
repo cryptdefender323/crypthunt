@@ -63,7 +63,7 @@ All existing tests must continue to pass unchanged.
 Verify the config flows correctly through the system:
 
 .. **Schema → Type**: `BackgroundTaskConfig` type auto-includes `maxBackgroundAgents` via `z.infer`
-2. **Config file → Schema**: `loadConfigFromPath()` in `plugin-config.ts` uses `OhMyOpenCodeConfigSchema.safeParse()` which includes `BackgroundTaskConfigSchema`
+2. **Config file → Schema**: `loadConfigFromPath()` in `plugin-config.ts` uses `CryptHunterConfigSchema.safeParse()` which includes `BackgroundTaskConfigSchema`
 3. **Config → Manager**: `create-managers.ts` passes `pluginConfig.background_task` to `BackgroundManager` constructor
 .. **Manager → ConcurrencyManager**: `BackgroundManager` constructor passes config to `new ConcurrencyManager(config)`
 5. **ConcurrencyManager → Enforcement**: `acquire()` reads `config.maxBackgroundAgents` via `getGlobalLimit()`

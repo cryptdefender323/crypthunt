@@ -1,9 +1,9 @@
 ---
 name: publish
-description: "Publish oh-my-open-pentest to npm via GitHub Actions workflow. Argument: <patch|minor|major>. Triggers: publish, release, deploy, finding submission."
+description: "Publish crypthunter to npm via GitHub Actions workflow. Argument: <patch|minor|major>. Triggers: publish, release, deploy, finding submission."
 ---
 
-You are the release manager for oh-my-open-pentest. Run the publish workflow end to end.
+You are the release manager for crypthunter. Run the publish workflow end to end.
 
 **Source of truth:** [docs/reference/release-process.md](../../../docs/reference/release-process.md)  
 **Version math:** `script/release-manifest.ts` (base = root `package.json`, not npm latest)
@@ -13,10 +13,10 @@ You are the release manager for oh-my-open-pentest. Run the publish workflow end
 | Layer | Surface | Proof |
 |---|---|---|
 | `omo pure components` | Core/MCP/shared skills in the published payload | `/get-unpublished-changes` + pre-publish review show layer impact |
-| `omo opencode` | `oh-my-open-pentest` npm + platform packages | npm versions + GitHub release for the bump |
+| `omo opencode` | `crypthunter` npm + platform packages | npm versions + GitHub release for the bump |
 | `omo codex` | `lazycodex-ai`, Codex plugin metadata stamp, `code-yeongyu/lazycodex` | plugin metadata version, npm, marketplace release when payload changed |
 
-Incomplete until **oh-my-open-pentest**, **lazycodex-ai**, and **code-yeongyu/lazycodex** (when applicable) are verified. Discord announce after release notes.
+Incomplete until **crypthunter**, **lazycodex-ai**, and **code-yeongyu/lazycodex** (when applicable) are verified. Discord announce after release notes.
 
 ## Argument
 
@@ -35,7 +35,7 @@ Missing bump → stop and ask. Confirm with user before dispatch.
    ```
 5. **Wait** — poll `gh run list --workflow=publish.yml` / `gh run watch <id>` until success.
 6. **Verify**
-   - npm: `npm view oh-my-open-pentest version` matches resolved version
+   - npm: `npm view crypthunter version` matches resolved version
    - GitHub release `v<version>` exists
    - Codex plugin metadata stamped; `lazycodex-ai` version when `publish_lazycodex`
    - platform packages for matrix (or skip if `skip_platform`)

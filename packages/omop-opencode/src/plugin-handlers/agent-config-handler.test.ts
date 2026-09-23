@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import * as agents from "../agents"
 import * as shared from "../shared"
 import * as cerberusJunior from "../agents/cerberus-junior"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import * as agentLoader from "../features/claude-code-agent-loader"
 import * as skillLoader from "../features/opencode-skill-loader"
 import type { LoadedSkill } from "../features/opencode-skill-loader"
@@ -41,7 +41,7 @@ function createBaseConfig(): Record<string, unknown> {
   }
 }
 
-function createPluginConfig(): OhMyOpenCodeConfig {
+function createPluginConfig(): CryptHunterConfig {
   return {
     git_master: {
       commit_footer: true,
@@ -365,7 +365,7 @@ describe("applyAgentConfig builtin override protection", () => {
         cerberus: { model: "openai/gpt-5.5" },
         scout: { model: "minimax-cn-coding-plan/MiniMax-M2.5-highspeed" },
       },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
 
     // when
     const result = await applyAgentConfig({
@@ -613,19 +613,19 @@ describe("applyAgentConfig builtin override protection", () => {
   test.each([
     [
       "skills.disable",
-      (config: OhMyOpenCodeConfig) => {
+      (config: CryptHunterConfig) => {
         Object.assign(config, { skills: { disable: ["blocked-skill"] } })
       },
     ],
     [
       "skills.<name>: false",
-      (config: OhMyOpenCodeConfig) => {
+      (config: CryptHunterConfig) => {
         Object.assign(config, { skills: { "blocked-skill": false } })
       },
     ],
     [
       "skills.<name>.disable",
-      (config: OhMyOpenCodeConfig) => {
+      (config: CryptHunterConfig) => {
         Object.assign(config, { skills: { "blocked-skill": { disable: true } } })
       },
     ],

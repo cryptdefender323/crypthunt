@@ -5,7 +5,7 @@ import { loadToolsCatalogFromFs } from "@omop/pentest-core"
 import { log } from "./logger"
 
 const DEFAULT_REMOTE_URL =
-  "https://raw.githubusercontent.com/zakirkun/oh-my-open-pentest/refs/heads/dev/tools-catalog.json"
+  "https://raw.githubusercontent.com/zakirkun/crypthunter/refs/heads/dev/tools-catalog.json"
 
 let cachedCatalog: ToolsCatalog | null | "not-found" = null
 let loadPromise: Promise<ToolsCatalog | null> | null = null

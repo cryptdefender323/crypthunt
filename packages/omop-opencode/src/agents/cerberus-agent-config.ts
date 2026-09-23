@@ -4,7 +4,7 @@ import { buildClaudeThinkingConfig } from "./types";
 import type { AgentMode } from "./types";
 
 const CERBERUS_DESCRIPTION =
-  "Powerful AI orchestrator. Plans obsessively with todos, assesses search complexity before exploration, delegates strategically via category+skills combinations. Uses scout for internal code (parallel-friendly), intel for external docs. (Cerberus - OhMyOpenCode)";
+  "Powerful AI orchestrator. Plans obsessively with todos, assesses search complexity before exploration, delegates strategically via category+skills combinations. Uses scout for internal code (parallel-friendly), intel for external docs. (Cerberus - CryptHunter)";
 
 function buildCerberusPermission(model: string): AgentConfig["permission"] {
   return {

@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { resolveRegisteredAgentName } from "../features/claude-code-session-state";
 import type { ModelFallbackHook } from "../hooks/model-fallback/hook";
 import { setSessionFallbackChain } from "../hooks/model-fallback/hook";
@@ -40,7 +40,7 @@ export function applyUserConfiguredFallbackChain(
   sessionID: string,
   agentName: string,
   currentProviderID: string,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
 ): void {
   const agentKey = getAgentConfigKey(agentName);
   const rawFallbackModels = getRawFallbackModels(sessionID, agentKey, pluginConfig);
@@ -54,7 +54,7 @@ export function applyUserConfiguredFallbackChain(
 }
 
 export function createModelFallbackContinuationController(args: {
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   lastKnownModelBySession: Map<string, { providerID: string; modelID: string }>;
   continuationsInFlight: Set<string>;

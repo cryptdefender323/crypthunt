@@ -12,7 +12,7 @@ export type {
   BuiltinCommandName,
   HookName,
   McpName,
-  OhMyOpenCodeConfig,
+  CryptHunterConfig,
 } from "./config"
 
 export type { ConfigLoadError } from "./shared/config-errors"

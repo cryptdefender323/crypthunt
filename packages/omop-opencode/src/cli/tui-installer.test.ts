@@ -145,7 +145,7 @@ describe("runTuiInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 
@@ -205,7 +205,7 @@ describe("runTuiInstaller", () => {
         }),
         spyOn(configManager, "writeOmoConfig").mockReturnValue({
           success: true,
-          configPath: join(configDir, "oh-my-open-pentest.jsonc"),
+          configPath: join(configDir, "crypthunter.jsonc"),
         }),
       ]
 
@@ -293,7 +293,7 @@ describe("runTuiInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 
@@ -349,7 +349,7 @@ describe("runTuiInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 
@@ -482,11 +482,11 @@ describe("runTuiInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
     const starSpy = spyOn(starRequest, "starGitHubRepositories").mockResolvedValue([
-      { repository: "code-yeongyu/oh-my-open-pentest", ok: true },
+      { repository: "code-yeongyu/crypthunter", ok: true },
       { repository: "code-yeongyu/lazycodex", ok: true },
     ])
 

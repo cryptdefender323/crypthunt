@@ -42,7 +42,7 @@ describe("config check", () => {
         mkdirSync(testConfigDir, { recursive: true })
         process.env.OPENCODE_CONFIG_DIR = testConfigDir
         writeFileSync(
-          join(testConfigDir, "oh-my-open-pentest.json"),
+          join(testConfigDir, "crypthunter.json"),
           JSON.stringify({ disabled_hooks: ["comment-checker"] }, null, 2) + "\n",
           "utf-8",
         )
@@ -50,7 +50,7 @@ describe("config check", () => {
         const result = await config.checkConfig()
 
         expect(normalizePathForAssertion(result.details?.[0] ?? "")).toContain(
-          normalizePathForAssertion(join(testConfigDir, "oh-my-open-pentest.json")),
+          normalizePathForAssertion(join(testConfigDir, "crypthunter.json")),
         )
       } finally {
         rmSync(testConfigDir, { recursive: true, force: true })
@@ -79,7 +79,7 @@ describe("config check", () => {
         process.env.HOME = testRootDir
         process.env.OPENCODE_CONFIG_DIR = join(testRootDir, "empty-user-config")
         writeFileSync(
-          join(projectDir, ".opencode", "oh-my-open-pentest.json"),
+          join(projectDir, ".opencode", "crypthunter.json"),
           JSON.stringify({ agents: { cerberus: { model: 123 } } }, null, 2) + "\n",
           "utf-8",
         )
@@ -127,7 +127,7 @@ describe("config check", () => {
         process.env.XDG_CACHE_HOME = xdgCacheDir
 
         writeFileSync(
-          join(pluginConfigDir, "oh-my-open-pentest.json"),
+          join(pluginConfigDir, "crypthunter.json"),
           JSON.stringify({ agents: { cerberus: { model: "kiro/claude-opus-4-6" } } }, null, 2) + "\n",
           "utf-8",
         )
@@ -188,7 +188,7 @@ describe("config check", () => {
         mkdirSync(testConfigDir, { recursive: true })
         process.env.OPENCODE_CONFIG_DIR = testConfigDir
         writeFileSync(
-          join(testConfigDir, "oh-my-open-pentest.json"),
+          join(testConfigDir, "crypthunter.json"),
           JSON.stringify({
             agents: {
               cerberus: { reasoningEffort: "max" },

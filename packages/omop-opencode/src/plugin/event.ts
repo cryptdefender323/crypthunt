@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin";
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import type { CreatedHooks } from "../create-hooks";
 import type { Managers } from "../create-managers";
 import type { PluginContext } from "./types";
@@ -28,7 +28,7 @@ export { extractErrorMessage } from "./event-error-utils";
 
 export function createEventHandler(args: {
   ctx: PluginContext;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   firstMessageVariantGate: FirstMessageVariantGate;
   managers: Managers;
   hooks: CreatedHooks;

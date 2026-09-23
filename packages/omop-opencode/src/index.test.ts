@@ -172,7 +172,7 @@ describe("crypthunter plugin module", () => {
     // when inspecting the default export
     // then it has the expected V1 shape
     expect(typeof pluginModule).toBe("object")
-    expect(pluginModule.id).toBe("oh-my-open-pentest")
+    expect(pluginModule.id).toBe("crypthunter")
     expect(typeof pluginModule.server).toBe("function")
   })
 })

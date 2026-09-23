@@ -104,7 +104,7 @@ function buildDynamicOrchestratorPrompt(ctx?: OrchestratorContext): string {
 
   const agentIdentity = buildAgentIdentitySection(
     "Argus",
-    "Master Orchestrator agent from OhMyOpenCode that coordinates specialized agents to complete todo lists",
+    "Master Orchestrator agent from CryptHunter that coordinates specialized agents to complete todo lists",
   )
   const basePrompt = loadPromptSync({
     source: argusPromptVariants[source],
@@ -119,7 +119,7 @@ function buildDynamicOrchestratorPrompt(ctx?: OrchestratorContext): string {
 export function createArgusAgent(ctx: OrchestratorContext): AgentConfig {
   const baseConfig: AgentConfig = {
     description:
-      "Orchestrates work via task() to complete ALL tasks in a todo list until fully done. (Argus - OhMyOpenCode)",
+      "Orchestrates work via task() to complete ALL tasks in a todo list until fully done. (Argus - CryptHunter)",
     mode: MODE,
     ...(ctx.model ? { model: ctx.model } : {}),
     temperature: 0.1,

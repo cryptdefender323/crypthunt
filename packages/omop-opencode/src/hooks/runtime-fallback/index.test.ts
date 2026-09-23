@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
-import type { OhMyOpenCodeConfig, RuntimeFallbackConfig } from "../../config"
+import type { CryptHunterConfig, RuntimeFallbackConfig } from "../../config"
 import {
   clearAllDelegatedChildSessionBootstrap,
   getDelegatedChildSessionBootstrap,
@@ -101,7 +101,7 @@ describe("runtime-fallback", () => {
     }
   }
 
-  function createMockPluginConfigWithCategoryFallback(fallbackModels: string[]): OhMyOpenCodeConfig {
+  function createMockPluginConfigWithCategoryFallback(fallbackModels: string[]): CryptHunterConfig {
     return {
       git_master: {
         commit_footer: true,
@@ -121,7 +121,7 @@ describe("runtime-fallback", () => {
     model: string,
     fallbackModels: string[],
     variant?: string,
-  ): OhMyOpenCodeConfig {
+  ): CryptHunterConfig {
     return {
       git_master: {
         commit_footer: true,
@@ -2696,7 +2696,7 @@ describe("runtime-fallback", () => {
   })
 
   describe("fallback models configuration", () => {
-    function createMockPluginConfigWithAgentFallback(agentName: string, fallbackModels: string[]): OhMyOpenCodeConfig {
+    function createMockPluginConfigWithAgentFallback(agentName: string, fallbackModels: string[]): CryptHunterConfig {
       return {
         git_master: {
           commit_footer: true,

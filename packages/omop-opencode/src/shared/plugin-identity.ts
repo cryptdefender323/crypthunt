@@ -2,11 +2,11 @@ import { createProductIdentity } from "@omop/utils"
 
 const PRODUCT_IDENTITY = createProductIdentity({
   pluginName: "crypthunter",
-  legacyPluginName: "oh-my-open-pentest",
+  legacyPluginName: "crypthunter",
   publishedPackageName: "crypthunter",
-  acceptedPackageNames: ["crypthunter", "oh-my-open-pentest", "oh-my-opencode"],
+  acceptedPackageNames: ["crypthunter", "crypthunter", "crypthunter"],
   configBasename: "crypthunter",
-  legacyConfigBasename: "oh-my-open-pentest",
+  legacyConfigBasename: "crypthunter",
   logFileName: "crypthunter.log",
   cacheDirName: "crypthunter",
 })

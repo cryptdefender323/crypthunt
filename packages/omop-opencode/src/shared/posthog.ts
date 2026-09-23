@@ -123,7 +123,7 @@ function getSharedProperties(source: PostHogSource): PostHogCaptureProperties {
   const osProvider = resolveOsProvider()
 
   return {
-    platform: "oh-my-open-pentest",
+    platform: "crypthunter",
     package_name: PUBLISHED_PACKAGE_NAME,
     plugin_name: PLUGIN_NAME,
     package_version: packageJson.version,

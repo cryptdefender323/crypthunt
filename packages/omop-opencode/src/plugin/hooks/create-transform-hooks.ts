@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { MonitorManager } from "../../features/monitor"
 import type { PluginContext } from "../types"
 import type { RalphLoopHook } from "../../hooks/pentest-loop"
@@ -31,7 +31,7 @@ export type TransformHooks = {
 
 export function createTransformHooks(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   isHookEnabled: (hookName: string) => boolean
   safeHookEnabled?: boolean
   ralphLoop?: RalphLoopHook | null

@@ -256,7 +256,7 @@ describe("codex doctor checks", () => {
     const stampIssue = result.issues.find((issue) => issue.title === "Codex plugin bundle is not version-stamped")
     expect(stampIssue).toBeDefined()
     expect(stampIssue?.severity).toBe("warning")
-    expect(stampIssue?.description).toContain("oh-my-open-pentest 4.8.1")
+    expect(stampIssue?.description).toContain("crypthunter 4.8.1")
     expect(stampIssue?.fix).toContain("npx lazycodex-ai install")
   })
 

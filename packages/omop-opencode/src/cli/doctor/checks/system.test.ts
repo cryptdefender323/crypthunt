@@ -17,7 +17,7 @@ const mockGetOpenCodeVersion = mock(async () => "1.0.200")
 const mockCompareVersions = mock((_leftVersion?: string, _rightVersion?: string) => true)
 const mockGetPluginInfo = mock((): PluginInfo => ({
   registered: true,
-  entry: "oh-my-open-pentest",
+  entry: "crypthunter",
   isPinned: false,
   pinnedVersion: null,
   configPath: null,
@@ -26,7 +26,7 @@ const mockGetPluginInfo = mock((): PluginInfo => ({
 const mockGetLoadedPluginVersion = mock(() => ({
   cacheDir: "/Users/test/Library/Caches/opencode with spaces",
   cachePackagePath: "/tmp/package.json",
-  installedPackagePath: "/tmp/node_modules/oh-my-open-pentest/package.json",
+  installedPackagePath: "/tmp/node_modules/crypthunter/package.json",
   expectedVersion: "3.0.0",
   loadedVersion: "3.1.0",
 }))
@@ -74,7 +74,7 @@ describe("system check", () => {
     mockCompareVersions.mockReturnValue(true)
     mockGetPluginInfo.mockReturnValue({
       registered: true,
-      entry: "oh-my-open-pentest",
+      entry: "crypthunter",
       isPinned: false,
       pinnedVersion: null,
       configPath: null,
@@ -83,7 +83,7 @@ describe("system check", () => {
     mockGetLoadedPluginVersion.mockReturnValue({
       cacheDir: "/Users/test/Library/Caches/opencode with spaces",
       cachePackagePath: "/tmp/package.json",
-      installedPackagePath: "/tmp/node_modules/oh-my-open-pentest/package.json",
+      installedPackagePath: "/tmp/node_modules/crypthunter/package.json",
       expectedVersion: "3.0.0",
       loadedVersion: "3.1.0",
     })
@@ -122,7 +122,7 @@ describe("system check", () => {
         getLoadedPluginVersion: () => ({
           cacheDir: "/Users/test/Library/Caches/opencode with spaces",
           cachePackagePath: "/tmp/package.json",
-          installedPackagePath: "/tmp/node_modules/oh-my-open-pentest/package.json",
+          installedPackagePath: "/tmp/node_modules/crypthunter/package.json",
           expectedVersion: "3.0.0",
           loadedVersion: "3.1.0",
         }),
@@ -160,7 +160,7 @@ describe("system check", () => {
       mockGetLoadedPluginVersion.mockReturnValue({
         cacheDir: "/Users/test/Library/Caches/opencode with spaces",
         cachePackagePath: "/tmp/package.json",
-        installedPackagePath: "/tmp/node_modules/oh-my-open-pentest/package.json",
+        installedPackagePath: "/tmp/node_modules/crypthunter/package.json",
         expectedVersion: "3.0.0-canary.1",
         loadedVersion: "3.0.0-canary.1",
       })
@@ -176,7 +176,7 @@ describe("system check", () => {
       //#then
       const outdatedIssue = result.issues.find((issue) => issue.title === "Loaded plugin is outdated")
       expect(outdatedIssue?.fix).toBe(
-        'Update: cd "/Users/test/Library/Caches/opencode with spaces" && bun add oh-my-open-pentest@canary'
+        'Update: cd "/Users/test/Library/Caches/opencode with spaces" && bun add crypthunter@canary'
       )
     })
   })
@@ -186,7 +186,7 @@ describe("system check", () => {
       //#given
       mockGetPluginInfo.mockReturnValue({
         registered: true,
-        entry: "oh-my-opencode",
+        entry: "crypthunter",
         isPinned: false,
         pinnedVersion: null,
         configPath: null,
@@ -200,7 +200,7 @@ describe("system check", () => {
       const legacyEntryIssue = result.issues.find((issue) => issue.title === "Using legacy package name")
       expect(legacyEntryIssue?.severity).toBe("warning")
       expect(legacyEntryIssue?.fix).toBe(
-        'Update your opencode.json plugin entry: "oh-my-opencode" → "oh-my-open-pentest"'
+        'Update your opencode.json plugin entry: "crypthunter" → "crypthunter"'
       )
     })
 
@@ -208,7 +208,7 @@ describe("system check", () => {
       //#given
       mockGetPluginInfo.mockReturnValue({
         registered: true,
-        entry: "oh-my-opencode@3.0.0",
+        entry: "crypthunter@3.0.0",
         isPinned: true,
         pinnedVersion: "3.0.0",
         configPath: null,
@@ -222,7 +222,7 @@ describe("system check", () => {
       const legacyEntryIssue = result.issues.find((issue) => issue.title === "Using legacy package name")
       expect(legacyEntryIssue?.severity).toBe("warning")
       expect(legacyEntryIssue?.fix).toBe(
-        'Update your opencode.json plugin entry: "oh-my-opencode@3.0.0" → "oh-my-open-pentest@3.0.0"'
+        'Update your opencode.json plugin entry: "crypthunter@3.0.0" → "crypthunter@3.0.0"'
       )
     })
 
@@ -248,7 +248,7 @@ describe("system check", () => {
       //#given
       mockGetPluginInfo.mockReturnValue({
         registered: true,
-        entry: "oh-my-open-pentest",
+        entry: "crypthunter",
         isPinned: false,
         pinnedVersion: null,
         configPath: null,

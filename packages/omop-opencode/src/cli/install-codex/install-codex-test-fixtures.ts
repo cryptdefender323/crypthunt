@@ -31,7 +31,7 @@ export async function createRepoWithBuiltComponentBins(
   await mkdir(join(repoRoot, "src"), { recursive: true })
   await mkdir(codexPackageRoot, { recursive: true })
   await writeFile(join(repoRoot, "src", "index.ts"), "export {}\n")
-  await writeFile(join(repoRoot, "package.json"), JSON.stringify({ name: "oh-my-open-pentest", version: "4.7.5" }))
+  await writeFile(join(repoRoot, "package.json"), JSON.stringify({ name: "crypthunter", version: "4.7.5" }))
   await writeFile(
     join(codexPackageRoot, "marketplace.json"),
     JSON.stringify({ name: "cerberuslabs", plugins: [{ name: "omop", source: "./plugins/omo" }] }),

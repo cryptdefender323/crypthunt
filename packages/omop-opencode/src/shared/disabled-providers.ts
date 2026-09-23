@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { FallbackModelObject } from "../config/schema/fallback-models"
 import { addConfigLoadError } from "./config-errors"
 import { log } from "./logger"
@@ -100,7 +100,7 @@ function applyToHolder(label: string, holder: ModelHolder, disabled: readonly st
  * Returns the same config reference (mutated in place). Safe to call when
  * `disabled_providers` is unset or empty - it becomes a no-op.
  */
-export function applyDisabledProviders(config: OhMyOpenCodeConfig): OhMyOpenCodeConfig {
+export function applyDisabledProviders(config: CryptHunterConfig): CryptHunterConfig {
   const disabled = config.disabled_providers ?? []
   if (disabled.length === 0) return config
 

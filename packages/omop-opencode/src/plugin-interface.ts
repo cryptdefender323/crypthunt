@@ -1,5 +1,5 @@
 import type { PluginContext, PluginInterface, ToolsRecord } from "./plugin/types"
-import type { OhMyOpenCodeConfig } from "./config"
+import type { CryptHunterConfig } from "./config"
 
 import { applyAgentVariant } from "./shared/agent-variant"
 import { createChatParamsHandler } from "./plugin/chat-params"
@@ -19,7 +19,7 @@ import type { Managers } from "./create-managers"
 
 export function createPluginInterface(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   firstMessageVariantGate: {
     shouldOverride: (sessionID: string) => boolean
     markApplied: (sessionID: string) => void

@@ -24,7 +24,7 @@ const PROMPT_SIGNATURES = [
   {
     path: "packages/prompts-core/prompts/argus/default.md",
     label: "Argus default",
-    signature: "You are Atlas - the Master Orchestrator from OhMyOpenCode.",
+    signature: "You are Atlas - the Master Orchestrator from CryptHunter.",
   },
   {
     path: "packages/prompts-core/prompts/argus/gemini.md",

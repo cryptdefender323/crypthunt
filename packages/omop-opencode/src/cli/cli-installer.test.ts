@@ -110,7 +110,7 @@ describe("runCliInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 
@@ -172,7 +172,7 @@ describe("runCliInstaller", () => {
         }),
         spyOn(configManager, "writeOmoConfig").mockReturnValue({
           success: true,
-          configPath: join(configDir, "oh-my-open-pentest.jsonc"),
+          configPath: join(configDir, "crypthunter.jsonc"),
         }),
       ]
 
@@ -288,7 +288,7 @@ describe("runCliInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 
@@ -349,7 +349,7 @@ describe("runCliInstaller", () => {
       }),
       spyOn(configManager, "writeOmoConfig").mockReturnValue({
         success: true,
-        configPath: "/tmp/oh-my-open-pentest.jsonc",
+        configPath: "/tmp/crypthunter.jsonc",
       }),
     ]
 

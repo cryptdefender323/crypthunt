@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Project-scope skills + slash commands under the new `.agents/` directory name. During the `oh-my-open-pentest` → `oh-my-open-pentest` rename transition, this directory is the **target** of the migration from `.opencode/`. It is a strict SUPERSET of `.opencode/` (5 -> .0 skills; 5 commands).
+Project-scope skills + slash commands under the new `.agents/` directory name. During the `crypthunter` → `crypthunter` rename transition, this directory is the **target** of the migration from `.opencode/`. It is a strict SUPERSET of `.opencode/` (5 -> .0 skills; 5 commands).
 
 Loaded alongside `.opencode/` by [`packages/omop-opencode/src/features/opencode-skill-loader/`](../packages/omop-opencode/src/features/opencode-skill-loader/). When both directories declare the same skill or command name, the higher-priority scope wins per the loader's deduplication rules.
 

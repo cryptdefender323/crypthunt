@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { DefaultModeConfig } from "../config/schema/default-mode"
 import type { CreatedHooks } from "../create-hooks"
 import { _resetForTesting, setMainSession } from "../features/claude-code-session-state"
@@ -91,8 +91,8 @@ function createPluginContext(toasts: ToastCall[]): PluginContext {
   })
 }
 
-function createPluginConfig(defaultMode: DefaultModeConfig): OhMyOpenCodeConfig {
-  return unsafeTestValue<OhMyOpenCodeConfig>({
+function createPluginConfig(defaultMode: DefaultModeConfig): CryptHunterConfig {
+  return unsafeTestValue<CryptHunterConfig>({
     default_mode: defaultMode,
   })
 }

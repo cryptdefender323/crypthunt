@@ -29,17 +29,17 @@ export function logLegacyPluginStartupWarning(deps: LogLegacyPluginStartupWarnin
   })
 
   console.warn(
-    `[oh-my-open-pentest] WARNING: Your opencode.json uses the legacy package name "${LEGACY_PLUGIN_NAME}".`
+    `[crypthunter] WARNING: Your opencode.json uses the legacy package name "${LEGACY_PLUGIN_NAME}".`
     + ` The package has been renamed to "${PLUGIN_NAME}".`
     + ` Attempting auto-migration...`,
   )
 
   const migrated = migrateLegacyPluginEntryFn(result.configPath)
   if (migrated) {
-    console.warn(`[oh-my-open-pentest] Auto-migrated opencode.json: ${result.legacyEntries.join(", ")} -> ${suggestedEntries.join(", ")}`)
+    console.warn(`[crypthunter] Auto-migrated opencode.json: ${result.legacyEntries.join(", ")} -> ${suggestedEntries.join(", ")}`)
   } else {
     console.warn(
-      `[oh-my-open-pentest] Could not auto-migrate. Please manually update your opencode.json:`
+      `[crypthunter] Could not auto-migrate. Please manually update your opencode.json:`
       + ` ${result.legacyEntries.map((e, i) => `"${e}" -> "${suggestedEntries[i]}"`).join(", ")}`,
     )
   }

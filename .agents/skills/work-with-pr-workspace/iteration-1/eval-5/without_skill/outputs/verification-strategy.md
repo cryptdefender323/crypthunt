@@ -76,7 +76,7 @@ Ensure the new module is properly bundled and exported.
 If binary is available locally:
 
 ```bash
-echo '{"session_id":"test","tool_name":"Write","transcript_path":"","cwd":"/tmp","hook_event_name":"PostToolUse","tool_input":{"file_path":"/tmp/test.ts","content":"// Note: Thread-safe implementation\nconst x = ."}}' | ~/.cache/oh-my-open-pentest/bin/comment-checker check
+echo '{"session_id":"test","tool_name":"Write","transcript_path":"","cwd":"/tmp","hook_event_name":"PostToolUse","tool_input":{"file_path":"/tmp/test.ts","content":"// Note: Thread-safe implementation\nconst x = ."}}' | ~/.cache/crypthunter/bin/comment-checker check
 echo "Exit code: $?"
 ```
 
@@ -87,7 +87,7 @@ Expected: Binary returns exit 2 (comment detected), but the TypeScript post-filt
 Test that config changes work:
 
 ```jsonc
-// .opencode/oh-my-open-pentest.jsonc
+// .opencode/crypthunter.jsonc
 {
   "comment_checker": {
     // Override: only allow Note: and TODO:

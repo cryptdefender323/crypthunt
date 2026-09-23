@@ -1,5 +1,5 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { Managers } from "../create-managers"
 import type { PluginContext } from "./types"
 import type { ToolRegistryFactories } from "./tool-registry-factories"
@@ -9,7 +9,7 @@ export function getCerberusJuniorModelOverride(agentOverride?: { model?: string 
 }
 
 export function createTeamModeToolsRecord(args: {
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly ctx: PluginContext
   readonly managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager">
   readonly factories: ToolRegistryFactories

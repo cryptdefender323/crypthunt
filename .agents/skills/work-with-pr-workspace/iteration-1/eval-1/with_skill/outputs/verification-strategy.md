@@ -99,7 +99,7 @@ Cubic is an automated code review bot that analyzes the PR diff. It must respond
 
 ### Recovery
 ```bash
-gh api repos/code-yeongyu/oh-my-open-pentest/pulls/<PR_NUMBER>/reviews
+gh api repos/code-yeongyu/crypthunter/pulls/<PR_NUMBER>/reviews
 
 # ... edit files ...
 git add -A && git commit -m "fix: address Cubic review feedback" && git push

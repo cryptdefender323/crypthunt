@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import { subagentSessions, getMainSessionID } from "../../features/claude-code-session-state"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { getSessionModel, setSessionModel } from "../../shared/session-model-state"
@@ -6,7 +6,7 @@ import type { ChatMessageHandlerOutput, ChatMessageInput, SessionModelOverride }
 
 function hasExplicitAgentModelOverride(
   agent: string | undefined,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
 ): boolean {
   const configuredAgents = pluginConfig.agents
   const normalizedAgent = typeof agent === "string" ? getAgentConfigKey(agent) : undefined
@@ -21,7 +21,7 @@ function hasExplicitAgentModelOverride(
 
 export function getStoredMainSessionModel(
   input: ChatMessageInput,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
   isFirstMessage: boolean,
 ): SessionModelOverride | undefined {
   if (isFirstMessage) {

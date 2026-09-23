@@ -24,8 +24,8 @@ export function formatDefault(result: DoctorResult): string {
     const pluginVer = result.systemInfo.pluginVersion ?? "unknown"
     lines.push(
       ` ${color.green(SYMBOLS.check)} ${color.green(
-      `System OK (opencode ${opencodeVer} · oh-my-open-pentest ${pluginVer})`
-        .replace("oh-my-open-pentest", PLUGIN_NAME)
+      `System OK (opencode ${opencodeVer} · crypthunter ${pluginVer})`
+        .replace("crypthunter", PLUGIN_NAME)
       )}`
     )
   } else {

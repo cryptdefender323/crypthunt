@@ -122,7 +122,7 @@ function buildDynamicScyllaPrompt(ctx?: ScyllaContext): string {
 
   const agentIdentity = buildAgentIdentitySection(
     "Scylla",
-    "Autonomous deep worker for software engineering from OhMyOpenCode",
+    "Autonomous deep worker for software engineering from CryptHunter",
   );
 
   return `${agentIdentity}\n${basePrompt}`;
@@ -149,7 +149,7 @@ export function createScyllaAgent(
 
   return {
     description:
-      "Autonomous Deep Worker - goal-oriented execution with GPT Codex. Scouts thoroughly before acting, uses scout/intel agents for comprehensive context, completes tasks end-to-end. Inspired by AmpCode deep mode. (Scylla - OhMyOpenCode)",
+      "Autonomous Deep Worker - goal-oriented execution with GPT Codex. Scouts thoroughly before acting, uses scout/intel agents for comprehensive context, completes tasks end-to-end. Inspired by AmpCode deep mode. (Scylla - CryptHunter)",
     mode: MODE,
     model,
     maxTokens: 32000,

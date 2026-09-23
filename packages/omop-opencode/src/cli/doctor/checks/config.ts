@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../../../config"
+import type { CryptHunterConfig } from "../../../config"
 import { validatePluginConfig } from "../../../config/validate"
 import { CHECK_IDS, CHECK_NAMES, PACKAGE_NAME } from "../framework/constants"
 import type { CheckResult, DoctorIssue } from "../framework/types"
@@ -14,7 +14,7 @@ interface ConfigValidationResult {
   errors: string[]
 }
 
-function toOmoConfig(config: OhMyOpenCodeConfig): OmoConfig {
+function toOmoConfig(config: CryptHunterConfig): OmoConfig {
   const agents: OmoConfig["agents"] = {}
   const categories: OmoConfig["categories"] = {}
 

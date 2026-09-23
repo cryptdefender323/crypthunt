@@ -3,7 +3,7 @@ import type { ToolContext } from "@opencode-ai/plugin/tool"
 
 import type { MonitorManager, MonitorRecord, MonitorStartOpts } from "../../features/monitor/types"
 import type { BashPermissionAskInput } from "../../features/monitor/permission"
-import type { OhMyOpenCodeConfig } from "../../config/schema/oh-my-open-pentest-config"
+import type { CryptHunterConfig } from "../../config/schema/crypthunter-config"
 import type { PluginContext } from "../../plugin/types"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
 import { createMonitorStart } from "./monitor-start"
@@ -32,8 +32,8 @@ function createRecord(overrides: Partial<MonitorRecord> = {}): MonitorRecord {
   }
 }
 
-function createPluginConfig(monitor: Partial<NonNullable<OhMyOpenCodeConfig["monitor"]>> = {}): OhMyOpenCodeConfig {
-  return unsafeTestValue<OhMyOpenCodeConfig>({
+function createPluginConfig(monitor: Partial<NonNullable<CryptHunterConfig["monitor"]>> = {}): CryptHunterConfig {
+  return unsafeTestValue<CryptHunterConfig>({
     monitor: {
       enabled: true,
       live_mode_enabled: true,

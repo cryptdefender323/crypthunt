@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { getAgentDisplayName, getAgentListDisplayName } from "../shared/agent-display-names";
 import { isTaskSystemEnabled } from "../shared";
 
@@ -39,7 +39,7 @@ function denyTaskForAgent(agentResult: Record<string, unknown>, key: string): vo
 
 export function applyToolConfig(params: {
   config: Record<string, unknown>;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   agentResult: Record<string, unknown>;
 }): void {
   const taskSystemEnabled = isTaskSystemEnabled(params.pluginConfig)

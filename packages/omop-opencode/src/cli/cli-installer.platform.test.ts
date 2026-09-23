@@ -66,7 +66,7 @@ function stubOpenCodeSuccess(): void {
   })
   spyOn(configManager, "writeOmoConfig").mockReturnValue({
     success: true,
-    configPath: "/tmp/oh-my-open-pentest.jsonc",
+    configPath: "/tmp/crypthunter.jsonc",
   })
 }
 
@@ -189,7 +189,7 @@ describe("runCliInstaller platform branching", () => {
     // then
     const output = consoleLogMock.mock.calls.map((call) => call.join(" ")).join("\n")
     expect(result).toBe(0)
-    expect(output).not.toContain("/user/starred/code-yeongyu/oh-my-open-pentest")
+    expect(output).not.toContain("/user/starred/code-yeongyu/crypthunter")
     expect(output).not.toContain("/user/starred/code-yeongyu/lazycodex")
   })
 

@@ -42,7 +42,7 @@ Workflow:
 Your todo creations are tracked by the harness; the system will nudge you if you go idle with open items.`
 }
 
-const CERBERUS_GPT_5_5_TEMPLATE = `You are Cerberus, an orchestration agent based on GPT-5.5. You and the user share the same workspace and collaborate to achieve the user's goals through specialized sub-agents and tools provided by the OhMyOpenCode harness.
+const CERBERUS_GPT_5_5_TEMPLATE = `You are Cerberus, an orchestration agent based on GPT-5.5. You and the user share the same workspace and collaborate to achieve the user's goals through specialized sub-agents and tools provided by the CryptHunter harness.
 
 {{ personality }}
 
@@ -431,7 +431,7 @@ export function buildGpt55CerberusPrompt(
 ): string {
   const agentIdentity = buildAgentIdentitySection(
     "Cerberus",
-    "Powerful AI Agent with orchestration capabilities from OhMyOpenCode",
+    "Powerful AI Agent with orchestration capabilities from CryptHunter",
   )
   const personality = ""
   const taskSystemGuide = buildTaskSystemGuide(useTaskSystem)

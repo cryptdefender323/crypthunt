@@ -71,7 +71,7 @@ function createTestPluginModule(): ReturnType<typeof createPluginModule> {
   })
 }
 
-describe("oh-my-open-pentest telemetry isolation", () => {
+describe("crypthunter telemetry isolation", () => {
   beforeEach(() => {
     mockInitConfigContext.mockClear()
     mockInjectServerAuthIntoClient.mockClear()

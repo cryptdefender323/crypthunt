@@ -266,9 +266,9 @@ describe("posthog trackActive emission contract", () => {
     const expectedPropertyKeys = ["$os", "$os_version", "$process_person_profile", "ci", "cpu_count", "cpu_model", "day_utc", "locale", "os_arch", "os_type", "package_name", "package_version", "platform", "plugin_name", "reason", "runtime", "runtime_version", "shell", "source", "terminal", "timezone", "total_memory_gb"]
     expect(Object.keys(properties).sort()).toEqual(expectedPropertyKeys.sort())
     expect(properties).toMatchObject({
-      platform: "oh-my-open-pentest",
-      package_name: "oh-my-open-pentest",
-      plugin_name: "oh-my-open-pentest",
+      platform: "crypthunter",
+      package_name: "crypthunter",
+      plugin_name: "crypthunter",
       source: "cli",
       $os: "linux",
       $os_version: "6.8.0-test",

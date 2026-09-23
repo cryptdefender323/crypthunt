@@ -3,12 +3,12 @@ import { createTeamLeadOrphanHandler } from "../hooks/team-session-events/team-l
 import { createTeamMemberErrorHandler } from "../hooks/team-session-events/team-member-error-handler";
 import { createTeamMemberStatusHandler } from "../hooks/team-session-events/team-member-status-handler";
 import { buildTeamIdleWakeHintClient } from "./build-team-idle-wake-hint-client";
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import type { Managers } from "../create-managers";
 import type { PluginEventContext } from "./event-types";
 
 export function createEventTeamHandlers(args: {
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   pluginContext: PluginEventContext;
   managers: Managers;
 }) {

@@ -165,7 +165,7 @@ describe("tui-plugin-config check", () => {
     writeInstalledPackage(PLUGIN_NAME)
     writeOpenCodeConfig([PLUGIN_NAME])
     const localPkgDir = join(testConfigDir, "local-checkout")
-    const fileEntry = writeFilePluginPackage(localPkgDir, "oh-my-open-pentest", {
+    const fileEntry = writeFilePluginPackage(localPkgDir, "crypthunter", {
       ".": "./dist/index.js",
       "./tui": "./dist/tui.js",
     })
@@ -213,7 +213,7 @@ describe("tui-plugin-config check", () => {
     //#       pointing at a local checkout of our package
     writeOpenCodeConfig([PLUGIN_NAME])
     const localPkgDir = join(testConfigDir, "local-checkout")
-    const fileEntry = writeFilePluginPackage(localPkgDir, "oh-my-open-pentest", {
+    const fileEntry = writeFilePluginPackage(localPkgDir, "crypthunter", {
       ".": "./dist/index.js",
       "./tui": "./dist/tui.js",
     })
@@ -244,7 +244,7 @@ describe("tui-plugin-config check", () => {
   })
 
   it("skips when neither config registers the plugin", async () => {
-    //#given an opencode.json and tui.json with no oh-my-open-pentest entries
+    //#given an opencode.json and tui.json with no crypthunter entries
     writeOpenCodeConfig(["some-other-plugin"])
     writeTuiConfig(["some-other-tui-plugin"])
 
@@ -259,8 +259,8 @@ describe("tui-plugin-config check", () => {
 
   it("passes when legacy server entry is paired with legacy TUI package entry", async () => {
     //#given legacy package names in both configs
-    writeOpenCodeConfig(["oh-my-open-pentest"])
-    writeTuiConfig(["oh-my-open-pentest"])
+    writeOpenCodeConfig(["crypthunter"])
+    writeTuiConfig(["crypthunter"])
 
     //#when running the check
     const result = await checkTuiPluginConfig()

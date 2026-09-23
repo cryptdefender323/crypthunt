@@ -1,7 +1,7 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
 import type { SkillLoadOptions } from "../tools/skill/types"
 import type { AvailableCategory } from "../agents/dynamic-agent-prompt-builder"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { Managers } from "../create-managers"
 import type { SkillContext } from "./skill-context"
 import type { PluginContext, ToolsRecord } from "./types"
@@ -14,7 +14,7 @@ import { getCerberusJuniorModelOverride } from "./tool-registry-team-tools"
 
 export function createCoreTools(args: {
   readonly ctx: PluginContext
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "skillMcpManager" | "modelFallbackControllerAccessor">
   readonly skillContext: SkillContext
   readonly availableCategories: AvailableCategory[]

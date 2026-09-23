@@ -66,7 +66,7 @@ describe("tui-sidebar mirror IPC", () => {
 
     // then
     expect(storageDir).toBe(
-      join(xdgDataHome, "opencode", "storage", "oh-my-open-pentest", MIRROR_DIR_NAME),
+      join(xdgDataHome, "opencode", "storage", "crypthunter", MIRROR_DIR_NAME),
     )
   })
 

@@ -5,7 +5,7 @@ description: "Thorough, file-cited technical debt audit across 9 dimensions usin
 
 # Attack Surface Audit Protocol
 
-Model-agnostic technical debt audit for oh-my-open-pentest (OMO). Uses OMO's built-in tools (`grep`, `glob`, `bash` with `sg`, `read`, `lsp_diagnostics`, `task`) plus **optional CodeGraph MCP** for enhanced code graph analysis when available. Produces a grounded, citable `ATTACK_SURFACE_AUDIT.md` artifact.
+Model-agnostic technical debt audit for crypthunter (OMO). Uses OMO's built-in tools (`grep`, `glob`, `bash` with `sg`, `read`, `lsp_diagnostics`, `task`) plus **optional CodeGraph MCP** for enhanced code graph analysis when available. Produces a grounded, citable `ATTACK_SURFACE_AUDIT.md` artifact.
 
 ## CodeGraph Enhancement (Optional)
 

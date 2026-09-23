@@ -1,5 +1,5 @@
 import type { AvailableSkill } from "../agents/dynamic-agent-prompt-builder"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { BrowserAutomationProvider } from "../config/schema/browser-automation"
 import type {
   LoadedSkill,
@@ -86,7 +86,7 @@ function isDisabledConfigSkillEntryName(
 
 export async function createSkillContext(args: {
   directory: string
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
 }): Promise<SkillContext> {
   const { directory, pluginConfig } = args
 

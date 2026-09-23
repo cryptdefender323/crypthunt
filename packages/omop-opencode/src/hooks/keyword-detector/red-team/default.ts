@@ -5,7 +5,7 @@
  * prefix injected by the CLI runner.
  *
  * Matched patterns (case-insensitive, word-bounded):
- *   --mode red-team          (injected by `bunx oh-my-open-pentest run --mode red-team`)
+ *   --mode red-team          (injected by `bunx crypthunter run --mode red-team`)
  *   red-team / redteam       (shorthand in chat)
  *   red team engage          (natural language)
  *   pentest engage red-team  (/pentest-engage red-team <target>)

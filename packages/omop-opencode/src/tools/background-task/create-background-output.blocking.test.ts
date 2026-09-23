@@ -6,7 +6,7 @@ import type { BackgroundTask } from "../../features/background-agent"
 import type { BackgroundOutputClient, BackgroundOutputManager } from "./clients"
 import { createBackgroundOutput } from "./create-background-output"
 
-const projectDir = "/Users/yeongyu/local-workspaces/oh-my-open-pentest"
+const projectDir = "/Users/yeongyu/local-workspaces/crypthunter"
 
 const mockContext = {
   sessionID: "test-session",

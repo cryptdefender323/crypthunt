@@ -1,6 +1,6 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin"
 
-import type { CryptHunterConfig } from "../../config/schema/oh-my-open-pentest-config"
+import type { CryptHunterConfig } from "../../config/schema/crypthunter-config"
 import { checkMonitorCommandPermission, type BashPermissionAskInput } from "../../features/monitor/permission"
 import { createMonitorFilter } from "../../features/monitor/filter"
 import type { MonitorManager, MonitorMode, MonitorStartArgs } from "../../features/monitor/types"

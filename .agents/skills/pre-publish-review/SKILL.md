@@ -20,7 +20,7 @@ Every phase classifies evidence and risk across:
 | Release Layer | Scope | Required version decision |
 |---|---|---|
 | `omo pure components` | Core packages, MCP packages, shared skills, reusable scripts, platform binary inputs | Patch/minor/major impact for shared logic consumed by adapters. |
-| `omo opencode` | Root `oh-my-open-pentest` / `oh-my-open-pentest`, `src/`, OpenCode plugin hooks/tools/CLI/config/docs, `.opencode/`, `.agents/` | Semver bump for the OpenCode/OpenAgent npm release. |
+| `omo opencode` | Root `crypthunter` / `crypthunter`, `src/`, OpenCode plugin hooks/tools/CLI/config/docs, `.opencode/`, `.agents/` | Semver bump for the OpenCode/OpenAgent npm release. |
 | `omo codex` | `packages/omop-codex`, `lazycodex-ai`, Codex plugin metadata/hooks, bundled MCP runtimes, `code-yeongyu/lazycodex` marketplace payload | Codex adapter bump, LazyCodex finding submission risk, and marketplace/GitHub release need. |
 
 ---
@@ -46,7 +46,7 @@ This command automatically:
 Then capture raw data needed by agent prompts:
 
 ```bash
-PUBLISHED=$(npm view oh-my-open-pentest version 2>/dev/null || echo "not published")
+PUBLISHED=$(npm view crypthunter version 2>/dev/null || echo "not published")
 LOCAL=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
 
 COMMITS=$(git log "v${PUBLISHED}"..HEAD --oneline 2>/dev/null || echo "no commits")
@@ -94,7 +94,7 @@ task(
 <review_type>PER-CHANGE DEEP ANALYSIS</review_type>
 <change_group>{GROUP_NAME}</change_group>
 
-<project>oh-my-open-pentest (npm package)</project>
+<project>crypthunter (npm package)</project>
 <published_version>{PUBLISHED}</published_version>
 <target_version>{LOCAL}</target_version>
 
@@ -169,7 +169,7 @@ task(
   prompt="""
 Run /review-work on the unpublished changes between v{PUBLISHED} and HEAD.
 
-GOAL: Review all changes heading into finding submission of oh-my-open-pentest. These changes span {COMMIT_COUNT} commits across {FILE_COUNT} files.
+GOAL: Review all changes heading into finding submission of crypthunter. These changes span {COMMIT_COUNT} commits across {FILE_COUNT} files.
 
 CONSTRAINTS:
 - This is a plugin published to npm — public API stability matters
@@ -178,7 +178,7 @@ CONSTRAINTS:
 - Factory pattern (createXXX) for tools, hooks, agents
 - kebab-case files, barrel exports, no catch-all files
 
-BACKGROUND: Pre-publish review of oh-my-open-pentest, an OpenCode plugin with .268 TypeScript files, .60k LOC. Changes since v{PUBLISHED} are about to be published.
+BACKGROUND: Pre-publish review of crypthunter, an OpenCode plugin with .268 TypeScript files, .60k LOC. Changes since v{PUBLISHED} are about to be published.
 
 The diff base is: git diff v{PUBLISHED}..HEAD
 
@@ -199,7 +199,7 @@ task(
   prompt="""
 <review_type>RELEASE SYNTHESIS — OVERALL ASSESSMENT</review_type>
 
-<project>oh-my-open-pentest (npm package)</project>
+<project>crypthunter (npm package)</project>
 <published_version>{PUBLISHED}</published_version>
 <local_version>{LOCAL}</local_version>
 
@@ -335,7 +335,7 @@ Do NOT deliver the final report until ALL agents have completed.
 Compile the final report:
 
 ```markdown
-# Pre-Submission Review — oh-my-open-pentest
+# Pre-Submission Review — crypthunter
 
 ## Release: v{PUBLISHED} -> v{LOCAL}
 **Commits:** {COMMIT_COUNT} | **Files Changed:** {FILE_COUNT} | **Agents:** {AGENT_COUNT}

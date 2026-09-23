@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { OhMyOpenCodeConfigSchema } from "../config"
+import { CryptHunterConfigSchema } from "../config"
 import * as mcpLoader from "../features/claude-code-mcp-loader"
 import * as skillLoader from "../features/opencode-skill-loader"
 import * as opencodeConfigDir from "../shared/opencode-config-dir"
@@ -65,7 +65,7 @@ describe("createSkillContext", () => {
       "getSystemMcpServerNames",
     ).mockReturnValue(new Set<string>())
 
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({})
+    const pluginConfig = CryptHunterConfigSchema.parse({})
 
     try {
       // when
@@ -140,7 +140,7 @@ describe("createSkillContext", () => {
       "getSystemMcpServerNames",
     ).mockReturnValue(new Set<string>())
 
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       browser_automation_engine: { provider: "agent-browser" },
     })
 
@@ -219,7 +219,7 @@ describe("createSkillContext", () => {
       "getSystemMcpServerNames",
     ).mockReturnValue(new Set<string>())
 
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({})
+    const pluginConfig = CryptHunterConfigSchema.parse({})
 
     try {
       // when
@@ -279,7 +279,7 @@ describe("createSkillContext", () => {
       "getSystemMcpServerNames",
     ).mockReturnValue(new Set<string>())
 
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({
+    const pluginConfig = CryptHunterConfigSchema.parse({
       browser_automation_engine: { provider: "playwright" },
     })
 
@@ -357,7 +357,7 @@ describe("createSkillContext", () => {
       "getSystemMcpServerNames",
     ).mockReturnValue(new Set<string>())
 
-    const pluginConfig = OhMyOpenCodeConfigSchema.parse({})
+    const pluginConfig = CryptHunterConfigSchema.parse({})
 
     try {
       // when

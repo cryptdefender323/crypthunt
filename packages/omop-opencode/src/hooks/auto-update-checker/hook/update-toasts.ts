@@ -10,7 +10,7 @@ export async function showUpdateAvailableToast(
   await ctx.client.tui
     .showToast({
       body: {
-        title: `OhMyOpenCode ${latestVersion}`,
+        title: `CryptHunter ${latestVersion}`,
         message: getToastMessage(true, latestVersion),
         variant: "info" as const,
         duration: 8000,
@@ -24,7 +24,7 @@ export async function showAutoUpdatedToast(ctx: PluginInput, oldVersion: string,
   await ctx.client.tui
     .showToast({
       body: {
-        title: "OhMyOpenCode Updated!",
+        title: "CryptHunter Updated!",
         message: `v${oldVersion} → v${newVersion}\nRestart OpenCode to apply.`,
         variant: "success" as const,
         duration: 8000,

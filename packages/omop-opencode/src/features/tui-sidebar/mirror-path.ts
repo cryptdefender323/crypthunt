@@ -10,7 +10,7 @@ export function mirrorStorageDir(): string {
     process.env.XDG_DATA_HOME ?? join(homedir(), ".local", "share"),
     "opencode",
     "storage",
-    "oh-my-open-pentest",
+    "crypthunter",
     MIRROR_DIR_NAME,
   )
 }

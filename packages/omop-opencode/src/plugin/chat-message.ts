@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 
 import { updateSessionAgent } from "../features/claude-code-session-state"
 import { isSyntheticOrInternalOnlyTextParts, log } from "../shared"
@@ -34,7 +34,7 @@ type PluginContextWithTui = {
 
 function isRuntimeFallbackEnabled(
   hooks: ChatMessageHooks,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
 ): boolean {
   return (
     hooks.runtimeFallback !== null &&
@@ -71,7 +71,7 @@ async function runChatMessageHooks(args: {
 
 export function createChatMessageHandler(args: {
   ctx: PluginContext
-  pluginConfig: OhMyOpenCodeConfig
+  pluginConfig: CryptHunterConfig
   firstMessageVariantGate: FirstMessageVariantGate
   hooks: ChatMessageHooks
 }): (

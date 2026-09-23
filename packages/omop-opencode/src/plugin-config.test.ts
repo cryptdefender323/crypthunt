@@ -3,17 +3,17 @@ import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, wr
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadConfigFromPath, mergeConfigs, parseConfigPartially } from "./plugin-config";
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig, type TeamModeConfig } from "./config";
+import { CryptHunterConfigSchema, type CryptHunterConfig, type TeamModeConfig } from "./config";
 import { clearConfigLoadErrors, getConfigLoadErrors } from "./shared/config-errors";
 import { resolveSymlink } from "./shared/file-utils"
 
 const tempDirs: string[] = []
-type ConfigInput = Omit<Partial<OhMyOpenCodeConfig>, "team_mode"> & {
+type ConfigInput = Omit<Partial<CryptHunterConfig>, "team_mode"> & {
   team_mode?: Partial<TeamModeConfig>
 }
 
-function createConfig(config: ConfigInput): OhMyOpenCodeConfig {
-  return OhMyOpenCodeConfigSchema.parse(config)
+function createConfig(config: ConfigInput): CryptHunterConfig {
+  return CryptHunterConfigSchema.parse(config)
 }
 
 async function importFreshPluginConfigModule(): Promise<typeof import("./plugin-config")> {
@@ -163,7 +163,7 @@ describe("mergeConfigs", () => {
         team_mode: {
           enabled: true,
         },
-      } as OhMyOpenCodeConfig;
+      } as CryptHunterConfig;
 
       const result = mergeConfigs(base, override);
 
@@ -266,7 +266,7 @@ describe("parseConfigPartially", () => {
     //#then should accept the hook name so runtime and schema stay aligned
 
     it("should accept unknown disabled_hooks values for forward compatibility", () => {
-      const result = OhMyOpenCodeConfigSchema.safeParse({
+      const result = CryptHunterConfigSchema.safeParse({
         disabled_hooks: ["future-hook-name"],
       });
 
@@ -458,7 +458,7 @@ describe("loadConfigFromPath agent_order warnings", () => {
     // given
     const rootDir = mkdtempSync(join(tmpdir(), "agent-order-warning-"))
     tempDirs.push(rootDir)
-    const configPath = join(rootDir, "oh-my-open-pentest.json")
+    const configPath = join(rootDir, "crypthunter.json")
     writeJsonFile(configPath, {
       agent_order: ["scylla", "not-real", "cerberus", "scylla"],
     })
@@ -480,7 +480,7 @@ describe("loadConfigFromPath agent_order warnings", () => {
     // given
     const rootDir = mkdtempSync(join(tmpdir(), "agent-order-sanitize-"))
     tempDirs.push(rootDir)
-    const configPath = join(rootDir, "oh-my-open-pentest.json")
+    const configPath = join(rootDir, "crypthunter.json")
     writeJsonFile(configPath, {
       agent_order: [
         "\u001B[31mbad\u001B[0m",
@@ -517,11 +517,11 @@ describe("loadPluginConfig", () => {
     mkdirSync(projectConfigDir, { recursive: true })
 
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["USER_ONLY_TOKEN"] })
     )
     writeFileSync(
-      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      join(projectConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["PROJECT_TOKEN"] })
     )
 
@@ -541,9 +541,9 @@ describe("loadPluginConfig", () => {
     const userConfigDir = join(rootDir, "user-config")
     const projectDir = join(rootDir, "project")
     const projectConfigDir = join(projectDir, ".opencode")
-    const legacyConfigPath = join(projectConfigDir, "oh-my-opencode.jsonc")
+    const legacyConfigPath = join(projectConfigDir, "crypthunter.jsonc")
     const backupConfigPath = `${legacyConfigPath}.bak`
-    const canonicalConfigPath = join(projectConfigDir, "oh-my-open-pentest.jsonc")
+    const canonicalConfigPath = join(projectConfigDir, "crypthunter.jsonc")
 
     tempDirs.push(rootDir)
     mkdirSync(userConfigDir, { recursive: true })
@@ -571,7 +571,7 @@ describe("loadPluginConfig", () => {
     const userConfigDir = join(rootDir, "user-config")
     const projectDir = join(rootDir, "project")
     const projectConfigDir = join(projectDir, ".opencode")
-    const legacyConfigPath = join(projectConfigDir, "oh-my-open-pentest.json")
+    const legacyConfigPath = join(projectConfigDir, "crypthunter.json")
 
     tempDirs.push(rootDir)
     mkdirSync(userConfigDir, { recursive: true })
@@ -587,7 +587,7 @@ describe("loadPluginConfig", () => {
     process.env.OPENCODE_CONFIG_DIR = userConfigDir
 
     // when
-    let config: OhMyOpenCodeConfig
+    let config: CryptHunterConfig
     try {
       const fresh = await importFreshPluginConfigModule()
       config = fresh.loadPluginConfig(projectDir, {})
@@ -608,8 +608,8 @@ describe("loadPluginConfig", () => {
     const userConfigDir = join(rootDir, "user-config")
     const projectDir = join(rootDir, "project")
     const projectConfigDir = join(projectDir, ".opencode")
-    const legacyConfigPath = join(projectConfigDir, "oh-my-opencode.jsonc")
-    const canonicalConfigPath = join(projectConfigDir, "oh-my-open-pentest.jsonc")
+    const legacyConfigPath = join(projectConfigDir, "crypthunter.jsonc")
+    const canonicalConfigPath = join(projectConfigDir, "crypthunter.jsonc")
 
     tempDirs.push(rootDir)
     mkdirSync(userConfigDir, { recursive: true })
@@ -632,7 +632,7 @@ describe("loadPluginConfig", () => {
     // given
     const { userConfigDir, projectDir } =
       createLoadPluginConfigTestContext("omop-plugin-config-preserve-user-model-")
-    const userConfigPath = join(userConfigDir, "oh-my-open-pentest.json")
+    const userConfigPath = join(userConfigDir, "crypthunter.json")
     writeJsonFile(userConfigPath, {
       agents: {
         cerberus: {
@@ -671,7 +671,7 @@ describe("loadPluginConfig", () => {
     mkdirSync(projectConfigDir, { recursive: true })
 
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           commit_footer: false,
@@ -681,7 +681,7 @@ describe("loadPluginConfig", () => {
     )
 
     writeFileSync(
-      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      join(projectConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         agents: {
           scylla: { model: "openai/gpt-5.5" },
@@ -715,7 +715,7 @@ describe("loadPluginConfig", () => {
     mkdirSync(projectConfigDir, { recursive: true })
 
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           commit_footer: false,
@@ -725,7 +725,7 @@ describe("loadPluginConfig", () => {
     )
 
     writeFileSync(
-      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      join(projectConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           commit_footer: true,
@@ -751,12 +751,12 @@ describe("loadPluginConfig", () => {
       // given
       const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-user-")
 
-      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         team_mode: {
           enabled: true,
         },
       })
-      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         agents: {
           cipher: {
             model: "openai/gpt-5.4",
@@ -779,10 +779,10 @@ describe("loadPluginConfig", () => {
       // given
       const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-legacy-")
 
-      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         hashline_edit: true,
       })
-      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         team_mode: {
           enabled: true,
         },
@@ -803,10 +803,10 @@ describe("loadPluginConfig", () => {
       // given
       const { userConfigDir, projectDir } = createLoadPluginConfigTestContext("omop-plugin-config-team-mode-visualization-")
 
-      writeJsonFile(join(userConfigDir, "oh-my-open-pentest.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         hashline_edit: true,
       })
-      writeJsonFile(join(userConfigDir, "oh-my-opencode.json"), {
+      writeJsonFile(join(userConfigDir, "crypthunter.json"), {
         team_mode: {
           enabled: true,
           tmux_visualization: true,
@@ -840,19 +840,19 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "user/model" } } })
     )
     writeFileSync(
-      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(homeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "home/model" } } })
     )
     writeFileSync(
-      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(workDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "work/model" } } })
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "project/model" } } })
     )
 
@@ -880,11 +880,11 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
     writeFileSync(
-      join(defaultGlobalConfigDir, "oh-my-open-pentest.jsonc"),
+      join(defaultGlobalConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "default/cipher" } } }),
     )
     writeFileSync(
-      join(customConfigDir, "oh-my-open-pentest.jsonc"),
+      join(customConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ agents: { scylla: { model: "custom/scylla" } } }),
     )
 
@@ -914,17 +914,17 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(workDir, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
-      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(homeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "home/cipher" } } })
     )
     writeFileSync(
-      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(workDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { scylla: { model: "work/scylla" } } })
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cerberus: { model: "project/cerberus" } } })
     )
 
@@ -956,19 +956,19 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
     writeFileSync(
-      join(userConfigDir, "oh-my-open-pentest.jsonc"),
+      join(userConfigDir, "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["USER_ONLY_TOKEN"] })
     )
     writeFileSync(
-      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(homeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["HOME_TOKEN"] })
     )
     writeFileSync(
-      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(workDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["WORK_TOKEN"] })
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ mcp_env_allowlist: ["PROJECT_TOKEN"] })
     )
 
@@ -997,16 +997,16 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(homeDir, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
-      join(aboveHomeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(aboveHomeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "above-home/leak" } } })
     )
     writeFileSync(
-      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(homeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { scylla: { model: "home/wins" } } })
     )
-    writeFileSync(join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(projectDir, ".opencode", "crypthunter.jsonc"), "{}")
 
     process.env.OPENCODE_CONFIG_DIR = userConfigDir
     process.env.HOME = homeDir
@@ -1034,13 +1034,13 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(outsideHomeRoot, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
-      join(outsideHomeRoot, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(outsideHomeRoot, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { cipher: { model: "outside-home/leak" } } })
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agents: { scylla: { model: "project/wins" } } })
     )
 
@@ -1070,9 +1070,9 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(workDir, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
-      join(homeDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(homeDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           commit_footer: false,
@@ -1082,7 +1082,7 @@ describe("loadPluginConfig", () => {
       })
     )
     writeFileSync(
-      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(workDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           include_co_authored_by: true,
@@ -1090,7 +1090,7 @@ describe("loadPluginConfig", () => {
       })
     )
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({
         git_master: {
           commit_footer: true,
@@ -1129,14 +1129,14 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(workDir, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
-      join(workDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(workDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agent_definitions: [workDefRelativePath] })
     )
     writeFileSync(join(workDir, ".opencode", "work-agent.md"), "# Work Agent")
     writeFileSync(
-      join(projectDir, ".opencode", "oh-my-open-pentest.jsonc"),
+      join(projectDir, ".opencode", "crypthunter.jsonc"),
       JSON.stringify({ agent_definitions: [projectDefRelativePath] })
     )
     writeFileSync(join(projectDir, ".opencode", "project-agent.md"), "# Project Agent")
@@ -1161,8 +1161,8 @@ describe("loadPluginConfig", () => {
     const homeDir = join(rootDir, "home")
     const workDir = join(homeDir, "work")
     const projectDir = join(workDir, "project")
-    const ancestorLegacyPath = join(workDir, ".opencode", "oh-my-opencode.jsonc")
-    const ancestorCanonicalPath = join(workDir, ".opencode", "oh-my-open-pentest.jsonc")
+    const ancestorLegacyPath = join(workDir, ".opencode", "crypthunter.jsonc")
+    const ancestorCanonicalPath = join(workDir, ".opencode", "crypthunter.jsonc")
 
     tempDirs.push(rootDir)
     mkdirSync(userConfigDir, { recursive: true })
@@ -1170,7 +1170,7 @@ describe("loadPluginConfig", () => {
     mkdirSync(join(workDir, ".opencode"), { recursive: true })
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
 
-    writeFileSync(join(userConfigDir, "oh-my-open-pentest.jsonc"), "{}")
+    writeFileSync(join(userConfigDir, "crypthunter.jsonc"), "{}")
     writeFileSync(
       ancestorLegacyPath,
       JSON.stringify({ agents: { cipher: { model: "ancestor-legacy/model" } } })
@@ -1196,7 +1196,7 @@ describe("loadPluginConfig", () => {
       createLoadPluginConfigTestContext("omop-plugin-config-disabled-providers-")
 
     writeFileSync(
-      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      join(projectConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         disabled_providers: ["github-copilot", "vercel"],
         agents: {
@@ -1266,7 +1266,7 @@ describe("loadPluginConfig", () => {
       createLoadPluginConfigTestContext("omop-plugin-config-disabled-providers-noop-")
 
     writeFileSync(
-      join(projectConfigDir, "oh-my-open-pentest.jsonc"),
+      join(projectConfigDir, "crypthunter.jsonc"),
       JSON.stringify({
         agents: {
           scylla: {

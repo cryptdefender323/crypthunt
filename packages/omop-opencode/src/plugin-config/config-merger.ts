@@ -1,10 +1,10 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import { deepMerge, mergeUniqueStrings, mergeUniqueStringsCaseInsensitive } from "@omop/utils";
 
 export function mergeConfigs(
-  base: OhMyOpenCodeConfig,
-  override: Partial<OhMyOpenCodeConfig>
-): OhMyOpenCodeConfig {
+  base: CryptHunterConfig,
+  override: Partial<CryptHunterConfig>
+): CryptHunterConfig {
   return {
     ...base,
     ...override,

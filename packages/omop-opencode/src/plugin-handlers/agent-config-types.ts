@@ -1,4 +1,4 @@
-import type { OhMyOpenCodeConfig } from "../config";
+import type { CryptHunterConfig } from "../config";
 import type { PluginComponents } from "./plugin-components-loader";
 
 export type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
@@ -8,7 +8,7 @@ export type AgentConfigRecord = Record<string, Record<string, unknown> | undefin
 
 export type ApplyAgentConfigParams = {
   config: Record<string, unknown>;
-  pluginConfig: OhMyOpenCodeConfig;
+  pluginConfig: CryptHunterConfig;
   ctx: { directory: string; client?: unknown };
   pluginComponents: PluginComponents;
 };

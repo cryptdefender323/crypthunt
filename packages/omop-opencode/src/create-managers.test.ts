@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 
-import { OhMyOpenCodeConfigSchema } from "./config/schema/oh-my-open-pentest-config"
+import { CryptHunterConfigSchema } from "./config/schema/crypthunter-config"
 import { createManagers } from "./create-managers"
 import * as openclawRuntimeDispatch from "./openclaw/runtime-dispatch"
 import { createModelCacheState } from "./plugin-state"
@@ -181,7 +181,7 @@ describe("createManagers", () => {
   it("#given tmux integration is disabled #when managers are created #then it does not mark the tmux server as running", () => {
     const args = {
       ctx: createContext("/tmp"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+      pluginConfig: CryptHunterConfigSchema.parse({}),
       tmuxConfig: createTmuxConfig(false),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -196,7 +196,7 @@ describe("createManagers", () => {
   it("#given tmux integration is enabled #when managers are created #then it marks the tmux server as running", () => {
     const args = {
       ctx: createContext("/tmp"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+      pluginConfig: CryptHunterConfigSchema.parse({}),
       tmuxConfig: createTmuxConfig(true),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -218,7 +218,7 @@ describe("createManagers", () => {
     const ctxWithoutServerUrl = { ...ctx, serverUrl: undefined as unknown as URL }
     const args = {
       ctx: ctxWithoutServerUrl,
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+      pluginConfig: CryptHunterConfigSchema.parse({}),
       tmuxConfig: createTmuxConfig(true),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -233,7 +233,7 @@ describe("createManagers", () => {
   it("#given openclaw is enabled #when the background session-created callback runs #then it dispatches openclaw with the tracked pane id", async () => {
     const args = {
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({
+      pluginConfig: CryptHunterConfigSchema.parse({
         openclaw: {
           enabled: true,
           gateways: {},
@@ -269,7 +269,7 @@ describe("createManagers", () => {
   it("#given team mode is enabled #when process cleanup runs #then session team runs are cleaned with tmux visualization dependencies", async () => {
     const args = {
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({
+      pluginConfig: CryptHunterConfigSchema.parse({
         team_mode: {
           enabled: true,
           tmux_visualization: true,
@@ -300,7 +300,7 @@ describe("createManagers", () => {
   it("#given TuiStateMirror is enabled #when managers are created and cleanup runs #then it starts and stops the mirror", async () => {
     const args = {
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+      pluginConfig: CryptHunterConfigSchema.parse({}),
       tmuxConfig: createTmuxConfig(false),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -325,7 +325,7 @@ describe("createManagers", () => {
   it("#given TuiStateMirror is enabled #when normal shutdown runs #then it stops the mirror", async () => {
     const args = {
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({}),
+      pluginConfig: CryptHunterConfigSchema.parse({}),
       tmuxConfig: createTmuxConfig(false),
       modelCacheState: createModelCacheState(),
       backgroundNotificationHookEnabled: false,
@@ -344,7 +344,7 @@ describe("createManagers", () => {
   it("#given TuiStateMirror is disabled #when managers are created #then it is not constructed or started", () => {
     const args = {
       ctx: createContext("/tmp/project"),
-      pluginConfig: OhMyOpenCodeConfigSchema.parse({
+      pluginConfig: CryptHunterConfigSchema.parse({
         tui: { sidebar: { enabled: false } },
       }),
       tmuxConfig: createTmuxConfig(false),

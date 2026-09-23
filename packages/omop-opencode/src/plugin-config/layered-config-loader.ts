@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { homedir } from "node:os";
 import * as path from "path";
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig } from "../config";
+import { CryptHunterConfigSchema, type CryptHunterConfig } from "../config";
 import { applyDisabledProviders } from "../shared/disabled-providers";
 import { migrateLegacyConfigFile } from "../shared/migrate-legacy-config-file";
 import { CONFIG_BASENAME, LEGACY_CONFIG_BASENAME } from "../shared/plugin-identity";
@@ -91,7 +91,7 @@ function getCanonicalAncestorPathsNearestFirst(directory: string): string[] {
 }
 
 function resolveUserAgentDefinitions(
-  config: Partial<OhMyOpenCodeConfig>,
+  config: Partial<CryptHunterConfig>,
   configDir: string,
 ): void {
   if (!config.agent_definitions) return;
@@ -104,7 +104,7 @@ function resolveUserAgentDefinitions(
 }
 
 function resolveAncestorAgentDefinitions(
-  config: Partial<OhMyOpenCodeConfig>,
+  config: Partial<CryptHunterConfig>,
   ancestorPath: string,
 ): void {
   if (!config.agent_definitions) return;
@@ -121,11 +121,11 @@ function resolveAncestorAgentDefinitions(
 export function loadPluginConfig(
   directory: string,
   ctx: unknown
-): OhMyOpenCodeConfig {
+): CryptHunterConfig {
   const userConfigLayers = getUserConfigLayers();
   const canonicalAncestorPathsNearestFirst = getCanonicalAncestorPathsNearestFirst(directory);
 
-  let config: OhMyOpenCodeConfig = OhMyOpenCodeConfigSchema.parse({});
+  let config: CryptHunterConfig = CryptHunterConfigSchema.parse({});
   let mergedUserGitMasterOverrides: Record<string, unknown> | null = null;
 
   for (const userLayer of userConfigLayers) {
@@ -149,7 +149,7 @@ export function loadPluginConfig(
 
   const userMcpEnvAllowlist = config.mcp_env_allowlist ?? [];
   const canonicalAncestorPathsFarthestFirst = [...canonicalAncestorPathsNearestFirst].reverse();
-  const defaultGitMaster = OhMyOpenCodeConfigSchema.parse({}).git_master;
+  const defaultGitMaster = CryptHunterConfigSchema.parse({}).git_master;
   const ancestorGitMasterOverridesFarthestFirst: Array<Record<string, unknown>> = [];
 
   for (const ancestorPath of canonicalAncestorPathsFarthestFirst) {

@@ -177,7 +177,7 @@ describe("resetServerCheck", () => {
 })
 
 describe("markServerRunningInProcess", () => {
-  const SERVER_RUNNING_KEY = Symbol.for("oh-my-open-pentest:server-running-in-process")
+  const SERVER_RUNNING_KEY = Symbol.for("crypthunter:server-running-in-process")
 
   beforeEach(() => {
     resetServerCheck()

@@ -54,7 +54,7 @@ async function createRunner() {
       configJson: join(TEST_CONFIG_DIR, "opencode.json"),
       configJsonc: join(TEST_CONFIG_DIR, "opencode.jsonc"),
       packageJson: join(TEST_CONFIG_DIR, "package.json"),
-      omoConfig: join(TEST_CONFIG_DIR, "oh-my-open-pentest.json"),
+      omoConfig: join(TEST_CONFIG_DIR, "crypthunter.json"),
     }),
     invalidatePackage: mockInvalidatePackage as never,
     extractChannel: mockExtractChannel,

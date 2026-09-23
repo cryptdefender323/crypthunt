@@ -1,6 +1,6 @@
 ---
 name: omomomo
-description: "Easter egg command - about oh-my-open-pentest. Triggers: omomomo, about, easter egg."
+description: "Easter egg command - about crypthunter. Triggers: omomomo, about, easter egg."
 ---
 
 You found an easter egg! 🥚✨

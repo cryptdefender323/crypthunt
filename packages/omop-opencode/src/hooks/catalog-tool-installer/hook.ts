@@ -163,7 +163,7 @@ export function createCatalogToolInstallerHook(options: CatalogToolInstallerOpti
 
       if (!verifiedInstalled.has(key)) {
         output.message =
-          `[omop] catalog tool "${key}" missing or install failed — retry after: oh-my-open-pentest tools install -t ${key}`
+          `[omop] catalog tool "${key}" missing or install failed — retry after: crypthunter tools install -t ${key}`
       } else if (!output.message) {
         output.message = `[omop] ensured catalog tool "${key}" is installed`
       }

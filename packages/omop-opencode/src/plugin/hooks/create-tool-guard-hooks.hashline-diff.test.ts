@@ -1,5 +1,5 @@
 import { describe, expect, it, spyOn } from "bun:test"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { ModelCacheState } from "../../plugin-state"
 import type { PluginContext } from "../types"
 import * as hooks from "../../hooks"
@@ -22,7 +22,7 @@ describe("createToolGuardHooks hashline-edit-diff-enhancer", () => {
     // when
     const result = createToolGuardHooks({
       ctx: mockContext,
-      pluginConfig: { hashline_edit: true } as OhMyOpenCodeConfig,
+      pluginConfig: { hashline_edit: true } as CryptHunterConfig,
       modelCacheState: mockModelCacheState,
       isHookEnabled: (name) => name === "hashline-edit-diff-enhancer",
       safeHookEnabled: true,

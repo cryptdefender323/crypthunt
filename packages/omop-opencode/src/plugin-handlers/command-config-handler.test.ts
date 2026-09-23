@@ -5,7 +5,7 @@ import * as builtinCommands from "../features/builtin-commands";
 import * as commandLoader from "../features/claude-code-command-loader";
 import * as mcpLoader from "../features/claude-code-mcp-loader";
 import * as skillLoader from "../features/opencode-skill-loader";
-import { OhMyOpenCodeConfigSchema, type OhMyOpenCodeConfig } from "../config";
+import { CryptHunterConfigSchema, type CryptHunterConfig } from "../config";
 import type { LoadedSkill } from "../features/opencode-skill-loader/types";
 import type { PluginComponents } from "./plugin-components-loader";
 import { applyCommandConfig } from "./command-config-handler";
@@ -26,7 +26,7 @@ function createPluginComponents(): PluginComponents {
   };
 }
 
-function createPluginConfig(): OhMyOpenCodeConfig {
+function createPluginConfig(): CryptHunterConfig {
   return {
     git_master: {
       commit_footer: true,
@@ -36,8 +36,8 @@ function createPluginConfig(): OhMyOpenCodeConfig {
   };
 }
 
-function createParsedPluginConfig(overrides: Record<string, unknown>): OhMyOpenCodeConfig {
-  return OhMyOpenCodeConfigSchema.parse({
+function createParsedPluginConfig(overrides: Record<string, unknown>): CryptHunterConfig {
+  return CryptHunterConfigSchema.parse({
     ...createPluginConfig(),
     ...overrides,
   });
@@ -217,7 +217,7 @@ describe("applyCommandConfig", () => {
 
   test("excludes builtin skills disabled via disabled_skills from the command config", async () => {
     // given
-    const pluginConfig: OhMyOpenCodeConfig = {
+    const pluginConfig: CryptHunterConfig = {
       ...createPluginConfig(),
       disabled_skills: ["init-deep"],
     };
@@ -258,7 +258,7 @@ describe("applyCommandConfig", () => {
 
   test("#given disabled_commands contains remove-ai-slops #when applying command config #then the skill-backed command does not resurrect", async () => {
     // given
-    const pluginConfig: OhMyOpenCodeConfig = {
+    const pluginConfig: CryptHunterConfig = {
       ...createPluginConfig(),
       disabled_commands: ["remove-ai-slops"],
     };

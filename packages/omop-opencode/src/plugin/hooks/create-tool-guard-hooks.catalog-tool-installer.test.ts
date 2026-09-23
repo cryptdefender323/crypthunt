@@ -1,13 +1,13 @@
 import { describe, expect, it } from "bun:test"
 import { createToolGuardHooks } from "./create-tool-guard-hooks"
-import type { OhMyOpenCodeConfig } from "../../config"
+import type { CryptHunterConfig } from "../../config"
 import type { ModelCacheState } from "../../plugin-state"
 import type { PluginContext } from "../types"
 
 describe("createToolGuardHooks catalog-tool-installer", () => {
   it("#given default config #when createToolGuardHooks #then catalogToolInstaller is registered", () => {
     // given
-    const pluginConfig = {} as OhMyOpenCodeConfig
+    const pluginConfig = {} as CryptHunterConfig
     const modelCacheState = {} as ModelCacheState
     const ctx = { directory: process.cwd() } as PluginContext
 
@@ -29,7 +29,7 @@ describe("createToolGuardHooks catalog-tool-installer", () => {
     // given
     const pluginConfig = {
       experimental: { tools_auto_install: false },
-    } as OhMyOpenCodeConfig
+    } as CryptHunterConfig
 
     // when
     const hooks = createToolGuardHooks({

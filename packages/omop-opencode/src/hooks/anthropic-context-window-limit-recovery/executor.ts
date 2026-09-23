@@ -1,5 +1,5 @@
 import type { AutoCompactState } from "./types";
-import type { OhMyOpenCodeConfig } from "../../config";
+import type { CryptHunterConfig } from "../../config";
 import type { ExperimentalConfig } from "../../config";
 import { TRUNCATE_CONFIG } from "./types";
 
@@ -20,7 +20,7 @@ export async function executeCompact(
   autoCompactState: AutoCompactState,
   client: Client,
   directory: string,
-  pluginConfig: OhMyOpenCodeConfig,
+  pluginConfig: CryptHunterConfig,
   experimental?: ExperimentalConfig
 ): Promise<void> {
   if (autoCompactState.compactionInProgress.has(sessionID)) {

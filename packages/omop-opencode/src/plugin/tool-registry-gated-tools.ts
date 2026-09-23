@@ -1,5 +1,5 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
-import type { OhMyOpenCodeConfig } from "../config"
+import type { CryptHunterConfig } from "../config"
 import type { Managers } from "../create-managers"
 import type { PluginContext } from "./types"
 import type { ToolRegistryFactories } from "./tool-registry-factories"
@@ -8,7 +8,7 @@ import { isTaskSystemEnabled } from "../shared"
 
 export function createTaskToolsRecord(args: {
   readonly taskSystemEnabled: boolean
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly ctx: PluginContext
   readonly factories: ToolRegistryFactories
 }): Record<string, ToolDefinition> {
@@ -24,7 +24,7 @@ export function createTaskToolsRecord(args: {
 }
 
 export function createHashlineToolsRecord(args: {
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly ctx: PluginContext
   readonly factories: ToolRegistryFactories
 }): Record<string, ToolDefinition> {
@@ -33,7 +33,7 @@ export function createHashlineToolsRecord(args: {
 }
 
 export function createMonitorToolsRecord(args: {
-  readonly pluginConfig: OhMyOpenCodeConfig
+  readonly pluginConfig: CryptHunterConfig
   readonly ctx: PluginContext
   readonly managers: Pick<Managers, "monitorManager">
   readonly factories: ToolRegistryFactories
@@ -43,6 +43,6 @@ export function createMonitorToolsRecord(args: {
   return factories.createMonitorTools(managers.monitorManager, Object.assign({}, ctx, { pluginConfig }))
 }
 
-export function getTaskSystemEnabled(pluginConfig: OhMyOpenCodeConfig): boolean {
+export function getTaskSystemEnabled(pluginConfig: CryptHunterConfig): boolean {
   return isTaskSystemEnabled(pluginConfig)
 }

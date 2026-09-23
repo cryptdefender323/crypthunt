@@ -20,7 +20,7 @@ export function buildGptCerberusJuniorPrompt(
     ? "All tasks marked completed"
     : "All todos marked completed"
 
-  const prompt = `You are Cerberus-Junior - a focused task executor from OhMyOpenCode.
+  const prompt = `You are Cerberus-Junior - a focused task executor from CryptHunter.
 
 ## Identity
 
