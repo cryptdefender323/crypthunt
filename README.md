@@ -18,6 +18,8 @@
 
 Define the scope. The agent runs recon, maps the attack surface, exploits findings, validates every result, and delivers a report. You review findings, not progress.
 
+**[Download and install](#download-and-install)** · [After install](#after-install) · [Modes](#engagement-modes) · [Docs](docs/guide/installation.md)
+
 ---
 
 ## What it does
@@ -36,57 +38,109 @@ You:     read the report
 
 ---
 
-## Installation
+## Download and install
 
-### macOS
+Repo: [github.com/cryptdefender323/crypthunt](https://github.com/cryptdefender323/crypthunt)
+
+Pick **one** path. Option 1 is enough for most people.
+
+| OS | Command |
+|---|---|
+| macOS / Linux / WSL | `curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh \| bash` |
+| Windows (PowerShell) | `irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 \| iex` |
+
+The installer installs Node.js, Bun, Git, OpenCode, clones this repo to `~/.crypthunter` (Windows: `%USERPROFILE%\.crypthunter`), and registers the plugin.
+
+### 1. macOS / Linux (Kali, Parrot, Ubuntu, Debian, Arch, Fedora, WSL)
+
+Open Terminal and run:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh | bash
 ```
 
-Installs Node.js, Bun, OpenCode, and CryptHunter automatically. After install:
+Reload PATH, then finish setup:
 
 ```bash
-exec $SHELL            # reload PATH
-crypthunter install    # setup AI provider
-opencode               # launch
+exec $SHELL
+crypthunter install
+opencode
 ```
 
-### Linux (Kali / Parrot / Ubuntu / Debian / Arch)
+`crypthunter install` asks which AI provider to use (Claude, OpenAI, Gemini, Copilot, or local).
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh | bash
-```
+### 2. Windows
 
-After install:
-
-```bash
-exec $SHELL            # reload PATH
-crypthunter install    # setup AI provider
-opencode               # launch
-```
-
-### Windows (PowerShell as Administrator)
+1. Open **PowerShell** (Search → PowerShell). Admin is not required.
+2. Paste:
 
 ```powershell
-winget install OpenJS.NodeJS.LTS
-npm install -g opencode-ai --allow-scripts
-powershell -c "irm bun.sh/install.ps1 | iex"
-curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh | bash
-crypthunter install
+irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 | iex
 ```
 
-### Verify
+If Windows blocks the script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 | iex"
+```
+
+3. Close PowerShell. Open a **new** PowerShell window.
+4. Run:
+
+```powershell
+crypthunter install
+opencode
+```
+
+Needs Windows 10/11 with `winget` (install **App Installer** from the Microsoft Store if `winget` is missing).
+
+### 3. Download the source yourself (git clone)
+
+Use this if you want the files on disk, or if you are developing.
+
+You need Git, [Node.js 22+](https://nodejs.org), and [Bun](https://bun.sh).
+
+```bash
+git clone https://github.com/cryptdefender323/crypthunt.git
+cd crypthunt
+bun install
+bun run build
+bun run dist/cli/index.js install
+bun run dist/cli/index.js doctor
+```
+
+ZIP from GitHub: green **Code** button → **Download ZIP** → unzip → same `bun install` / `bun run build` / `bun run dist/cli/index.js install` steps inside the folder.
+
+### 4. Check that it worked
 
 ```bash
 crypthunter doctor
 ```
 
-### Codex Light Edition
+Optional pentest binaries (nmap, nuclei, and the rest) can wait:
+
+```bash
+crypthunter tools install
+```
+
+### 5. Codex Light (optional)
 
 ```bash
 npx lazycodex-ai install
 ```
+
+### If something fails
+
+| Problem | Fix |
+|---|---|
+| `curl` / `irm` 404 | Repo must be **public**, or you must be logged into GitHub. Branch is `main`. |
+| `crypthunter: command not found` | Close the terminal and open a new one. On macOS/Linux also run `exec $SHELL`. |
+| `bun: command not found` | Install from [bun.sh](https://bun.sh), then open a new terminal. |
+| Windows: execution policy | Use the `-ExecutionPolicy Bypass` command above. |
+| Windows: `winget` missing | Install **App Installer** from the Microsoft Store, then retry. |
+| Installer cannot clone | Run Option 3 (`git clone`) instead. |
+
+Longer notes: [docs/guide/installation.md](docs/guide/installation.md)
 
 ---
 
@@ -290,14 +344,23 @@ cd phantom && make
 
 ## Uninstall
 
-```bash
-jq '.plugin = [.plugin[] | select(. != "crypthunter")]' \
-    ~/.config/opencode/opencode.json > /tmp/oc.json && \
-    mv /tmp/oc.json ~/.config/opencode/opencode.json
+macOS / Linux:
 
+```bash
+rm -rf ~/.crypthunter ~/.local/bin/crypthunter ~/.local/bin/ch
 rm -f ~/.config/opencode/crypthunter.jsonc
-rm -rf .omop/
 ```
+
+Then delete the `file://...crypthunter.js` line from `~/.config/opencode/opencode.jsonc`.
+
+Windows (PowerShell):
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.crypthunter"
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\crypthunter"
+```
+
+Then delete the plugin line from `%USERPROFILE%\.config\opencode\opencode.jsonc`.
 
 ---
 
@@ -317,7 +380,4 @@ rm -rf .omop/
 ---
 
 Contributions welcome — PRs to `main`.
-# crypthunt
-# crypthunt
-# crypthunt
 # crypthunt
