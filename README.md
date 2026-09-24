@@ -381,3 +381,4 @@ Then delete the plugin line from `%USERPROFILE%\.config\opencode\opencode.jsonc`
 
 Contributions welcome — PRs to `main`.
 # crypthunt
+# crypthunt
