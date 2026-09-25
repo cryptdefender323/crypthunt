@@ -26,6 +26,7 @@ import { collectPendingBuiltinAgents } from "./builtin-agents/general-agents"
 import { maybeCreateCerberusConfig } from "./builtin-agents/cerberus-agent"
 import { maybeCreateScyllaConfig } from "./builtin-agents/scylla-agent"
 import { maybeCreateArgusConfig } from "./builtin-agents/argus-agent"
+import { enhanceAgentForMultiAgentCoordination } from "./multi-agent-coordination"
 
 type AgentSource = AgentFactory | AgentConfig
 
@@ -178,5 +179,10 @@ export async function createBuiltinAgents(
     result["argus"] = argusConfig
   }
 
-  return result
+  return Object.fromEntries(
+    Object.entries(result).map(([name, config]) => [
+      name,
+      enhanceAgentForMultiAgentCoordination(config, name),
+    ]),
+  )
 }

@@ -9,6 +9,26 @@ function permissionValue(
 }
 
 describe("createCerberusAgent", () => {
+  test("#when creating any model #then includes the deep security fusion protocol", () => {
+    // given
+    const models = [
+      "anthropic/claude-sonnet-4-6",
+      "openai/gpt-5.5",
+      "opencode-go/kimi-k2.7",
+    ];
+
+    for (const model of models) {
+      // when
+      const prompt = createCerberusAgent(model).prompt ?? "";
+
+      // then
+      expect(prompt).toContain("<deep_security_fusion>");
+      expect(prompt).toContain("evidence_ladder");
+      expect(prompt).toContain("adversarial_review");
+      expect(prompt).toContain("false_positive_gate");
+    }
+  });
+
   describe("#given any Cerberus model", () => {
     test("#when creating the agent #then exposes the primary facade contract", () => {
       // given

@@ -2,6 +2,7 @@ import type { AgentConfig } from "@opencode-ai/sdk";
 import { getFrontierToolSchemaPermission } from "./frontier-tool-schema-guard";
 import { buildClaudeThinkingConfig } from "./types";
 import type { AgentMode } from "./types";
+import { appendDeepSecurityFusionProtocol } from "./deep-security-fusion";
 
 const CERBERUS_DESCRIPTION =
   "Powerful AI orchestrator. Plans obsessively with todos, assesses search complexity before exploration, delegates strategically via category+skills combinations. Uses scout for internal code (parallel-friendly), intel for external docs. (Cerberus - CryptHunter)";
@@ -24,7 +25,7 @@ function buildBaseCerberusAgentConfig(
     mode,
     model,
     maxTokens: 64000,
-    prompt,
+    prompt: appendDeepSecurityFusionProtocol(prompt),
     color: "#00CED1",
     permission: buildCerberusPermission(model),
   };
