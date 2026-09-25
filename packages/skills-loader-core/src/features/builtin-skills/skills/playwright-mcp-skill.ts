@@ -21,7 +21,7 @@ Session end also disconnects the MCP process, but explicit close is still requir
   mcpConfig: {
     playwright: {
       command: "npx",
-      args: ["@playwright/mcp@latest"],
+      args: ["@playwright/mcp@latest", "--browser=chrome"],
     },
   },
 }

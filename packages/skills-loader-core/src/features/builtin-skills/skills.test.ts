@@ -27,7 +27,7 @@ describe("createBuiltinSkills", () => {
 		// #then
 		expect(playwrightSkill.name).toBe("playwright")
 		expect(playwrightMcp?.command).toBe("npx")
-		expect(playwrightMcp?.args).toEqual(["@playwright/mcp@latest"])
+		expect(playwrightMcp?.args).toEqual(["@playwright/mcp@latest", "--browser=chrome"])
 		expect(agentBrowserSkill.name).toBe("agent-browser")
 		expect(agentBrowserSkill.allowedTools).toEqual(["Bash(agent-browser:*)"])
 	})

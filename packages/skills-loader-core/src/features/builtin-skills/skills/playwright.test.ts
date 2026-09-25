@@ -44,7 +44,7 @@ describe("playwright browser skill facade", () => {
     expect(template).not.toContain("---")
     expect(mcpConfig).toEqual({
       command: "npx",
-      args: ["@playwright/mcp@latest"],
+      args: ["@playwright/mcp@latest", "--browser=chrome"],
     })
   })
 
