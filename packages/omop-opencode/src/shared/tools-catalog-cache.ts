@@ -6,6 +6,7 @@ import { log } from "./logger"
 
 const DEFAULT_REMOTE_URL =
   "https://raw.githubusercontent.com/zakirkun/crypthunter/refs/heads/dev/tools-catalog.json"
+const REMOTE_LOAD_TIMEOUT_MS = 1_000
 
 let cachedCatalog: ToolsCatalog | null | "not-found" = null
 let loadPromise: Promise<ToolsCatalog | null> | null = null
@@ -25,14 +26,35 @@ async function loadFromLocalFile(path: string): Promise<ToolsCatalog | null> {
 }
 
 async function loadFromRemote(url: string): Promise<ToolsCatalog | null> {
+  const controller = new AbortController()
+  let timeout: ReturnType<typeof setTimeout> | undefined
   try {
-    const res = await fetch(url)
+    const fetchPromise = fetch(url, { signal: controller.signal })
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => {
+        controller.abort()
+        reject(new Error(`Timed out after ${REMOTE_LOAD_TIMEOUT_MS}ms`))
+      }, REMOTE_LOAD_TIMEOUT_MS)
+    })
+    const res = await Promise.race([fetchPromise, timeoutPromise])
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return (await res.json()) as ToolsCatalog
   } catch (err) {
     log("[tools-catalog-cache] remote catalog load failed", { err: String(err), url })
     return null
+  } finally {
+    if (timeout) clearTimeout(timeout)
   }
+}
+
+function getLocalCatalogPaths(options: ToolsCatalogCacheOptions, cwd: string): string[] {
+  if (options.catalogPath) return [options.catalogPath]
+
+  return [...new Set([
+    resolve(cwd, "tools-catalog.json"),
+    resolve(import.meta.dir, "../tools-catalog.json"),
+    resolve(import.meta.dir, "../../../../tools-catalog.json"),
+  ])]
 }
 
 export async function getToolsCatalog(options: ToolsCatalogCacheOptions = {}): Promise<ToolsCatalog | null> {
@@ -42,11 +64,12 @@ export async function getToolsCatalog(options: ToolsCatalogCacheOptions = {}): P
 
   loadPromise = (async () => {
     const cwd = options.cwd ?? process.cwd()
-    const localPath = options.catalogPath ?? resolve(cwd, "tools-catalog.json")
-    const local = await loadFromLocalFile(localPath)
-    if (local) {
-      cachedCatalog = local
-      return local
+    for (const localPath of getLocalCatalogPaths(options, cwd)) {
+      const local = await loadFromLocalFile(localPath)
+      if (local) {
+        cachedCatalog = local
+        return local
+      }
     }
 
     const remote = await loadFromRemote(options.remoteUrl ?? DEFAULT_REMOTE_URL)
