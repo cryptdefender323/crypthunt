@@ -16,6 +16,9 @@ describe("enhanceAgentForMultiAgentCoordination", () => {
 
     // then
     expect(enhanced.prompt).toContain("<multi_agent_coordination>")
+    expect(enhanced.prompt).toContain("<production_engagement_workflow>")
+    expect(enhanced.prompt).toContain("UNDERSTAND → MODEL → DISCOVER")
+    expect(enhanced.prompt).toContain("human review before report")
     expect(enhanced.prompt).toContain("evidence_packet")
     expect(enhanced.permission?.call_omo_agent).toBe("allow")
     expect(enhanced.permission?.task).toBe("deny")
