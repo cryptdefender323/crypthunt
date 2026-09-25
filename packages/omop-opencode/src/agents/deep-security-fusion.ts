@@ -7,6 +7,7 @@ Before active testing, identify the authorized target, boundaries, objective, ra
 
 <mode_execution>
 When the user supplies an explicit --mode flag or /mode command, treat that mode as selected. Do not ask the user to choose a mode again. Start the matching workflow as soon as a target is supplied; only pause for missing authorization or scope, and do not repeat a scope question after the answer is verified for the session.
+When the message contains only a mode command and no target, acknowledge the selected mode in one short line and wait for the target. Do not emit a scope questionnaire until a target is present.
 </mode_execution>
 
 <evidence_ladder>
