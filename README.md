@@ -42,22 +42,29 @@ You:     read the report
 
 Repo: [github.com/cryptdefender323/crypthunt](https://github.com/cryptdefender323/crypthunt)
 
-Pick **one** path. Option 1 is enough for most people.
+Choose the path for your environment. The installer detects the current OS and package manager, then uses the current user's home/config directories.
 
-| OS | Command |
+| Environment | Recommended path |
 |---|---|
-| macOS / Linux / WSL | `curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh \| bash` |
-| Windows (PowerShell) | `irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 \| iex` |
+| macOS, Linux, WSL, or Git Bash | Automatic installer below |
+| Windows PowerShell | Source install below |
+| Development or troubleshooting | Clone and build locally |
 
-The installer installs Node.js, Bun, Git, OpenCode, clones this repo to `~/.crypthunter` (Windows: `%USERPROFILE%\.crypthunter`), and registers the plugin.
+### Automatic installer: macOS, Linux, WSL, and Git Bash
 
-### 1. macOS / Linux (Kali, Parrot, Ubuntu, Debian, Arch, Fedora, WSL)
-
-Open Terminal and run:
+Run this from the shell where you will use CryptHunter:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.sh | bash
 ```
+
+The installer uses these defaults and supports overrides:
+
+| Purpose | Default | Override |
+|---|---|---|
+| CryptHunter source | `~/.crypthunter` | `CRYPTHUNTER_INSTALL_DIR=/path/to/crypthunter` |
+| OpenCode config | `~/.config/opencode` | `OPENCODE_CONFIG_DIR=/path/to/opencode-config` |
+| Launcher | `~/.local/bin` | Add the directory to `PATH` manually if needed |
 
 Reload PATH, then finish setup:
 
@@ -67,34 +74,25 @@ crypthunter install
 opencode
 ```
 
-`crypthunter install` asks which AI provider to use (Claude, OpenAI, Gemini, Copilot, or local).
+`crypthunter install` asks which AI provider you want to use. Choose only providers for which you have access or credentials.
 
-### 2. Windows
+### Windows PowerShell
 
-1. Open **PowerShell** (Search → PowerShell). Admin is not required.
-2. Paste:
-
-```powershell
-irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 | iex
-```
-
-If Windows blocks the script:
+The repository currently does not ship a native `install.ps1`. Use PowerShell with Git, Node.js 22+, and Bun already installed:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/cryptdefender323/crypthunt/main/install.ps1 | iex"
-```
-
-3. Close PowerShell. Open a **new** PowerShell window.
-4. Run:
-
-```powershell
-crypthunter install
+git clone https://github.com/cryptdefender323/crypthunt.git
+Set-Location crypthunt
+bun install --frozen-lockfile
+bun run build
+bun run dist/cli/index.js install --platform opencode
+bun run dist/cli/index.js doctor
 opencode
 ```
 
-Needs Windows 10/11 with `winget` (install **App Installer** from the Microsoft Store if `winget` is missing).
+For the most compatible Windows shell, use WSL or Git Bash and the automatic installer above. Native Windows support depends on the availability of OpenCode, Bun, and each optional security tool for Windows.
 
-### 3. Download the source yourself (git clone)
+### Clone and build locally
 
 Use this if you want the files on disk, or if you are developing.
 
@@ -103,7 +101,7 @@ You need Git, [Node.js 22+](https://nodejs.org), and [Bun](https://bun.sh).
 ```bash
 git clone https://github.com/cryptdefender323/crypthunt.git
 cd crypthunt
-bun install
+bun install --frozen-lockfile
 bun run build
 bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
@@ -111,19 +109,25 @@ bun run dist/cli/index.js doctor
 
 ZIP from GitHub: green **Code** button → **Download ZIP** → unzip → same `bun install` / `bun run build` / `bun run dist/cli/index.js install` steps inside the folder.
 
-### 4. Check that it worked
+To use a custom source and OpenCode config directory on macOS/Linux/WSL:
+
+```bash
+CRYPTHUNTER_INSTALL_DIR="$HOME/tools/crypthunter" OPENCODE_CONFIG_DIR="$HOME/.config/opencode-personal" bash install.sh
+```
+
+### Check that it worked
 
 ```bash
 crypthunter doctor
 ```
 
-Optional pentest binaries (nmap, nuclei, and the rest) can wait:
+Optional pentest binaries can be installed only when needed:
 
 ```bash
 crypthunter tools install
 ```
 
-### 5. Codex Light (optional)
+### Codex Light (optional)
 
 ```bash
 npx lazycodex-ai install
@@ -136,9 +140,10 @@ npx lazycodex-ai install
 | `curl` / `irm` 404 | Repo must be **public**, or you must be logged into GitHub. Branch is `main`. |
 | `crypthunter: command not found` | Close the terminal and open a new one. On macOS/Linux also run `exec $SHELL`. |
 | `bun: command not found` | Install from [bun.sh](https://bun.sh), then open a new terminal. |
-| Windows: execution policy | Use the `-ExecutionPolicy Bypass` command above. |
-| Windows: `winget` missing | Install **App Installer** from the Microsoft Store, then retry. |
-| Installer cannot clone | Run Option 3 (`git clone`) instead. |
+| Windows native install fails | Use WSL or Git Bash, or follow the source-install steps above. |
+| OpenCode is not registered | Run `bun run dist/cli/index.js install --platform opencode`, then `crypthunter doctor`. |
+| Custom directory is needed | Set `CRYPTHUNTER_INSTALL_DIR` and/or `OPENCODE_CONFIG_DIR` before running `install.sh`. |
+| Installer cannot clone | Use the local clone-and-build steps instead. |
 
 Longer notes: [docs/guide/installation.md](docs/guide/installation.md)
 
@@ -380,6 +385,7 @@ Then delete the plugin line from `%USERPROFILE%\.config\opencode\opencode.jsonc`
 ---
 
 Contributions welcome — PRs to `main`.
+# crypthunt
 # crypthunt
 # crypthunt
 # crypthunt
