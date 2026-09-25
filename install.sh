@@ -252,7 +252,7 @@ esac
 # ─── register plugin with OpenCode ────────────────────────────────────────────
 
 register_plugin() {
-  local plugin_entry="file://$INSTALL_DIR/bin/crypthunter.js"
+  local plugin_entry="file://$INSTALL_DIR/dist/index.js"
   local config_dir="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
   local config_file="$config_dir/opencode.jsonc"
 
