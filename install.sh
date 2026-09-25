@@ -295,17 +295,15 @@ register_plugin \
   && success "Plugin registered in ~/.config/opencode/opencode.jsonc" \
   || warn "Auto-registration failed — run: crypthunter install"
 
-# ─── background pre-build ─────────────────────────────────────────────────────
-
 if [ ! -f "$INSTALL_DIR/dist/cli/index.js" ]; then
-  info "Pre-building in background (first launch will be instant after this)..."
-  (
-    cd "$INSTALL_DIR"
-    bun install --silent 2>/dev/null \
-      && bun run build 2>/dev/null \
-      && touch "$INSTALL_DIR/.build-complete"
-  ) &
-  info "Build running in background — first launch may take ~60s if build not done"
+  info "Building CryptHunter before completing the install..."
+  [ -f "$INSTALL_DIR/package.json" ] || error "Installation is incomplete: $INSTALL_DIR/package.json is missing"
+  cd "$INSTALL_DIR" || error "Cannot enter installation directory: $INSTALL_DIR"
+  bun install --silent || error "Dependency installation failed in $INSTALL_DIR"
+  bun run build || error "CryptHunter build failed in $INSTALL_DIR"
+  [ -f "$INSTALL_DIR/dist/cli/index.js" ] || error "Build completed without dist/cli/index.js"
+  touch "$INSTALL_DIR/.build-complete"
+  success "CryptHunter build complete"
 fi
 
 # ─── done ─────────────────────────────────────────────────────────────────────
