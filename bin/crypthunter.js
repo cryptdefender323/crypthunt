@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = dirname(fileURLToPath(new URL("..", import.meta.url)));
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CLI = join(ROOT, "dist", "cli", "index.js");
 
 function findBun() {
