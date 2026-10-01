@@ -381,15 +381,3 @@ Then delete the plugin line from `%USERPROFILE%\.config\opencode\opencode.jsonc`
 ---
 
 > For authorized security testing only. Using this tool against systems you do not own or have explicit written permission to test is illegal.
-
----
-
-Contributions welcome — PRs to `main`.
-# crypthunt
-# crypthunt
-# crypthunt
-# crypthunt
-# crypthunt
-# crypthunt
-# crypthunt
-# crypthunt
