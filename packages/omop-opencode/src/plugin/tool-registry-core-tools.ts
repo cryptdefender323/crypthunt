@@ -128,6 +128,7 @@ export function createCoreTools(args: {
   tools.pentest_confidence = factories.createPentestConfidenceTool()
   tools.pentest_pivot = factories.createPentestPivotTool()
   tools.pentest_handoff = factories.createPentestHandoffTool()
+  tools.pentest_open_evidence = factories.createPentestOpenEvidenceTool()
 
   return tools
 }

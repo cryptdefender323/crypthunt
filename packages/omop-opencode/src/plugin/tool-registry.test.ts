@@ -142,6 +142,7 @@ describe("#given task_system configuration", () => {
     expect(result.filteredTools).not.toHaveProperty("task_get")
     expect(result.filteredTools).not.toHaveProperty("task_list")
     expect(result.filteredTools).not.toHaveProperty("task_update")
+    expect(result.filteredTools).toHaveProperty("pentest_open_evidence")
   })
 
   test("#when task_system is enabled #then task tools are registered", () => {
