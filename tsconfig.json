@@ -17,5 +17,11 @@
     "types": ["bun-types"]
   },
   "include": ["packages/omop-opencode/src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "script"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "packages/omop-opencode/src/__tests__/perf/fixtures/**",
+    "script"
+  ]
 }
