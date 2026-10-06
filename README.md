@@ -194,7 +194,7 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | `ctf` | HackTheBox, TryHackMe, picoCTF | Flag |
 | `blue-team` | Detection, IR, defensive audit | IR report |
 | `offensive` | Aggressive exploitation | Technical |
-| `grey-hat` | Balanced assessment | Technical |
+| `grey-hat` | Authorized vulnerability research with strict scope | Technical evidence report |
 | `forensic` | Evidence preservation | Chain-of-custody |
 | `reverse-engineering` | Binaries, firmware | Technical RE |
 | `mobile-pentest` | Android / iOS | OWASP Mobile |

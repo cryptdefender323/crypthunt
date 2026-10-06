@@ -58,7 +58,7 @@ fullscan
 /mode red-team        # stealth operations, persistence, lateral movement
 /mode blue-team       # detection, incident response, forensics
 /mode offensive       # aggressive exploitation, max parallelism
-/mode grey-hat        # balanced offensive/defensive
+/mode grey-hat        # authorized vulnerability research; strict scope, no stealth
 /mode forensic        # digital forensics, evidence preservation
 /mode reverse-engineering  # binary analysis, RE challenges
 /mode mobile-pentest  # Android / iOS app security assessment

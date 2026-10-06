@@ -169,18 +169,25 @@ Exploit-first, maximum parallelism. All tools enabled.
 
 ## Grey Hat
 
-**Use when:** Research and educational contexts. Balanced offensive/defensive coverage.
+**Use when:** You have explicit written authorization and want a thorough,
+vulnerability-led assessment with evidence suitable for human review. Grey-hat
+does not mean testing without permission. It is deliberately different from
+red-team adversary emulation: it focuses on broad authorized discovery and safe
+vulnerability validation, without covert operations.
 
-Stealth enabled by default. Scope enforcement moderate. Both offensive skills and blue team detection run in parallel.
+Do not start active testing until the authorization identifies the target,
+allowed methods, and operating limits. Findings require human review before
+external submission.
 
 | Property | Value |
 | :--- | :--- |
-| Scope enforcement | Moderate |
-| Tool priority | Balanced (all phases equal priority) |
-| Skill chain | `pentest-recon` → `pentest-enum` → `pentest-exploit` + `blue-detect` |
-| Parallelism | 4x |
-| Stealth | On |
+| Scope enforcement | **Strict**; explicit assets only, auto-stop on violation |
+| Skill chain | `greyhat-research` → `pentest-recon` → `pentest-enum` → `pentest-exploit` → `pentest-privesc` → `pentest-report` |
+| Parallelism | 8x |
+| Stealth | Off |
 | DoS protection | On |
+| Exfiltration guard | On |
+| C2, persistence, lateral movement | Disabled |
 | Report format | Technical |
 
 ---
@@ -272,11 +279,11 @@ Scope-strict (stay within in-scope app and its APIs). Requires physical/virtual 
 
 | Control | Auto | CTF | Bug Bounty | Red Team | Blue Team | Offensive | Grey Hat | Forensic | RE | Mobile |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Scope enforcement | Moderate | None | **Strict** | Moderate | Moderate | Moderate | Moderate | **Strict** | None | **Strict** |
+| Scope enforcement | Moderate | None | **Strict** | **Strict** | Moderate | Moderate | **Strict** | **Strict** | None | **Strict** |
 | DoS protection | On | Off | **On** | **On** | On | Off | On | On | Off | On |
-| Stealth mode | Off | Off | Off | **On** | Off | Off | On | Off | Off | Off |
-| Exfiltration guard | On | Off | **On** | **On** | On | Off | On | Off | Off | On |
-| Auto-stop on violation | No | No | **Yes** | No | No | No | No | No | No | No |
+| Stealth mode | Off | Off | Off | **On** | Off | Off | Off | Off | Off | Off |
+| Exfiltration guard | On | Off | **On** | Off | On | Off | **On** | Off | Off | On |
+| Auto-stop on violation | No | No | **Yes** | **Yes** | No | No | **Yes** | No | No | No |
 | Exploitation | On | On | On | On | **Off** | On | On | **Off** | On | On |
 
 ---
