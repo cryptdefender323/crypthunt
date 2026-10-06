@@ -1,0 +1,23 @@
+type RuntimeEnv = Readonly<Record<string, string | undefined>>;
+export declare const SPARKSHELL_SPARK_ENV = "OMOP_SPARKSHELL_SPARK";
+export declare const SPARKSHELL_SPARK_MODEL_ENV = "OMOP_SPARKSHELL_SPARK_MODEL";
+export declare const SPARKSHELL_SPARK_TIMEOUT_ENV = "OMOP_SPARKSHELL_SPARK_TIMEOUT_MS";
+export declare const SPARKSHELL_SPARK_BIN_ENV = "OMOP_SPARKSHELL_SPARK_BIN";
+export declare const SPARKSHELL_SPARK_PROFILE_ENV = "OMOP_SPARKSHELL_SPARK_PROFILE";
+export declare const DEFAULT_SPARK_MODEL = "gpt-5.3-codex-spark";
+export declare const DEFAULT_SPARK_TIMEOUT_MS = 30000;
+export declare const SPARK_PROMPT_OUTPUT_CAP_CHARS = 24000;
+export type SparkSummaryRequest = {
+    readonly commandLine: string;
+    readonly text: string;
+    readonly budgetChars: number;
+    readonly sessionContext: string;
+};
+export type SparkSummarizer = (request: SparkSummaryRequest) => string | null;
+export declare function isSparkSummaryEnabled(env: RuntimeEnv): boolean;
+export declare function resolveSparkModel(env: RuntimeEnv): string;
+export declare function resolveSparkTimeoutMs(env: RuntimeEnv): number;
+export declare function buildSparkSummaryPrompt(request: SparkSummaryRequest): string;
+export declare function buildSparkExecArgs(env: RuntimeEnv, lastMessagePath: string): readonly string[];
+export declare function createDefaultSparkSummarizer(env: RuntimeEnv, cwd: string): SparkSummarizer;
+export {};

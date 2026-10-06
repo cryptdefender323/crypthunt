@@ -1,0 +1,34 @@
+import type { HookName, CryptHunterConfig } from "../../config";
+import type { ModelCacheState } from "../../plugin-state";
+import type { PluginContext } from "../types";
+import { createCommentCheckerHooks, createToolOutputTruncatorHook, createDirectoryAgentsInjectorHook, createDirectoryReadmeInjectorHook, createEmptyTaskResponseDetectorHook, createTaskReminderHook, createRulesInjectorHook, createTasksTodowriteDisablerHook, createWriteExistingFileGuardHook, createBashFileReadGuardHook, createCatalogToolInstallerHook, createHashlineReadEnhancerHook, createHashlineEditDiffEnhancerHook, createReadImageResizerHook, createJsonErrorRecoveryHook, createTodoDescriptionOverrideHook, createWebFetchRedirectGuardHook, createTeamToolGating, createFsyncSkipWarningHook, createNotepadWriteGuardHook, createPlanFormatValidatorHook } from "../../hooks";
+export type ToolGuardHooks = {
+    commentChecker: ReturnType<typeof createCommentCheckerHooks> | null;
+    toolOutputTruncator: ReturnType<typeof createToolOutputTruncatorHook> | null;
+    directoryAgentsInjector: ReturnType<typeof createDirectoryAgentsInjectorHook> | null;
+    directoryReadmeInjector: ReturnType<typeof createDirectoryReadmeInjectorHook> | null;
+    emptyTaskResponseDetector: ReturnType<typeof createEmptyTaskResponseDetectorHook> | null;
+    taskReminder: ReturnType<typeof createTaskReminderHook> | null;
+    rulesInjector: ReturnType<typeof createRulesInjectorHook> | null;
+    tasksTodowriteDisabler: ReturnType<typeof createTasksTodowriteDisablerHook> | null;
+    writeExistingFileGuard: ReturnType<typeof createWriteExistingFileGuardHook> | null;
+    bashFileReadGuard: ReturnType<typeof createBashFileReadGuardHook> | null;
+    catalogToolInstaller: ReturnType<typeof createCatalogToolInstallerHook> | null;
+    hashlineReadEnhancer: ReturnType<typeof createHashlineReadEnhancerHook> | null;
+    hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null;
+    jsonErrorRecovery: ReturnType<typeof createJsonErrorRecoveryHook> | null;
+    readImageResizer: ReturnType<typeof createReadImageResizerHook> | null;
+    todoDescriptionOverride: ReturnType<typeof createTodoDescriptionOverrideHook> | null;
+    webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null;
+    fsyncSkipWarning: ReturnType<typeof createFsyncSkipWarningHook> | null;
+    teamToolGating: ReturnType<typeof createTeamToolGating> | null;
+    notepadWriteGuard: ReturnType<typeof createNotepadWriteGuardHook> | null;
+    planFormatValidator: ReturnType<typeof createPlanFormatValidatorHook> | null;
+};
+export declare function createToolGuardHooks(args: {
+    ctx: PluginContext;
+    pluginConfig: CryptHunterConfig;
+    modelCacheState: ModelCacheState;
+    isHookEnabled: (hookName: HookName) => boolean;
+    safeHookEnabled: boolean;
+}): ToolGuardHooks;
