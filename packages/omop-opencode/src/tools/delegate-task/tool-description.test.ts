@@ -35,8 +35,8 @@ describe("createDelegateTaskPresentation", () => {
 
     const description = presentation.description
 
-    expect(description).toContain("there is no minimum query count")
-    expect(description).toContain("within the active mode's parallelism")
-    expect(description).toContain("collect every required result before final reporting")
+    expect(description).toContain("There is no minimum query count")
+    expect(description).toContain("within the active mode's parallelism limit")
+    expect(description).toContain("collect all required results before reporting")
   })
 })

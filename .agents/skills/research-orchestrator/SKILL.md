@@ -42,7 +42,7 @@ Never skip from EXECUTE directly to REPORT.
 Never skip DISPROVE.
 Never infer impact from root cause without demonstration.
 
-### Coverage-preserving throughput
+### Schedule the full task set
 
 Improve throughput by scheduling the existing work graph, not by pruning it.
 Build the complete task set required by the active mode, scope, and evidence,
