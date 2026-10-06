@@ -7,12 +7,14 @@ import type { Member } from "../types"
 const resolveCategoryExecutionMock = mock()
 const resolveSubagentExecutionMock = mock()
 const buildSystemContentMock = mock(() => "resolved-system-content")
+const resolveSkillContentMock = mock(async () => ({ content: "loaded playbooks", contents: ["loaded playbooks"], error: null }))
 
 mock.module("./resolve-member-dependencies", () => ({
   resolveCategoryExecution: resolveCategoryExecutionMock,
   resolveSubagentExecution: resolveSubagentExecutionMock,
   buildSystemContent: buildSystemContentMock,
 }))
+mock.module("../../../tools/delegate-task/skill-resolver", () => ({ resolveSkillContent: resolveSkillContentMock }))
 
 const { resolveMember, TeamMemberResolutionError } = await import("./resolve-member?resolve-member-test")
 
@@ -31,6 +33,8 @@ describe("resolveMember", () => {
     resolveSubagentExecutionMock.mockReset()
     buildSystemContentMock.mockReset()
     buildSystemContentMock.mockImplementation(() => "resolved-system-content")
+    resolveSkillContentMock.mockReset()
+    resolveSkillContentMock.mockImplementation(async () => ({ content: "loaded playbooks", contents: ["loaded playbooks"], error: null }))
   })
 
   test("routes category members through resolveCategoryExecution", async () => {
@@ -224,5 +228,33 @@ describe("resolveMember", () => {
     expect(source).not.toContain("member.prompt +")
     expect(source).not.toContain("+ member.prompt")
     expect(source).not.toContain(".join(")
+  })
+
+  test("loads requested skills into the team member system prompt", async () => {
+    // given
+    const member = {
+      backendType: "in-process",
+      isActive: true,
+      kind: "category",
+      name: "web-auditor",
+      category: "deep",
+      prompt: "Audit the scoped web application",
+      loadSkills: ["bug-bounty-research", "tool-capability-registry"],
+    } satisfies Member
+    resolveCategoryExecutionMock.mockResolvedValue({
+      agentToUse: "cerberus-junior",
+      categoryModel: { providerID: "openai", modelID: "gpt-5.4" },
+      fallbackChain: [],
+    })
+
+    // when
+    await resolveMember(member, createExecutorContext(), "deep, quick")
+
+    // then
+    expect(resolveSkillContentMock).toHaveBeenCalledWith(member.loadSkills, {
+      directory: "/tmp/team-mode-test",
+      teamModeEnabled: true,
+    })
+    expect(buildSystemContentMock).toHaveBeenCalledWith(expect.objectContaining({ skillContents: ["loaded playbooks"] }))
   })
 })

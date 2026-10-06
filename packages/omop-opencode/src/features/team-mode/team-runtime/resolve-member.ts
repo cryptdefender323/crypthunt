@@ -3,6 +3,7 @@ import type { DelegatedModelConfig } from "../../../shared/model-resolution-type
 import type { ExecutorContext } from "../../../tools/delegate-task/executor-types"
 import type { DelegateTaskArgs } from "../../../tools/delegate-task/types"
 import type { Member } from "../types"
+import { resolveSkillContent } from "../../../tools/delegate-task/skill-resolver"
 import {
   buildSystemContent,
   resolveCategoryExecution,
@@ -42,13 +43,26 @@ function resolveSystemContent(input: {
   categoryPromptAppend?: string
   maxPromptTokens?: number
   model: DelegatedModelConfig | undefined
+  skillContents?: string[]
 }): string {
   return buildSystemContent({
     agentName: input.agentToUse,
     categoryPromptAppend: input.categoryPromptAppend,
     maxPromptTokens: input.maxPromptTokens,
     model: input.model,
+    ...(input.skillContents && input.skillContents.length > 0 ? { skillContents: input.skillContents } : {}),
   }) ?? ""
+}
+
+async function loadMemberSkills(member: Member, ctx: ExecutorContext): Promise<string[]> {
+  const requestedSkills = member.loadSkills ?? []
+  if (requestedSkills.length === 0) return []
+  const resolved = await resolveSkillContent(requestedSkills, {
+    directory: ctx.directory,
+    teamModeEnabled: true,
+  })
+  if (resolved.error) throw new Error(resolved.error)
+  return resolved.contents
 }
 
 // Strip global `agents.cerberus-junior.model` override at the team-mode boundary —
@@ -66,6 +80,7 @@ export async function resolveMember(
   parentAgent?: string,
 ): Promise<ResolvedMember> {
   try {
+    const skillContents = await loadMemberSkills(member, ctx)
     if (member.kind === "category") {
       const execution = await resolveCategoryExecution(
         {
@@ -92,6 +107,7 @@ export async function resolveMember(
           categoryPromptAppend: execution.categoryPromptAppend,
           maxPromptTokens: execution.maxPromptTokens,
           model: execution.categoryModel,
+          skillContents,
         }),
       }
     }
@@ -122,6 +138,7 @@ export async function resolveMember(
       systemContent: resolveSystemContent({
         agentToUse: execution.agentToUse,
         model: execution.categoryModel,
+        skillContents,
       }),
     }
   } catch (error) {

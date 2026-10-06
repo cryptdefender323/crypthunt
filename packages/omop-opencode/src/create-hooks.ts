@@ -67,6 +67,7 @@ export function createHooks(args: {
     monitorManager,
     isHookEnabled,
     safeHookEnabled,
+    mergedSkills,
   })
 
   const continuation = createContinuationHooks({

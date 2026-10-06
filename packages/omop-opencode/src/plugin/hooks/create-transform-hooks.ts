@@ -1,6 +1,7 @@
 import type { CryptHunterConfig } from "../../config"
 import type { MonitorManager } from "../../features/monitor"
 import type { PluginContext } from "../types"
+import type { LoadedSkill } from "../../features/opencode-skill-loader/types"
 import type { RalphLoopHook } from "../../hooks/pentest-loop"
 
 import {
@@ -36,8 +37,9 @@ export function createTransformHooks(args: {
   safeHookEnabled?: boolean
   ralphLoop?: RalphLoopHook | null
   monitorManager?: MonitorManager
+  mergedSkills: LoadedSkill[]
 }): TransformHooks {
-  const { ctx, pluginConfig, isHookEnabled, ralphLoop, monitorManager } = args
+  const { ctx, pluginConfig, isHookEnabled, ralphLoop, monitorManager, mergedSkills } = args
   const safeHookEnabled = args.safeHookEnabled ?? true
 
   const claudeCodeHooks = isHookEnabled("claude-code-hooks")
@@ -74,7 +76,7 @@ export function createTransformHooks(args: {
   const pentestContext = isHookEnabled("pentest-context")
     ? safeCreateHook(
         "pentest-context",
-        () => createPentestContextHook(),
+        () => createPentestContextHook(mergedSkills),
         { enabled: safeHookEnabled },
       )
     : null
