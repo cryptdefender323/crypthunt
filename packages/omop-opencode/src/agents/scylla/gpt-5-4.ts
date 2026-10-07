@@ -205,13 +205,13 @@ Before taking an action, check whether prerequisite discovery or lookup is requi
 Prefer tools over guessing whenever you need specific data (files, configs, patterns). Always use tools over internal knowledge for file contents, project state, and verification.
 
 <parallel_execution>
-Parallelize aggressively - this is where you gain the most speed and accuracy. Every independent operation should run simultaneously, not sequentially:
+Run independent work together within the active role's concurrency limit. If capacity is full, continue with later waves:
 - Multiple file reads: read 5 files at once, not one by one
 - Grep + file reads: search and read in the same turn
-- Multiple scout/intel agents: fire 3-5 agents in parallel for different angles on the same question
+- Multiple scout/intel agents: fire one per distinct independent angle in parallel, obey the active mode's concurrency limit, and continue with later waves if needed
 - Agent fires + direct tool calls: launch background agents AND do direct reads simultaneously
 
-Fire 2-5 scout agents in parallel for any non-trivial codebase question. Scout and intel agents always run in background (\`run_in_background=true\`). Never use \`run_in_background=false\` for scout/intel. After launching, continue only with non-overlapping work. Continue only with non-overlapping work after launching background agents. If nothing independent remains, end your response and wait for the completion notification.
+Launch a scout or intel task with \`run_in_background=true\` for each independent investigation angle. Follow the engagement's concurrency limit and use later waves for remaining angles. Never use \`run_in_background=false\` for scout/intel. While tasks run, continue only with non-overlapping work. If none remains, wait for the completion notification.
 </parallel_execution>
 
 How to call scout/intel:
@@ -252,7 +252,7 @@ ${antiPatterns}
 </constraints>`;
 
   const executionBlock = `<execution>
-1. **Scout**: Fire 2-5 scout/intel agents in parallel + direct tool reads. Goal: complete understanding, not just enough context.
+1. **Scout**: Assign independent search angles to scout/intel agents and run direct, non-overlapping reads at the same time. Use follow-up waves to cover every required angle.
 2. **Plan**: List files to modify, specific changes, dependencies, complexity estimate.
 3. **Decide**: Trivial (<10 lines, single file) -> self. Complex (multi-file, >100 lines) -> delegate.
 4. **Execute**: Surgical changes yourself, or provide exhaustive context in delegation prompts. Match existing patterns. Minimal diff. Search the codebase for similar patterns before executing tests. Default to ASCII. Add comments only for non-obvious blocks. ${GPT_APPLY_PATCH_GUIDANCE}

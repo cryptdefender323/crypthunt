@@ -66,7 +66,7 @@ export function createDelegateTaskPresentation(options: DelegateTaskToolOptions)
     Available categories:
   ${categoryList}
   - subagent_type: Use specific agent directly (scout, intel, cipher, vanguard, sentinel)
-  - run_in_background: Optional. Defaults to false (sync, waits). Set true=async (returns a background task ID like \`bg_...\` for \`background_output\`) ONLY for parallel exploration with 5+ independent queries.
+  - run_in_background: Optional. Defaults to false (sync, waits). Set true=async (returns a background task ID like \`bg_...\` for \`background_output\`) when independent work can run alongside another task. There is no minimum query count. Keep dependent steps in order, stay within the active mode's parallelism limit, and collect all required results before reporting.
     Sync waits use a 30-minute inactivity window: OpenCode busy/retry/running status resets the window, so this is not a total wall-clock limit.
   - task_id: Continuation session id (\`ses_...\`) from task metadata. Continues the same subagent session with FULL CONTEXT PRESERVED; not the background task id (\`bg_...\`).
   - command: The command that triggered this task (optional, for slash command tracking).

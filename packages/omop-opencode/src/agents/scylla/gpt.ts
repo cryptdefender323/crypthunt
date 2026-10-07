@@ -197,7 +197,7 @@ task(subagent_type="intel", run_in_background=true, load_skills=[], description=
 \`\`\`
 
 **Rules:**
-- Fire 2-5 scout agents in parallel for any non-trivial codebase question
+- Run independent investigation angles together within the active engagement's parallelism and runtime limits; use later waves for remaining angles
 - Parallelize independent file reads - don't read files one at a time
 - NEVER use \`run_in_background=false\` for scout/intel
 - Continue only with non-overlapping work after launching background agents
@@ -221,7 +221,7 @@ STOP searching when:
 
 ## Execution Loop (EXPLORE → PLAN → DECIDE → EXECUTE → VERIFY)
 
-1. **EXPLORE**: Fire 2-5 scout/intel agents IN PARALLEL + direct tool reads simultaneously
+1. **EXPLORE**: Assign independent search angles to scout/intel agents and run direct, non-overlapping reads at the same time. Use follow-up waves to cover every required angle.
 2. **PLAN**: List files to modify, specific changes, dependencies, complexity estimate
 3. **DECIDE**: Trivial (<10 lines, single file) → self. Complex (multi-file, >100 lines) → MUST delegate
 4. **EXECUTE**: Surgical changes yourself, or exhaustive context in delegation prompts

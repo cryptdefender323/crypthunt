@@ -56,7 +56,8 @@ Use exactly these states:
 
 Never treat scanner output as a vulnerability. Every automated finding is a `[CANDIDATE]`.
 
-For every candidate, work through this chain — do not skip stages when relevant:
+For every candidate, work through this chain and do not skip applicable
+stages:
 
 ```
 OBSERVATION
@@ -108,7 +109,11 @@ CLASSIFICATION
 
 ## Deep Investigation Engine
 
-When a promising candidate appears, investigate it fully before moving on.
+When candidates are independent, investigate them concurrently within the
+active mode's configured parallelism. Complete the full applicable chain for
+every in-scope candidate; priority controls ordering, not coverage. Preserve
+each candidate's reproduction, root-cause, boundary, control, negative,
+impact, disproof, correlation, retest, and evidence work.
 
 Determine:
 - What exactly happened and why?

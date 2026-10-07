@@ -132,8 +132,8 @@ function normalizeInlineMember(member: JsonRecord, options?: NormalizeTeamSpecIn
   const {
     capabilities: _capabilities,
     description: _description,
-    loadSkills: _loadSkills,
-    load_skills: _loadSkillsSnakeCase,
+    loadSkills,
+    load_skills: loadSkillsSnakeCase,
     permission: _permission,
     responsibilities: _responsibilities,
     role: _role,
@@ -141,6 +141,17 @@ function normalizeInlineMember(member: JsonRecord, options?: NormalizeTeamSpecIn
     system_prompt: _systemPromptSnakeCase,
     ...normalizedMember
   } = strippedMember
+
+  const normalizedLoadSkills = Array.isArray(loadSkills)
+    ? loadSkills
+    : Array.isArray(loadSkillsSnakeCase)
+      ? loadSkillsSnakeCase
+      : undefined
+  if (normalizedLoadSkills) {
+    normalizedMember.loadSkills = normalizedLoadSkills.filter(
+      (skill): skill is string => typeof skill === "string" && skill.trim().length > 0,
+    )
+  }
 
   const rawKind = normalizedMember.kind
 

@@ -11,6 +11,7 @@ import { createTeamRun } from "../team-runtime/create"
 import { listActiveTeams, loadRuntimeState } from "@omop/team-core/team-state-store/store"
 import { AGENT_ELIGIBILITY_REGISTRY } from "@omop/team-core/types"
 import { findParticipantRuntime, sanitizeRuntimeState, type TeamLifecycleToolContext } from "./lifecycle-participant"
+import { getModeAutoLoadSkills, getPentestSessionMode, setPentestSessionMode } from "../../../shared/pentest-session-mode"
 import {
   parseInlineTeamSpec,
   parseTeamCreateArgs,
@@ -90,12 +91,23 @@ export function createTeamCreateTool(
       const spec = args.teamName
         ? await deps.loadTeamSpec(args.teamName, config, projectRoot, { callerTeamLead })
         : parseInlineTeamSpec(args.inline_spec, { callerTeamLead, defaultCategoryName })
+      const sessionMode = getPentestSessionMode(leadSessionId)
+      const modeSkills = sessionMode ? getModeAutoLoadSkills(sessionMode) : []
+      const specWithModeSkills = modeSkills.length === 0
+        ? spec
+        : {
+            ...spec,
+            members: spec.members.map((member) => ({
+              ...member,
+              loadSkills: Array.from(new Set([...(member.loadSkills ?? []), ...modeSkills])),
+            })),
+          }
       const participantRuntime = await findParticipantRuntime(leadSessionId, config, deps)
       if (participantRuntime && (participantRuntime.teamName !== spec.name || participantRuntime.leadSessionId !== leadSessionId)) {
         throw new Error(`team_create denied: session is already a participant of team ${participantRuntime.teamRunId}`)
       }
       const runtimeState = await deps.createTeamRun(
-        spec,
+        specWithModeSkills,
         leadSessionId,
         {
           client,
@@ -113,6 +125,11 @@ export function createTeamCreateTool(
           parentMessageID: runtimeContext.messageID,
         },
       )
+      if (sessionMode) {
+        for (const member of runtimeState.members) {
+          if (member.sessionId) setPentestSessionMode(member.sessionId, sessionMode)
+        }
+      }
       return JSON.stringify({ teamRunId: runtimeState.teamRunId, runtimeState: sanitizeRuntimeState(runtimeState) })
     },
   })

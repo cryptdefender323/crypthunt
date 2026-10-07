@@ -6,6 +6,9 @@ const repositoryRoot = fileURLToPath(new URL("..", import.meta.url))
 const packageJson = JSON.parse(readFileSync(`${repositoryRoot}/package.json`, "utf8")) as {
   scripts: Record<string, string>
 }
+const tsconfig = JSON.parse(readFileSync(`${repositoryRoot}/tsconfig.json`, "utf8")) as {
+  exclude: string[]
+}
 
 const scripts = packageJson.scripts
 
@@ -57,6 +60,12 @@ describe("build script layers", () => {
     expect(cli).toContain("packages/omop-opencode/src/cli/index.ts")
     expect(cli).toContain("build:cli-node")
     expect(cli).toContain("build:codex-install")
+  })
+
+  test("declaration build excludes performance test fixtures", () => {
+    expect(tsconfig.exclude).toContain(
+      "packages/omop-opencode/src/__tests__/perf/fixtures/**",
+    )
   })
 
   test("build-vendored.ts runs leaf packages in parallel", () => {

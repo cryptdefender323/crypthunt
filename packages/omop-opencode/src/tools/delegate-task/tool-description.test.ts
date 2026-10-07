@@ -29,4 +29,14 @@ describe("createDelegateTaskPresentation", () => {
     expect(description).toContain("not the background task id")
     expect(description).toContain("bg_")
   })
+
+  test("#given independent tasks #when description is rendered #then it encourages complete parallel waves", () => {
+    const presentation = createDelegateTaskPresentation({})
+
+    const description = presentation.description
+
+    expect(description).toContain("There is no minimum query count")
+    expect(description).toContain("within the active mode's parallelism limit")
+    expect(description).toContain("collect all required results before reporting")
+  })
 })

@@ -42,6 +42,19 @@ Never skip from EXECUTE directly to REPORT.
 Never skip DISPROVE.
 Never infer impact from root cause without demonstration.
 
+### Schedule the full task set
+
+Improve throughput by scheduling the existing work graph, not by pruning it.
+Build the complete task set required by the active mode, scope, and evidence,
+then launch all ready independent tasks up to the mode's configured
+parallelism. Run capacity-limited work in later waves and keep dependencies
+ordered. Reuse current scope, target model, and evidence to avoid duplicate
+checks, while retaining distinct assets, hypotheses, test vectors, negative
+tests, and validation steps. Priority controls order only. Preserve the mode's
+iteration ceiling, all evidence and report requirements, and every safety and
+human-review gate. Before reporting, account for every required task as
+completed, blocked by a real dependency or policy, or awaiting human validation.
+
 ---
 
 ## Persistent Research State
