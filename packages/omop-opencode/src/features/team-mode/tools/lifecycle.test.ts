@@ -6,7 +6,7 @@ import type { ToolResult } from "@opencode-ai/plugin/tool"
 
 import { clearTeamSessionRegistry, registerTeamSession } from "../team-session-registry"
 import type { RuntimeState } from "@omop/team-core/types"
-import { clearPentestSessionMode, setPentestSessionMode } from "../../../shared/pentest-session-mode"
+import { clearPentestSessionMode, getPentestSessionMode, setPentestSessionMode } from "../../../shared/pentest-session-mode"
 import {
   approveShutdownMock,
   backgroundManager,
@@ -63,6 +63,7 @@ describe("team lifecycle tools", () => {
     resetLifecycleTestState()
     clearTeamSessionRegistry()
     clearPentestSessionMode("lead-session")
+    clearPentestSessionMode("member-a-session")
   })
 
   test("team_create works without toolContext.client field", async () => {
@@ -121,6 +122,7 @@ describe("team lifecycle tools", () => {
     expect(createdSpec?.members.every((member) =>
       member.loadSkills?.includes("pentest-recon") && member.loadSkills.includes("bug-bounty-research"),
     )).toBe(true)
+    expect(getPentestSessionMode("member-a-session")).toBe("bug-bounty")
   })
 
   test("team_create returns teamRunId and sanitized runtimeState for inline specs", async () => {

@@ -11,7 +11,7 @@ import { createTeamRun } from "../team-runtime/create"
 import { listActiveTeams, loadRuntimeState } from "@omop/team-core/team-state-store/store"
 import { AGENT_ELIGIBILITY_REGISTRY } from "@omop/team-core/types"
 import { findParticipantRuntime, sanitizeRuntimeState, type TeamLifecycleToolContext } from "./lifecycle-participant"
-import { getModeAutoLoadSkills, getPentestSessionMode } from "../../../shared/pentest-session-mode"
+import { getModeAutoLoadSkills, getPentestSessionMode, setPentestSessionMode } from "../../../shared/pentest-session-mode"
 import {
   parseInlineTeamSpec,
   parseTeamCreateArgs,
@@ -125,6 +125,11 @@ export function createTeamCreateTool(
           parentMessageID: runtimeContext.messageID,
         },
       )
+      if (sessionMode) {
+        for (const member of runtimeState.members) {
+          if (member.sessionId) setPentestSessionMode(member.sessionId, sessionMode)
+        }
+      }
       return JSON.stringify({ teamRunId: runtimeState.teamRunId, runtimeState: sanitizeRuntimeState(runtimeState) })
     },
   })
