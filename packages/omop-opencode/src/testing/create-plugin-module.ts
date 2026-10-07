@@ -213,6 +213,7 @@ export function createPluginModule(overrides: Partial<PluginModuleDeps> = {}): P
       backgroundManager: managers.backgroundManager,
       modelFallbackControllerAccessor: managers.modelFallbackControllerAccessor,
       monitorManager: managers.monitorManager,
+      skillMcpManager: managers.skillMcpManager,
       isHookEnabled,
       safeHookEnabled,
       mergedSkills: toolsResult.mergedSkills,

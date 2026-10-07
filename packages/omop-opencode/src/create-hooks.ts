@@ -6,6 +6,7 @@ import type { MonitorManager } from "./features/monitor"
 import type { ModelFallbackControllerAccessor } from "./hooks/model-fallback"
 import type { PluginContext } from "./plugin/types"
 import type { ModelCacheState } from "./plugin-state"
+import type { SkillMcpManager } from "./features/skill-mcp-manager"
 
 import { createCoreHooks } from "./plugin/hooks/create-core-hooks"
 import { createContinuationHooks } from "./plugin/hooks/create-continuation-hooks"
@@ -40,6 +41,7 @@ export function createHooks(args: {
   backgroundManager: BackgroundManager
   modelFallbackControllerAccessor?: ModelFallbackControllerAccessor
   monitorManager?: MonitorManager
+  skillMcpManager?: Pick<SkillMcpManager, "listTools" | "callTool">
   isHookEnabled: (hookName: HookName) => boolean
   safeHookEnabled: boolean
   mergedSkills: LoadedSkill[]
@@ -52,6 +54,7 @@ export function createHooks(args: {
     backgroundManager,
     modelFallbackControllerAccessor,
     monitorManager,
+    skillMcpManager,
     isHookEnabled,
     safeHookEnabled,
     mergedSkills,
@@ -65,6 +68,7 @@ export function createHooks(args: {
     backgroundManager,
     modelFallbackControllerAccessor,
     monitorManager,
+    skillMcpManager,
     isHookEnabled,
     safeHookEnabled,
     mergedSkills,
