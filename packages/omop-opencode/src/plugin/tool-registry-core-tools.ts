@@ -129,6 +129,10 @@ export function createCoreTools(args: {
   tools.pentest_pivot = factories.createPentestPivotTool()
   tools.pentest_handoff = factories.createPentestHandoffTool()
   tools.pentest_open_evidence = factories.createPentestOpenEvidenceTool()
+  tools.pentest_browser_check = factories.createPentestBrowserCheckTool({
+    manager: managers.skillMcpManager,
+    getLoadedSkills: () => skillContext.mergedSkills,
+  })
 
   return tools
 }

@@ -38,6 +38,7 @@ import {
   createPentestPivotTool,
   createPentestHandoffTool,
   createPentestOpenEvidenceTool,
+  createPentestBrowserCheckTool,
 } from "../tools"
 
 export type ToolRegistryFactories = {
@@ -78,6 +79,7 @@ export type ToolRegistryFactories = {
   createPentestPivotTool: typeof createPentestPivotTool
   createPentestHandoffTool: typeof createPentestHandoffTool
   createPentestOpenEvidenceTool: typeof createPentestOpenEvidenceTool
+  createPentestBrowserCheckTool: typeof createPentestBrowserCheckTool
 }
 
 export const defaultToolRegistryFactories: ToolRegistryFactories = {
@@ -118,4 +120,5 @@ export const defaultToolRegistryFactories: ToolRegistryFactories = {
   createPentestPivotTool,
   createPentestHandoffTool,
   createPentestOpenEvidenceTool,
+  createPentestBrowserCheckTool,
 }

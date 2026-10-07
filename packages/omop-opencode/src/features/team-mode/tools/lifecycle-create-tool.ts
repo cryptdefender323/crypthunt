@@ -99,7 +99,13 @@ export function createTeamCreateTool(
             ...spec,
             members: spec.members.map((member) => ({
               ...member,
-              loadSkills: Array.from(new Set([...(member.loadSkills ?? []), ...modeSkills])),
+              loadSkills: Array.from(new Set([
+                ...(member.loadSkills ?? []),
+                ...modeSkills,
+                ...(/https?:\/\/|\b(?:web|browser|xss|sqli|sql\s+injection|csrf|crlf)\b/i.test(member.prompt ?? "")
+                  ? ["playwright", "browser-pentest-live"]
+                  : []),
+              ])),
             })),
           }
       const participantRuntime = await findParticipantRuntime(leadSessionId, config, deps)
