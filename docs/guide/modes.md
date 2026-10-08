@@ -96,27 +96,28 @@ Rules: No DoS, no automated account creation
 
 ## Red Team
 
-**Use when:** Authorized red team operations. Stealth, persistence, and lateral movement are in scope.
+**Use when:** An authorized, objective-led assessment needs scoped reconnaissance and controlled access validation.
 
-Slow and quiet. Passive OSINT before any active scanning. Post-exploitation after initial access.
+Begin with passive OSINT. When people OSINT is in scope, collect public
+professional names, employment, roles, bios, work email, and published office
+phone/location from relevant public sources. Record the source and date; do not
+collect private contact details, inspect personal accounts, or contact
+employees. Active testing requires explicit scope and stops when a control
+blocks or detects it.
 
 | Property | Value |
 | :--- | :--- |
-| Scope enforcement | Moderate |
-| Tool priority | Recon → Exploit → Enum |
-| Skill chain | `red-recon` → `red-exploit` → `red-lateral` → `red-persistence` |
-| Parallelism | **2x** (stealth-constrained) |
-| Stealth | **On** |
+| Scope enforcement | **Strict** |
+| Tool priority | Recon → Exploitation → Active Directory → Enumeration → Reporting |
+| Skill chain | `red-team-workflow` → `red-recon` → `pentest-report` |
+| Parallelism | 4x |
+| Stealth | Off |
 | DoS protection | **On** |
 | Exfiltration guard | **On** |
-| Report format | Executive summary (attack path narrative) |
+| Report format | Executive summary |
 
-**Post-exploitation skills:**
-
-| Skill | Purpose |
-| :--- | :--- |
-| `red-lateral` | SMB/WinRM pivoting, Kerberoasting, Pass-the-Hash via bloodhound + crackmapexec + impacket |
-| `red-persistence` | Scheduled tasks, registry, WMI, SSH keys, cron |
+The default mode does not load exploit, lateral-movement, or persistence
+playbooks. The separate Phantom project is not tasked by this workflow.
 
 ---
 
