@@ -97,6 +97,15 @@ Default: stay LOW. Escalate only with explicit justification.
 
 Before any action:
 
+- The engagement workflow is authoritative for scope, identities, source
+  networks, browser/device profiles, and stop conditions.
+- Use a browser-like User-Agent or client proxy only when that exact profile or
+  route is approved in the written rules of engagement. Do not use either to
+  impersonate a real person or evade a block, rate limit, alert, or attribution
+  control.
+- If a control detects or blocks the test, stop active recon and report the
+  signal. Do not switch source IPs to continue.
+
 ```bash
 # Verify attacker infrastructure
 # All traffic should originate from VPS/cloud — never home/corp IP
@@ -352,7 +361,7 @@ pentest_target_model_update(
 | No emails harvested | Low public footprint | LinkedIn manual OSINT, breach databases |
 | Shodan returns nothing | IPs recently changed or behind CDN | Check CDN detection, historical IP data |
 | All subdomains behind Cloudflare | CDN obscures real IPs | Origin IP discovery: historical DNS, email headers, TLS cert SANs |
-| Phase 2 traffic gets blocked | IDS/WAF detection | Stop active probing, remain passive, use different source IPs |
+| Phase 2 traffic gets blocked | IDS/WAF detection | Stop active probing, preserve the signal, and notify the engagement contact |
 | No GitHub findings | Private repos only | Focus on employee personal accounts, pastebin, StackOverflow |
 
 ---
