@@ -34,11 +34,17 @@ system.
 Start with public or client-provided information that does not send requests to
 the target: subdomain sources, DNS history, certificate transparency, public
 registries, public code and documentation, document metadata, job listings,
-and approved threat-intelligence data. Email and organizational information
-may be collected from public sources when the rules allow it. If leaked
-credentials or secrets are encountered, record only the minimum exposure
-evidence and notify the owner; never test, reuse, or copy them. Do not contact
-employees or probe discovered hosts in this phase.
+and approved threat-intelligence data. When people OSINT is in scope, collect
+relevant professional information from public sources: names, current or past
+employer, job title or function, public professional biography, work email,
+and published office phone or office location. Suitable sources include
+official company pages, public professional profiles, conference biographies,
+job listings, and public filings. Record the source and collection date; keep
+only details relevant to the engagement. Do not collect private phone numbers,
+home addresses, family details, or personal-account data, and do not contact
+employees. If leaked credentials or secrets are encountered, record only the
+minimum exposure evidence and notify the owner; never test, reuse, or copy
+them. Do not probe discovered hosts in this phase.
 
 Build an asset and hypothesis list. Separate confirmed in-scope assets from
 unverified leads; unverified leads are not targets.
@@ -50,9 +56,10 @@ expected request volume, approved origin, expected evidence, and stop condition.
 Check the asset and technique against the rules of engagement immediately
 before execution. Port discovery, service fingerprinting, and technology
 identification must be limited to confirmed in-scope assets, agreed ports,
-request rates, and the approved test window. Social-engineering research is
-limited to public organizational information; no outreach, impersonation, or
-collection of personal accounts. Retain a baseline and evidence for each
+request rates, and the approved test window. People and social-engineering
+research is limited to public professional information described in the OSINT
+phase; no outreach, impersonation, or collection of private personal details
+or accounts. Retain a baseline and evidence for each
 distinct check. No denial-of-service, unbounded crawling, or bulk credential
 attempts.
 
