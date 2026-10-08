@@ -190,7 +190,7 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 |---|---|---|
 | `auto` | Unknown target | Standard |
 | `bug-bounty` | HackerOne, Bugcrowd, Intigriti | HackerOne format |
-| `red-team` | Stealth ops, persistence, AD | Executive summary |
+| `red-team` | Scoped recon, public professional people OSINT, and controlled access validation | Executive summary |
 | `ctf` | HackTheBox, TryHackMe, picoCTF | Flag |
 | `blue-team` | Detection, IR, defensive audit | IR report |
 | `offensive` | Aggressive exploitation | Technical |
@@ -205,6 +205,14 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | `ctf-forensics` | Forensics deep | Flag |
 | `cloud-pentest` | AWS / GCP / Azure | Cloud report |
 | `ad-audit` | Active Directory audit | AD report |
+
+The default red-team workflow is `red-team-workflow` → `red-recon` →
+`pentest-report`. When included in the rules of engagement, people OSINT may
+record names, public employment and job titles, professional bios, work email,
+and published office phone or office location, with source and collection
+date. Private contact details, personal accounts, and employee outreach are
+excluded. Active checks require defined scope and stop when a control blocks or
+detects them.
 
 ```
 /mode red-team
@@ -319,7 +327,8 @@ Every finding goes through a 9-stage false-positive battery before it can be rep
 
 ## Phantom C2
 
-[Phantom](https://github.com/cryptdefender323/phantom) — first-class C2 in the red-team chain.
+[Phantom](https://github.com/cryptdefender323/phantom) is a separate project.
+The default red-team workflow does not deploy implants or task a Phantom beacon.
 
 - Multi-protocol: mTLS · WireGuard · HTTP/S · DNS
 - AV/EDR evasion: AMSI · ETW · DLL unhooking · sleep obfuscation · indirect syscalls
