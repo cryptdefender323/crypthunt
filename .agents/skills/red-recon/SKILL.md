@@ -156,7 +156,18 @@ shodan search "ssl.cert.subject.cn:$TARGET" --fields ip_str,port,product 2>/dev/
   tee -a $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/shodan.txt
 ```
 
-### 1.2 Identity and Credential Exposure
+### 1.2 People, Organization, and Credential Exposure
+
+When the rules of engagement include people OSINT, collect only professional
+details published for work: names, current or past employer, role or job title,
+public professional biography, work email, and office phone or office location
+when relevant. Use official company pages, public professional profiles,
+conference biographies, job listings, and public filings. Record each source
+and collection date. Do not collect private phone numbers, home addresses,
+family details, or personal-account data; do not contact employees. Keep email
+harvesting limited to work addresses relevant to the in-scope organization.
+Never validate, reuse, or test leaked credentials; record the exposure source
+and notify the owner.
 
 ```bash
 # Email harvesting
@@ -315,13 +326,13 @@ EOF
 |---|---|---|
 | VPN/Citrix/OWA exposed | Remote access entry point | Credential stuffing, password spray |
 | Dev/staging subdomains live | Weaker security controls | Reused credentials, debug endpoints |
-| Employee emails in breach data | Credential exposure | Password spray with breached passwords |
+| Employee work emails or credentials referenced in breach data | Potential exposure | Record source and notify the owner; do not test or reuse credentials |
 | API keys in public GitHub | Direct system access | Immediate credential use |
 | Jenkins/GitLab exposed | CI/CD pipeline attack | RCE via pipeline or credential theft |
 | S3/blob buckets misconfigured | Data access | Sensitive file retrieval |
 | Old CVE in Shodan banner | Known exploit available | Direct exploitation |
 | Internal hostnames in certs | Internal network visibility | Internal pivot planning |
-| Login portal with no lockout | Brute-force candidate | Credential spray |
+| Login portal with weak lockout policy | Authentication control gap | Review published or client-provided policy; do not spray accounts |
 
 ---
 
@@ -358,11 +369,11 @@ pentest_target_model_update(
 | Failure | Root Cause | Response |
 |---|---|---|
 | No subdomains found | Tight DNS hygiene | Expand to IP ranges, ASN lookup, certificate transparency deeper search |
-| No emails harvested | Low public footprint | LinkedIn manual OSINT, breach databases |
+| No work emails harvested | Low public footprint | Review public professional profiles and official company sources |
 | Shodan returns nothing | IPs recently changed or behind CDN | Check CDN detection, historical IP data |
 | All subdomains behind Cloudflare | CDN obscures real IPs | Origin IP discovery: historical DNS, email headers, TLS cert SANs |
 | Phase 2 traffic gets blocked | IDS/WAF detection | Stop active probing, preserve the signal, and notify the engagement contact |
-| No GitHub findings | Private repos only | Focus on employee personal accounts, pastebin, StackOverflow |
+| No public code findings | Low public footprint | Review public work-related profiles and repositories; do not investigate personal accounts |
 
 ---
 
