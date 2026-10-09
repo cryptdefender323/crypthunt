@@ -106,7 +106,7 @@ Continue through the requested red-team objectives using safe test evidence:
 
 If an objective requires a technique excluded above, mark it `not tested` and
 explain why; do not substitute a covert or destructive action. Use the
-`red-recon` skill for the scoped discovery phase and `pentest-report` for the
+`red-recon` skill for the scoped discovery phase and `red-team-report` for the
 final evidence-backed report. The standard red-team mode does not load the
 `red-exploit`, `red-lateral`, or `red-persistence` playbooks.
 

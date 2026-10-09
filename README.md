@@ -207,7 +207,7 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | `ad-audit` | Active Directory audit | AD report |
 
 The default red-team workflow is `red-team-workflow` → `red-recon` →
-`pentest-report`. When included in the rules of engagement, people OSINT may
+`red-team-report`. When included in the rules of engagement, people OSINT may
 record names, public employment and job titles, professional bios, work email,
 and published office phone or office location, with source and collection
 date. Private contact details, personal accounts, and employee outreach are
@@ -237,7 +237,8 @@ pentest-privesc  pentest-report   bug-bounty-research
 **Red Team**
 
 ```
-red-recon    red-exploit    red-lateral    red-persistence    phantom-c2
+red-team-workflow  red-recon  red-team-report
+red-exploit    red-lateral    red-persistence    phantom-c2
 post-linux-privesc  post-windows-privesc  post-bloodhound
 post-credential-dumping  post-pivoting  post-container-escape
 ```

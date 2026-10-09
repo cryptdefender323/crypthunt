@@ -524,7 +524,7 @@ When resources are constrained:
 | Role | Terminal state | Meaning |
 |---|---|---|
 | bug-bounty | `READY_FOR_HUMAN_REVIEW` | Human confirms → HackerOne report |
-| red-team | `READY_FOR_REPORT` | Auto-generate executive report |
+| red-team | `READY_FOR_REPORT` | Generate the objective-led `red-team-report` |
 | ctf | `FLAG_VALIDATED` | Output flag + solution summary |
 | blue-team | `READY_FOR_ANALYST_REVIEW` | Human analyst reviews IR timeline |
 | offensive | `READY_FOR_REPORT` | Auto-generate technical report |

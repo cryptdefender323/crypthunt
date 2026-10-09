@@ -109,8 +109,8 @@ blocks or detects it.
 | :--- | :--- |
 | Scope enforcement | **Strict** |
 | Tool priority | Recon → Exploitation → Active Directory → Enumeration → Reporting |
-| Skill chain | `red-team-workflow` → `red-recon` → `pentest-report` |
-| Parallelism | 4x |
+| Skill chain | `red-team-workflow` → `red-recon` → `red-team-report` |
+| Parallelism | 2x |
 | Stealth | Off |
 | DoS protection | **On** |
 | Exfiltration guard | **On** |
@@ -151,7 +151,7 @@ Detection-first. No offensive techniques. Output is an IR report with IOCs and r
 
 ## Offensive
 
-**Use when:** Authorized internal red team or pentest with full exploitation scope. No stealth required, max coverage.
+**Use when:** An authorized penetration test needs broad vulnerability discovery and evidence-gated exploit validation.
 
 Exploit-first, maximum parallelism. All tools enabled.
 
@@ -282,10 +282,10 @@ Scope-strict (stay within in-scope app and its APIs). Requires physical/virtual 
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | Scope enforcement | Moderate | None | **Strict** | **Strict** | Moderate | Moderate | **Strict** | **Strict** | None | **Strict** |
 | DoS protection | On | Off | **On** | **On** | On | Off | On | On | Off | On |
-| Stealth mode | Off | Off | Off | **On** | Off | Off | Off | Off | Off | Off |
-| Exfiltration guard | On | Off | **On** | Off | On | Off | **On** | Off | Off | On |
+| Stealth mode | Off | Off | Off | Off | Off | Off | Off | Off | Off | Off |
+| Exfiltration guard | On | Off | **On** | **On** | On | Off | **On** | Off | Off | On |
 | Auto-stop on violation | No | No | **Yes** | **Yes** | No | No | **Yes** | No | No | No |
-| Exploitation | On | On | On | On | **Off** | On | On | **Off** | On | On |
+| Exploitation | On | On | On | Scoped | **Off** | On | On | **Off** | On | On |
 
 ---
 
