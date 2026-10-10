@@ -234,7 +234,7 @@ export function createKeywordDetectorHook(
           .showToast({
             body: {
               title: "Red Team Engagement Activated",
-              message: "Skill chain: red-recon → red-exploit → red-lateral → red-persistence. Phantom C2 ready.",
+              message: "Skill chain: red-team-workflow → red-recon → red-assess → red-team-report. Active testing requires signed authorization.",
               variant: "success" as const,
               duration: 4000,
             },

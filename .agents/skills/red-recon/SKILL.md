@@ -1,18 +1,18 @@
 ---
 name: red-recon
-description: "Red team reconnaissance — stealth-first intelligence gathering. OPSEC-aware passive recon, infrastructure mapping, identity and credential exposure, technology fingerprinting, internal network discovery, trust relationship mapping. Every action minimizes detection footprint. No active scanning without explicit authorization and stealth assessment. Feeds attack model for red-exploit and red-lateral. Triggers: 'red team recon', 'red recon', 'stealth recon', 'opsec recon', 'adversary simulation recon', 'pre-attack recon', 'infrastructure mapping'."
+description: "Red-team reconnaissance — public professional OSINT, passive infrastructure mapping, and explicitly authorized active discovery. Maps people, organization, services, and technology into a scoped target model for red-assess. Does not impersonate people or evade controls. Triggers: 'red team recon', 'red recon', 'people OSINT', 'active recon', 'infrastructure mapping'."
 version: 3.0.0
 phase: ["recon"]
 category: ["recon"]
 tools: ["subfinder", "amass", "httpx", "shodan", "curl", "python3", "theHarvester", "gitleaks"]
-tags: ["red-team", "recon", "opsec", "stealth", "infrastructure", "osint", "credential-exposure"]
+tags: ["red-team", "recon", "infrastructure", "people-osint", "active-discovery", "detection"]
 ---
 
-# Red Team Reconnaissance — Stealth Intelligence Engine
+# Red Team Reconnaissance — People, Infrastructure, and Service Discovery
 
 ## OBJECTIVE
 
-Build a comprehensive, accurate intelligence model of the target before any active engagement. Minimize detection footprint at every step. Every intelligence collection action is a risk decision — weigh value against exposure.
+Build a sourced intelligence model for the exact target. Start with passive OSINT, including relevant public professional information about people and the organization. Continue to active discovery only for assets and methods explicitly authorized by the engagement. Record detection outcomes; do not evade controls.
 
 **Red recon is fundamentally different from pentest recon:**
 
@@ -29,32 +29,26 @@ Build a comprehensive, accurate intelligence model of the target before any acti
 
 ## PREREQUISITES
 
-- [ ] Rules of engagement documented — authorized actions explicitly defined
-- [ ] Attack scenario defined — what adversary are we simulating?
-- [ ] OPSEC baseline established — attacker infrastructure ready (VPS, redirectors)
-- [ ] Detection threshold understood — is blue team aware of the exercise?
-- [ ] Escalation path defined — who to contact if live systems affected
+- [ ] Exact target domain or IP supplied
+- [ ] A current signed authorization letter/rules of engagement covers any active-discovery target and method before Phase 2 or 3
 
-**Stop if RoE is unclear. Red team without written authorization is criminal.**
+Passive OSINT can proceed from the supplied target without contacting it. Do not treat related domains or discovered hosts as active scope unless the rules explicitly include them.
 
 ---
 
 ## DECISION LOGIC
 
 ```
-Phase 0: OPSEC setup → establish clean attacker infrastructure
+Phase 0: Confirm the target and evidence workspace
 Phase 1: Passive OSINT only (zero active traffic to target)
   → Build initial intelligence model from public sources
   → Identify identity exposure (credentials, emails, social)
   → Map technology from passive signals
-Phase 2: Semi-passive (traffic resembles legitimate users)
-  → Light HTTP probing — browser-like requests only
-  → Certificate transparency, DNS, WHOIS
-  → Job posting analysis (reveals internal tech stack)
-Phase 3: Active (if authorized) — targeted, low-noise
-  → Port scan only identified targets, not /24 sweeps
-  → Service fingerprint without exploit attempts
-  → Single-threaded, rate-limited, browser UA
+Phase 2: Active discovery (only explicitly authorized assets/methods)
+  → HTTP and application fingerprinting
+  → Approved port and service discovery
+  → Endpoint, API, and authentication-surface mapping
+  → Technology-specific vulnerability assessment in red-assess
 
 At each phase:
   → Update attack model
@@ -68,7 +62,9 @@ LOW:    Pure passive — no traffic to target (OSINT, public data)
 MEDIUM: Traffic indistinguishable from normal user (single requests, browser UA)
 HIGH:   Traffic anomalous (port scans, vulnerability probes, automation patterns)
 
-Default: stay LOW. Escalate only with explicit justification.
+Use the lowest request volume that answers the hypothesis. Do not spoof
+identities or source addresses, evade detection, or continue after a block or
+alert. Active discovery requires the explicit authorization gate.
 ```
 
 ---
@@ -93,25 +89,20 @@ Default: stay LOW. Escalate only with explicit justification.
 
 ---
 
-## PHASE 0: OPSEC SETUP
+## PHASE 0: ENGAGEMENT SETUP
 
 Before any action:
 
-```bash
-# Verify attacker infrastructure
-# All traffic should originate from VPS/cloud — never home/corp IP
-curl -s https://api.ipify.org  # confirm IP is clean VPS
+- The engagement workflow is authoritative for scope, test identities, source
+  networks, browser/device profiles, and stop conditions.
+- Use the approved source network and identify the scanner/browser honestly.
+  Do not use proxy rotation, forged user agents, or client profiles to evade
+  attribution, rate limits, alerts, or blocks.
+- If a control detects or blocks the test, stop active recon and report the
+  signal. Do not switch source IPs to continue.
 
-# Set browser-like User-Agent for all requests
-USERAGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-
-# Establish engagement directory
-TARGET="target.example.com"
-ENGAGEMENT="redteam-$(date +%Y%m%d)-$TARGET"
-mkdir -p $HOME/.omop/red-team/$ENGAGEMENT/{intel,infrastructure,identity,credentials,attack-model}
-
-# Note: never store engagement data on shared systems
-```
+Create the engagement evidence directory only after the target is supplied.
+Do not route traffic through unapproved infrastructure.
 
 ---
 
@@ -147,7 +138,18 @@ shodan search "ssl.cert.subject.cn:$TARGET" --fields ip_str,port,product 2>/dev/
   tee -a $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/shodan.txt
 ```
 
-### 1.2 Identity and Credential Exposure
+### 1.2 People, Organization, and Credential Exposure
+
+Collect relevant professional details published for work: names, current or
+past employer, role or job title,
+public professional biography, work email, and office phone or office location
+when relevant. Use official company pages, public professional profiles,
+conference biographies, job listings, and public filings. Record each source
+and collection date. Do not collect private phone numbers, home addresses,
+family details, or personal-account data; do not contact employees. Keep email
+harvesting limited to work addresses relevant to the in-scope organization.
+Never validate, reuse, or test leaked credentials; record the exposure source
+and notify the owner.
 
 ```bash
 # Email harvesting
@@ -205,9 +207,12 @@ echo "site:$TARGET ext:env OR ext:config OR ext:bak OR ext:sql"
 
 ---
 
-## PHASE 2: SEMI-PASSIVE (BROWSER-LIKE TRAFFIC)
+## PHASE 2: ACTIVE SERVICE DISCOVERY (AUTHORIZED)
 
-Only proceed after Phase 1 is complete and has been reviewed.
+Only proceed after Phase 1 is complete and a current signed authorization
+letter/rules of engagement explicitly authorizes discovery on the exact assets
+and methods being tested. Browser-like headers
+must identify the approved test client; do not use them to disguise traffic.
 
 ```bash
 # HTTP probe — browser-like, minimal set of targets
@@ -239,13 +244,13 @@ curl -s -H "User-Agent: $USERAGENT" \
 
 ---
 
-## PHASE 3: TARGETED ACTIVE (AUTHORIZED + LOW-NOISE ONLY)
+## PHASE 3: PORT AND SERVICE DISCOVERY (AUTHORIZED)
 
-Only if RoE explicitly authorizes active scanning.
+Only if a current signed authorization letter/rules of engagement explicitly
+authorizes active scanning.
 
 ```bash
-# Port scan — single target, slow, stealthy
-# -T1 = paranoid timing, --max-parallelism 1 = sequential
+# Port scan — only an explicitly in-scope target, at the approved rate
 nmap -T1 -sV --max-parallelism 1 \
   -p 21,22,23,25,53,80,110,143,443,445,993,995,1433,3306,3389,5432,5985,5986,6379,8080,8443,27017 \
   --open \
@@ -306,13 +311,13 @@ EOF
 |---|---|---|
 | VPN/Citrix/OWA exposed | Remote access entry point | Credential stuffing, password spray |
 | Dev/staging subdomains live | Weaker security controls | Reused credentials, debug endpoints |
-| Employee emails in breach data | Credential exposure | Password spray with breached passwords |
+| Employee work emails or credentials referenced in breach data | Potential exposure | Record source and notify the owner; do not test or reuse credentials |
 | API keys in public GitHub | Direct system access | Immediate credential use |
 | Jenkins/GitLab exposed | CI/CD pipeline attack | RCE via pipeline or credential theft |
 | S3/blob buckets misconfigured | Data access | Sensitive file retrieval |
 | Old CVE in Shodan banner | Known exploit available | Direct exploitation |
 | Internal hostnames in certs | Internal network visibility | Internal pivot planning |
-| Login portal with no lockout | Brute-force candidate | Credential spray |
+| Login portal with weak lockout policy | Authentication control gap | Review published or client-provided policy; do not spray accounts |
 
 ---
 
@@ -349,22 +354,22 @@ pentest_target_model_update(
 | Failure | Root Cause | Response |
 |---|---|---|
 | No subdomains found | Tight DNS hygiene | Expand to IP ranges, ASN lookup, certificate transparency deeper search |
-| No emails harvested | Low public footprint | LinkedIn manual OSINT, breach databases |
+| No work emails harvested | Low public footprint | Review public professional profiles and official company sources |
 | Shodan returns nothing | IPs recently changed or behind CDN | Check CDN detection, historical IP data |
 | All subdomains behind Cloudflare | CDN obscures real IPs | Origin IP discovery: historical DNS, email headers, TLS cert SANs |
-| Phase 2 traffic gets blocked | IDS/WAF detection | Stop active probing, remain passive, use different source IPs |
-| No GitHub findings | Private repos only | Focus on employee personal accounts, pastebin, StackOverflow |
+| Phase 2 traffic gets blocked | IDS/WAF detection | Stop active probing, preserve the signal, and notify the engagement contact |
+| No public code findings | Low public footprint | Review public work-related profiles and repositories; do not investigate personal accounts |
 
 ---
 
 ## STOP CONDITIONS
 
-Stop recon and proceed to red-exploit planning when:
+Stop discovery and proceed to `red-assess` when:
 
 - High-value entry points identified (VPN, email portal, exposed admin)
 - Credential exposure found (even partial)
 - Initial attack paths defined with at least L1 evidence
-- Detection risk increasing — any sign of blue team awareness
+- A control blocks or detects activity; stop that activity and record the signal
 
 **Do not over-recon.** More recon = more exposure. Move to exploitation planning when first viable paths are identified.
 
@@ -382,7 +387,7 @@ $HOME/.omop/red-team/$ENGAGEMENT/
   attack-model/      current attack model + hypotheses
 ```
 
-Hand off to `red-exploit` with:
+Hand off to `red-assess` with:
 - `attack-model/current-model.md` populated
 - At least 2 Priority 1 attack hypotheses registered
 - High-value targets identified

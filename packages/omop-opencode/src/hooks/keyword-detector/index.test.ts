@@ -105,6 +105,27 @@ describe("keyword-detector message transform", () => {
     expect(text).toBe("search for the bug")
   })
 
+  test("should inject only the current red-team workflow guidance", async () => {
+    const collector = new ContextCollector()
+    const sessionID = "red-team-mode-test"
+    getMainSessionSpy = spyOn(sessionState, "getMainSessionID").mockReturnValue(sessionID)
+    const hook = createKeywordDetectorHook(createMockPluginInput(), collector)
+    const output = {
+      message: {} as Record<string, unknown>,
+      parts: [{ type: "text", text: "--mode red-team" }],
+    }
+
+    await hook["chat.message"]({ sessionID }, output)
+
+    const text = expectTextPartText(output.parts)
+    expect(text).toContain("red-team-workflow → red-recon → red-assess → red-team-report")
+    expect(text).toContain("ask only for its domain or IP")
+    expect(text).toContain("current signed authorization")
+    expect(text).not.toContain("red-exploit → red-lateral → red-persistence")
+    expect(text).not.toContain("Phantom C2")
+    expect(text).not.toContain("STEALTH: ON")
+  })
+
   test("should not prepend mode messages twice when an injected message is processed again", async () => {
     const cases = [
       { prompt: "team mode for this refactor", marker: "[team-mode]" },

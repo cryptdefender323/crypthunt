@@ -178,7 +178,7 @@ Switch mode mid-session:
 /mode forensic
 ```
 
-The agent will re-inject specialized context for the new mode. In red-team mode, high-noise scanners (nikto, gobuster, dirsearch) are automatically suppressed. In blue-team/forensic mode, all offensive tools are removed from the session.
+The agent will re-inject specialized context for the new mode. Red Team uses its own workflow, requires a current signed authorization letter/rules of engagement before active recon or tests, and does not inject C2, persistence, lateral movement, or stealth instructions. In blue-team/forensic mode, all offensive tools are removed from the session.
 
 Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted to `.omop/engagement/` and survives process restarts.
 
@@ -190,11 +190,11 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 |---|---|---|
 | `auto` | Unknown target | Standard |
 | `bug-bounty` | HackerOne, Bugcrowd, Intigriti | HackerOne format |
-| `red-team` | Stealth ops, persistence, AD | Executive summary |
+| `red-team` | Scoped recon, public professional people OSINT, and controlled access validation | Executive summary |
 | `ctf` | HackTheBox, TryHackMe, picoCTF | Flag |
 | `blue-team` | Detection, IR, defensive audit | IR report |
 | `offensive` | Aggressive exploitation | Technical |
-| `grey-hat` | Balanced assessment | Technical |
+| `grey-hat` | Authorized vulnerability research with strict scope | Technical evidence report |
 | `forensic` | Evidence preservation | Chain-of-custody |
 | `reverse-engineering` | Binaries, firmware | Technical RE |
 | `mobile-pentest` | Android / iOS | OWASP Mobile |
@@ -205,6 +205,15 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | `ctf-forensics` | Forensics deep | Flag |
 | `cloud-pentest` | AWS / GCP / Azure | Cloud report |
 | `ad-audit` | Active Directory audit | AD report |
+
+The default red-team workflow is `red-team-workflow` → `red-recon` →
+`red-assess` → `red-team-report`. It includes public professional OSINT about
+the target organization, passive and authorized active reconnaissance, and a
+coverage ledger for relevant vulnerability classes on explicitly in-scope
+assets. Public work details are source-dated; private contact details,
+personal accounts, and employee outreach are excluded. Scanner results remain
+candidates until manually verified. Active checks require defined scope and
+stop when a control blocks or detects them.
 
 ```
 /mode red-team
@@ -229,7 +238,8 @@ pentest-privesc  pentest-report   bug-bounty-research
 **Red Team**
 
 ```
-red-recon    red-exploit    red-lateral    red-persistence    phantom-c2
+red-team-workflow  red-recon  red-assess  red-team-report
+red-exploit    red-lateral    red-persistence    phantom-c2
 post-linux-privesc  post-windows-privesc  post-bloodhound
 post-credential-dumping  post-pivoting  post-container-escape
 ```
@@ -319,7 +329,8 @@ Every finding goes through a 9-stage false-positive battery before it can be rep
 
 ## Phantom C2
 
-[Phantom](https://github.com/cryptdefender323/phantom) — first-class C2 in the red-team chain.
+[Phantom](https://github.com/cryptdefender323/phantom) is a separate project.
+The default red-team workflow does not deploy implants or task a Phantom beacon.
 
 - Multi-protocol: mTLS · WireGuard · HTTP/S · DNS
 - AV/EDR evasion: AMSI · ETW · DLL unhooking · sleep obfuscation · indirect syscalls

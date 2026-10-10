@@ -282,40 +282,45 @@ speed: moderate
 
 ## Role: GREY-HAT
 
-**Objective:** Balanced offensive/defensive assessment with conservative authorization handling.
+**Objective:** Conduct broad, evidence-led vulnerability research against assets
+the operator is explicitly authorized to test, then produce a reproducible
+technical report for human review.
 
-**Core principle:** When authorization is unclear, stop and clarify. Never escalate testing without explicit permission.
+**Core principle:** Grey-hat means vulnerability-led research, not permission
+to test without consent. Require written authorization, exact assets, permitted
+methods, test window, and rate limits before any active request. If scope or
+authorization is missing or unclear, stop active testing and ask for it.
 
 **Skill chain:**
 ```
-pentest-recon
+greyhat-research
   ↓
-pentest-enum
-  ↓
-pentest-exploit (conservative — stop before destructive actions)
-  ↓
-pentest-report (hybrid technical/executive)
+pentest-recon → pentest-enum → pentest-exploit → pentest-privesc → pentest-report
 ```
 
-**Authorization check — before every escalation:**
-```
-Is this action explicitly authorized?
-  → Yes: proceed
-  → No: stop and request clarification
-  → Unclear: treat as No
-```
+**Operating posture:**
+- Map and test every explicitly in-scope asset required by the engagement.
+- Generate and track distinct hypotheses from evidence; priority sets order,
+  not whether a hypothesis is retained or validated.
+- Use the minimum safe reproduction for each candidate and preserve the full
+  control, negative, disproof, evidence, and reporting requirements.
+- Do not use stealth, C2, persistence, lateral movement, credential spraying,
+  denial of service, or data exfiltration in this mode.
+- Stop automatically on any scope violation. A newly discovered asset is only
+  a candidate; it does not enter active scope without written approval.
+- Require human review of the evidence package before report submission.
 
 **Resource constraints:**
 ```
-scope_enforcement: moderate
-stealth: true
+scope_enforcement: strict
+stealth: false
 no_dos: true
 no_exfiltration: true
-max_parallelism: 4
-authorization_escalation: requires_explicit_confirmation
+max_parallelism: 8
+auto_stop_on_scope_violation: true
 ```
 
-**Handoff state:** `READY_FOR_REPORT`
+**Handoff state:** `READY_FOR_HUMAN_REVIEW`
 
 ---
 
@@ -519,11 +524,11 @@ When resources are constrained:
 | Role | Terminal state | Meaning |
 |---|---|---|
 | bug-bounty | `READY_FOR_HUMAN_REVIEW` | Human confirms → HackerOne report |
-| red-team | `READY_FOR_REPORT` | Auto-generate executive report |
+| red-team | `READY_FOR_REPORT` | Generate the objective-led `red-team-report` |
 | ctf | `FLAG_VALIDATED` | Output flag + solution summary |
 | blue-team | `READY_FOR_ANALYST_REVIEW` | Human analyst reviews IR timeline |
 | offensive | `READY_FOR_REPORT` | Auto-generate technical report |
-| grey-hat | `READY_FOR_REPORT` | Auto-generate hybrid report |
+| grey-hat | `READY_FOR_HUMAN_REVIEW` | Human reviews evidence and authorizes any external submission |
 | forensic | `READY_FOR_ANALYST_REVIEW` | Forensic analyst reviews conclusions |
 | reverse-engineering | `READY_FOR_REPORT` | Auto-generate RE technical report |
 | mobile-pentest | `READY_FOR_REPORT` | Auto-generate OWASP Mobile report |

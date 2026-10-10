@@ -96,27 +96,32 @@ Rules: No DoS, no automated account creation
 
 ## Red Team
 
-**Use when:** Authorized red team operations. Stealth, persistence, and lateral movement are in scope.
+**Use when:** An authorized, objective-led assessment needs scoped reconnaissance and controlled access validation.
 
-Slow and quiet. Passive OSINT before any active scanning. Post-exploitation after initial access.
+Begin with passive OSINT, including relevant public professional names,
+employment, roles, bios, work email, and published office phone/location.
+Record the source and date; do not collect private contact details, inspect
+personal accounts, or contact employees. Continue with active recon and
+systematic validation of relevant in-scope vulnerability classes only after a
+current signed authorization letter/rules of engagement names the target,
+allowed methods, and time window. Record the test coverage and detection
+outcome; scanner hits remain candidates until manually verified. Stop when a
+control blocks or detects testing.
 
 | Property | Value |
 | :--- | :--- |
-| Scope enforcement | Moderate |
-| Tool priority | Recon → Exploit → Enum |
-| Skill chain | `red-recon` → `red-exploit` → `red-lateral` → `red-persistence` |
-| Parallelism | **2x** (stealth-constrained) |
-| Stealth | **On** |
+| Scope enforcement | **Strict** |
+| Tool priority | Recon → Enumeration → Exploitation → Active Directory → Reporting |
+| Skill chain | `red-team-workflow` → `red-recon` → `red-assess` → `red-team-report` |
+| Parallelism | 2x |
+| Stealth | Off |
 | DoS protection | **On** |
 | Exfiltration guard | **On** |
-| Report format | Executive summary (attack path narrative) |
+| Report format | Executive summary |
 
-**Post-exploitation skills:**
-
-| Skill | Purpose |
-| :--- | :--- |
-| `red-lateral` | SMB/WinRM pivoting, Kerberoasting, Pass-the-Hash via bloodhound + crackmapexec + impacket |
-| `red-persistence` | Scheduled tasks, registry, WMI, SSH keys, cron |
+The mode keeps its own assessment and executive-report flow. It does not load
+covert exploit, lateral-movement, or persistence playbooks. The separate
+Phantom project is not tasked by this workflow.
 
 ---
 
@@ -150,7 +155,7 @@ Detection-first. No offensive techniques. Output is an IR report with IOCs and r
 
 ## Offensive
 
-**Use when:** Authorized internal red team or pentest with full exploitation scope. No stealth required, max coverage.
+**Use when:** An authorized penetration test needs broad vulnerability discovery and evidence-gated exploit validation.
 
 Exploit-first, maximum parallelism. All tools enabled.
 
@@ -169,18 +174,25 @@ Exploit-first, maximum parallelism. All tools enabled.
 
 ## Grey Hat
 
-**Use when:** Research and educational contexts. Balanced offensive/defensive coverage.
+**Use when:** You have explicit written authorization and want a thorough,
+vulnerability-led assessment with evidence suitable for human review. Grey-hat
+does not mean testing without permission. It is deliberately different from
+red-team adversary emulation: it focuses on broad authorized discovery and safe
+vulnerability validation, without covert operations.
 
-Stealth enabled by default. Scope enforcement moderate. Both offensive skills and blue team detection run in parallel.
+Do not start active testing until the authorization identifies the target,
+allowed methods, and operating limits. Findings require human review before
+external submission.
 
 | Property | Value |
 | :--- | :--- |
-| Scope enforcement | Moderate |
-| Tool priority | Balanced (all phases equal priority) |
-| Skill chain | `pentest-recon` → `pentest-enum` → `pentest-exploit` + `blue-detect` |
-| Parallelism | 4x |
-| Stealth | On |
+| Scope enforcement | **Strict**; explicit assets only, auto-stop on violation |
+| Skill chain | `greyhat-research` → `pentest-recon` → `pentest-enum` → `pentest-exploit` → `pentest-privesc` → `pentest-report` |
+| Parallelism | 8x |
+| Stealth | Off |
 | DoS protection | On |
+| Exfiltration guard | On |
+| C2, persistence, lateral movement | Disabled |
 | Report format | Technical |
 
 ---
@@ -272,12 +284,12 @@ Scope-strict (stay within in-scope app and its APIs). Requires physical/virtual 
 
 | Control | Auto | CTF | Bug Bounty | Red Team | Blue Team | Offensive | Grey Hat | Forensic | RE | Mobile |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Scope enforcement | Moderate | None | **Strict** | Moderate | Moderate | Moderate | Moderate | **Strict** | None | **Strict** |
+| Scope enforcement | Moderate | None | **Strict** | **Strict** | Moderate | Moderate | **Strict** | **Strict** | None | **Strict** |
 | DoS protection | On | Off | **On** | **On** | On | Off | On | On | Off | On |
-| Stealth mode | Off | Off | Off | **On** | Off | Off | On | Off | Off | Off |
-| Exfiltration guard | On | Off | **On** | **On** | On | Off | On | Off | Off | On |
-| Auto-stop on violation | No | No | **Yes** | No | No | No | No | No | No | No |
-| Exploitation | On | On | On | On | **Off** | On | On | **Off** | On | On |
+| Stealth mode | Off | Off | Off | Off | Off | Off | Off | Off | Off | Off |
+| Exfiltration guard | On | Off | **On** | **On** | On | Off | **On** | Off | Off | On |
+| Auto-stop on violation | No | No | **Yes** | **Yes** | No | No | **Yes** | No | No | No |
+| Exploitation | On | On | On | Scoped | **Off** | On | On | **Off** | On | On |
 
 ---
 

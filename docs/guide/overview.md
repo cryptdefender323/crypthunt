@@ -67,7 +67,7 @@ CryptHunter is not smarter than the underlying model. It makes the model operate
 
 **Active disproof.** Before any finding is promoted, CryptHunter generates the strongest argument against its own conclusion and runs disproof tests. Findings that survive active disproof are stronger.
 
-**Role-specific reasoning.** Each engagement mode loads a purpose-built reasoning model, skill chain, safety constraints, and handoff state. Bug bounty enforces strict scope and requires human validation before report generation. Red team enforces stealth discipline and BOF-first execution. CTF prioritizes speed and technique-specific routing.
+**Role-specific reasoning.** Each engagement mode loads a purpose-built reasoning model, skill chain, safety constraints, and handoff state. Bug bounty enforces strict scope and requires human validation before report generation. Red team uses strict scope, passive-first reconnaissance, professional people OSINT, and a dedicated objective-led report. CTF prioritizes speed and technique-specific routing.
 
 ---
 
@@ -77,7 +77,7 @@ CryptHunter is not smarter than the underlying model. It makes the model operate
 |---|---|
 | `ctf` | CTF competition — routes to category-specific skill (pwn, crypto, reversing, web, forensics, misc) |
 | `bug-bounty` | Authorized bug bounty — scope-strict, evidence-gated, HackerOne report |
-| `red-team` | Authorized red team — stealth, AD attacks, Phantom C2, executive report |
+| `red-team` | Authorized, strict-scope reconnaissance and objective-led red-team report |
 | `offensive` | Authorized pentest — aggressive exploitation, privesc chain |
 | `blue-team` | Incident response — detection, timeline, IOC, MITRE ATT&CK |
 | `forensic` | Digital forensics — memory/disk/network, chain-of-custody |

@@ -6,6 +6,7 @@ import type { ToolResult } from "@opencode-ai/plugin/tool"
 
 import { clearTeamSessionRegistry, registerTeamSession } from "../team-session-registry"
 import type { RuntimeState } from "@omop/team-core/types"
+import { clearPentestSessionMode, getPentestSessionMode, setPentestSessionMode } from "../../../shared/pentest-session-mode"
 import {
   approveShutdownMock,
   backgroundManager,
@@ -61,6 +62,8 @@ describe("team lifecycle tools", () => {
   beforeEach(() => {
     resetLifecycleTestState()
     clearTeamSessionRegistry()
+    clearPentestSessionMode("lead-session")
+    clearPentestSessionMode("member-a-session")
   })
 
   test("team_create works without toolContext.client field", async () => {
@@ -104,6 +107,22 @@ describe("team lifecycle tools", () => {
       undefined,
       { callerAgentTypeId: "cerberus", parentMessageID: expect.any(String) },
     )
+  })
+
+  test("team_create adds the selected mode skills to each worker", async () => {
+    // given
+    const teamCreateTool = createTeamCreateToolForTest()
+    setPentestSessionMode("lead-session", "bug-bounty")
+
+    // when
+    await teamCreateTool.execute({ inline_spec: createSpec() }, createToolContext("lead-session"))
+
+    // then
+    const createdSpec = createTeamRunMock.mock.calls[0]?.[0]
+    expect(createdSpec?.members.every((member) =>
+      member.loadSkills?.includes("pentest-recon") && member.loadSkills.includes("bug-bounty-research"),
+    )).toBe(true)
+    expect(getPentestSessionMode("member-a-session")).toBe("bug-bounty")
   })
 
   test("team_create returns teamRunId and sanitized runtimeState for inline specs", async () => {

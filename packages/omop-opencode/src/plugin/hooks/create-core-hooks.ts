@@ -4,6 +4,8 @@ import type { MonitorManager } from "../../features/monitor"
 import type { ModelFallbackControllerAccessor } from "../../hooks/model-fallback"
 import type { PluginContext } from "../types"
 import type { ModelCacheState } from "../../plugin-state"
+import type { LoadedSkill } from "../../features/opencode-skill-loader/types"
+import type { SkillMcpManager } from "../../features/skill-mcp-manager"
 
 import { createSessionHooks } from "./create-session-hooks"
 import { createToolGuardHooks } from "./create-tool-guard-hooks"
@@ -16,10 +18,12 @@ export function createCoreHooks(args: {
   backgroundManager: BackgroundManager
   modelFallbackControllerAccessor?: ModelFallbackControllerAccessor
   monitorManager?: MonitorManager
+  skillMcpManager?: Pick<SkillMcpManager, "listTools" | "callTool">
   isHookEnabled: (hookName: HookName) => boolean
   safeHookEnabled: boolean
+  mergedSkills: LoadedSkill[]
 }) {
-  const { ctx, pluginConfig, modelCacheState, backgroundManager, modelFallbackControllerAccessor, monitorManager, isHookEnabled, safeHookEnabled } = args
+  const { ctx, pluginConfig, modelCacheState, backgroundManager, modelFallbackControllerAccessor, monitorManager, skillMcpManager, isHookEnabled, safeHookEnabled, mergedSkills } = args
 
   const session = createSessionHooks({
     ctx,
@@ -46,6 +50,8 @@ export function createCoreHooks(args: {
     safeHookEnabled,
     ralphLoop: session.ralphLoop,
     monitorManager,
+    skillMcpManager,
+    mergedSkills,
   })
 
   return {

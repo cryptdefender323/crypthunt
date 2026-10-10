@@ -48,6 +48,29 @@ describe("normalizeTeamSpecInput", () => {
     expect(normalizedSpec).toEqual(rawSpec)
   })
 
+  test("preserves skill names for inline team members and normalizes the snake-case alias", () => {
+    // given
+    const rawSpec = {
+      name: "security-team",
+      leadAgentId: "recon",
+      members: [
+        { kind: "subagent_type", name: "recon", subagent_type: "cerberus" },
+        { kind: "category", name: "web-auditor", category: "deep", prompt: "Audit web routes", load_skills: ["bug-bounty-research", "tool-capability-registry"] },
+      ],
+    }
+
+    // when
+    const normalizedSpec = normalizeTeamSpecInput(rawSpec)
+
+    // then
+    expect(normalizedSpec).toMatchObject({
+      members: [
+        { name: "recon" },
+        { name: "web-auditor", loadSkills: ["bug-bounty-research", "tool-capability-registry"] },
+      ],
+    })
+  })
+
   test("prefers isLead over the caller when both are present", () => {
     // given
     const rawSpec = {
