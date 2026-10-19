@@ -27,7 +27,8 @@ Entry `index.ts` orchestrates a staged initialization across the directories bel
 
 | File | Purpose |
 |------|---------|
-| `index.ts` | Plugin entry; default-exports `pluginModule: PluginModule` with `{ id, server }` |
+| `index.ts` | Dual-version plugin entry; default-exports V1 `{ id, server }` plus V2 `{ id, setup }` |
+| `opencode-v2-bridge.ts` | Native V2 prompt/context hooks, mode command, and automatic skill selection |
 | `plugin-config.ts` | JSONC parse, multi-level merge (user + walked project), Zod v. validation, migration |
 | `plugin-state.ts` | `createModelCacheState()` — model resolution cache shared across handlers |
 | `plugin-interface.ts` | .2 OpenCode hook handlers wired into `Hooks` (a further 2, `experimental.session.compacting` + `experimental.compaction.autocontinue`, are wired in `src/testing/create-plugin-module.ts`, for .. total) |

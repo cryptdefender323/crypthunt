@@ -6,7 +6,7 @@
 
 Project-scope OpenCode configuration: 5 skills and 5 slash commands committed alongside the source. Picked up by [`packages/omop-opencode/src/features/opencode-skill-loader/`](../packages/omop-opencode/src/features/opencode-skill-loader/) and the slash-command discovery pipeline.
 
-**Relationship to `.agents/`:** `.agents/` is the migration target during the `oh-my-open-pentest` → `oh-my-open-pentest` rename. It is a SUPERSET of `.opencode/` (mirrors all 5 skills + adds 5 more, mirrors the 5 commands). Both directories load during the transition; consumers should prefer `.agents/`.
+**Relationship to `.agents/`:** `.agents/` is the migration target during the CryptHunter rename. It is a superset of `.opencode/`; both directories load during the transition. The dual-version OpenCode plugin entrypoint lives in `.opencode/plugin/`, which is discovered by OpenCode V1 and V2. Keep it separate from markdown skills and slash commands.
 
 ## SKILLS (5)
 

@@ -1,6 +1,6 @@
 ---
 name: opencode-qa
-description: "QA opencode itself, per case: verify the CLI/terminal (opencode run, db, serve, export), prove a specific plugin hook/action/event fired via the SSE event stream, smoke-test the TUI under tmux, and investigate sessions in opencode's SQLite DB by id, title/name, or message text. Ships tested helper scripts (each with a --self-test) plus per-domain references. Use whenever someone wants to QA, smoke-test, verify, or debug opencode's CLI, HTTP server, plugin hooks/events, or TUI, or to find/inspect opencode sessions in the database. Triggers: opencode qa, qa opencode, test opencode, verify opencode hook, opencode session db, find opencode session by id/name/text, opencode tui test, opencode server health, opencode event stream."
+description: "QA OpenCode V1 and V2: verify CLI/server/TUI, prove V1 lifecycle events, inspect V2 plugin/skill/command registration and prompt/context hooks, and investigate sessions in SQLite. Ships isolated helper scripts plus per-domain references. Use when testing or debugging OpenCode plugins, skills, commands, APIs, sessions, or TUI. Triggers: opencode qa, qa opencode, test opencode, verify opencode hook, opencode V2 plugin, opencode skill, opencode session db, opencode tui test, opencode server health."
 ---
 
 # opencode QA
@@ -10,9 +10,9 @@ helper script and a deep reference. Every script ships a `--self-test` that
 asserts its scenario against the live machine, so the scripts are both the QA
 tools and their own regression checks.
 
-Verified against opencode v...7.7 (bun ..3..2, macOS). Confirm the installed
-version with `opencode --version`; the surface is stable but always sanity
-check a flag with `opencode <cmd> --help`.
+V1 and V2 expose different plugin APIs. Confirm the installed version with
+`opencode --version`; check the matching official documentation and sanity
+check CLI flags with `opencode <cmd> --help` before driving the harness.
 
 ## Golden rules (read before running anything)
 
@@ -28,6 +28,34 @@ check a flag with `opencode <cmd> --help`.
   unbounded scan on purpose.
 - The opencode source repo (`packages/opencode`) tests itself with `bun test`
   and CANNOT run tests from the repo root. See `references/testing-harness.md`.
+
+## OpenCode V2 plugin and skill QA
+
+Always check `opencode --version` before choosing a plugin test. OpenCode V2
+does not execute a V1 `server()` plugin by itself. A V2 plugin must default
+export a definition with a stable `id` and `setup(ctx)` or `effect(ctx)`; a
+dual-version module may expose both V1 `server()` and V2 `setup(ctx)`.
+Project-local V2 plugins are discovered under `.opencode/plugins/` and `.opencode/plugin/`. The latter can share a dual-version entrypoint with V1 when it exports both `server()` and `setup()`.
+
+For V2, verify the running workspace through the server API, not only the
+config file:
+
+- `plugin.list` shows the plugin source and `active` state.
+- `skill.list` shows the skill names the agent can select.
+- `command.list` shows project commands registered by a plugin.
+- Exercise prompt admission and model-context behavior separately: `prompt`
+  hooks can add selected skill names before admission; `context` hooks can add
+  model instructions before a model request. These hooks are distinct from the
+  V1 `chat.message` and `experimental.chat.system.transform` hooks.
+- When a real prompt is needed, run it in an isolated XDG profile. Avoid a
+  provider call unless the QA explicitly needs to prove model output; unit-test
+  hook behavior and inspect API registrations first.
+
+Use the V2 guides as the source of truth for current API shapes:
+
+- <https://opencode.ai/v2/docs/build/plugins/migrate-v1>
+- <https://opencode.ai/v2/docs/build/plugins>
+- <https://opencode.ai/v2/docs/skills>
 
 ## Setup
 

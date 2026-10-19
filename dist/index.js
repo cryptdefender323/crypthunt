@@ -22965,15 +22965,15 @@ var MODE_PRESETS = {
   },
   "bug-bounty": {
     mode: "bug-bounty",
-    description: "Bug bounty mode. Scope-strict deep recon, aggressive enumeration (nuclei full + parameter fuzzing + auth bypass + API discovery), chained exploitation with evidence-gated validation, HackerOne/Bugcrowd report with CVSS 4.0 + PoC. Human validation gate before submission.",
+    description: "Bug bounty mode. Verify the current official program and exact target scope in Playwright before target traffic. Then run evidence-led in-scope research and safe validation under program policy; no denial of service or data exfiltration. Human validation is required before report submission.",
     scope_enforcement: "strict",
     tool_priority: ["recon", "enumeration", "exploitation", "reporting"],
-    skill_chain: ["pentest-recon", "pentest-enum", "pentest-exploit", "bug-bounty-research", "pentest-report"],
+    skill_chain: ["bug-bounty-research", "pentest-recon", "pentest-enum", "pentest-exploit", "pentest-report"],
     parallelism: 8,
     stealth: false,
     report_format: "hackerone",
     loop_config: { max_iterations: 200, iteration_timeout_ms: 480000, strategy: "adaptive", auto_continue: true, speed: "moderate" },
-    safety_constraints: { scope_strict: true, no_dos: true, no_exfiltration: false, stealth_mode: false, auto_stop_on_scope_violation: true }
+    safety_constraints: { scope_strict: true, no_dos: true, no_exfiltration: true, stealth_mode: false, auto_stop_on_scope_violation: true }
   },
   "red-team": {
     mode: "red-team",
@@ -110530,7 +110530,9 @@ function getModeAutoLoadSkills(mode2) {
   if (chain.length === 0)
     return [];
   const primary = chain[0];
-  const specific = mode2 === "bug-bounty" ? chain.find((skill) => skill === "bug-bounty-research") : mode2 === "ctf" ? chain.find((skill) => skill === "ctf-exploit") : mode2 === "red-team" ? chain.find((skill) => skill === "red-recon") : chain.find((skill) => skill.startsWith(`${mode2}-`) && skill !== primary);
+  if (mode2 === "bug-bounty")
+    return [primary];
+  const specific = mode2 === "ctf" ? chain.find((skill) => skill === "ctf-exploit") : mode2 === "red-team" ? chain.find((skill) => skill === "red-recon") : chain.find((skill) => skill.startsWith(`${mode2}-`) && skill !== primary);
   const fallback = chain.find((skill) => skill !== primary);
   return Array.from(new Set([primary, specific ?? fallback].filter((skill) => Boolean(skill))));
 }
@@ -110549,6 +110551,21 @@ function extractWebTarget(text) {
   } catch {
     return;
   }
+}
+function extractBugBountyProgramUrl(text) {
+  const urls = text.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
+  for (const value of urls) {
+    const candidate = value.replace(/[),.;!?]+$/, "");
+    try {
+      const parsed = new URL(candidate);
+      const host = parsed.hostname.toLowerCase();
+      if (["hackerone.com", "bugcrowd.com", "intigriti.com", "yeswehack.com"].some((domain) => host === domain || host.endsWith(`.${domain}`)))
+        return parsed.toString();
+    } catch {
+      continue;
+    }
+  }
+  return;
 }
 async function openWebTargetInPlaywright(args) {
   const skill = args.skills.find((candidate) => candidate.name.toLowerCase() === "playwright" && candidate.mcpConfig?.playwright);
@@ -110598,7 +110615,7 @@ function isModeOnlyCommand(text) {
   const normalized = normalizeModeCommandText(text);
   return /^--mode\s+[\w-]+\s*$/m.test(normalized) || /^\/mode\s+[\w-]+\s*$/m.test(normalized);
 }
-function buildContextBlock(config, toolNames, intel, skillBlocks, modeReason, isReinjection, webTarget = false, modeOnly = false, awaitingRedTeamTarget = false, browserStatus) {
+function buildContextBlock(config, toolNames, intel, skillBlocks, modeReason, isReinjection, webTarget = false, modeOnly = false, awaitingTarget = false, browserStatus) {
   const toolsLine = toolNames.length > 0 ? `Available tools (${toolNames.length}): ${toolNames.join(", ")}` : "";
   const lines = [
     `<PENTEST_CONTEXT${isReinjection ? ' mode_switch="true"' : ""}${webTarget ? ' web_browser="required"' : ""}>`,
@@ -110610,25 +110627,29 @@ function buildContextBlock(config, toolNames, intel, skillBlocks, modeReason, is
     `Tool priority: ${config.tool_priority.join(" \u2192 ")}`,
     `Parallelism: ${config.parallelism} | Stealth: ${config.stealth ? "ON" : "OFF"} | Report: ${config.report_format}`,
     `Scope: ${config.scope_enforcement} | no_dos=${config.safety_constraints.no_dos} | scope_strict=${config.safety_constraints.scope_strict}`,
-    config.mode === "red-team" ? "Red-team startup: after mode selection, ask only for the target domain or IP if it has not been supplied. Do not ask an upfront questionnaire, offer workflow choices, create engagement IDs/directories/todos, or invoke tools before receiving the target. Once supplied, treat exactly that domain or IP as the initial boundary, use the default objective of passive public-surface mapping, and begin passive OSINT without contacting the target. Do not expand discovered assets into active scope. Before active recon or any active test, require a current signed authorization letter/rules-of-engagement document that names the target scope, allowed methods, and time window, plus the user's confirmation that it is valid. If it is missing, ask once for the document and stop active work. A verbal yes, mode selection, or start reply is not authorization." : `Engagement start: run passive preflight automatically; ask at most once for missing scope or authorization before active testing, and never repeat an already verified answer in this session.`,
+    config.mode === "red-team" ? "Red-team startup: after mode selection, ask only for the target domain or IP if it has not been supplied. Do not ask an upfront questionnaire, offer workflow choices, create engagement IDs/directories/todos, or invoke tools before receiving the target. Once supplied, treat exactly that domain or IP as the initial boundary, use the default objective of passive public-surface mapping, and begin passive OSINT without contacting the target. Do not expand discovered assets into active scope. Before active recon or any active test, require a current signed authorization letter/rules-of-engagement document that names the target scope, allowed methods, and time window, plus the user's confirmation that it is valid. If it is missing, ask once for the document and stop active work. A verbal yes, mode selection, or start reply is not authorization." : config.mode === "bug-bounty" ? "Bug-bounty authorization gate: verify the live program authorization and exact asset scope in Playwright before any recon request, crawler, scanner, or navigation to the target asset. Inspect the official HackerOne/Bugcrowd/other program page. Verify that the program is active, the exact requested asset is listed in scope, and read its restrictions, rate limits, exclusions, and safe-harbor terms. Search the platform's own program directory in the browser if only a domain was supplied; do not trust search snippets or third-party directories. Record the official page URL, asset row, policy, and verification date. If no official program can be verified, do not contact the target; ask the user directly whether they have real authorization to test it. A yes answer only permits collecting/verifying the authorization details; before any target traffic, require permission naming the exact asset, allowed methods, and time window. If they say no or cannot establish those details, stop target-directed activity." : `Engagement start: run passive preflight automatically; ask at most once for missing scope or authorization before active testing, and never repeat an already verified answer in this session.`,
     `Loop: max_iterations=${config.loop_config.max_iterations} | speed=${config.loop_config.speed} | auto_continue=${config.loop_config.auto_continue}`
   ];
   if (webTarget) {
-    lines.push("Web workflow: load the playwright skill and open the target in visible Chrome before web enumeration. Capture DOM, forms, client-side routes, console logs, network logs, and screenshots as evidence.", "Required browser checks: DOM XSS sinks and sources, authentication and session flows, CSRF protections and PoC behavior, SPA/API endpoint discovery, client-side storage, and security headers.", "Use browser GUI interaction for rendered or stateful behavior; use HTTP tools for broad discovery and feed browser findings back into the evidence chain.", "When available, use Burp Suite for HTTP request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
+    if (config.mode === "bug-bounty") {
+      lines.push("Bug bounty browser order: use Playwright on the official program page first. Do not navigate to the target asset until the program is active and that exact asset and method are confirmed in scope. After verification, use the same browser session for authorized target browsing and save scope-page evidence separately from target evidence.", "After the scope gate passes, inspect DOM, forms, client-side routes, console and network logs, authentication/session flows, CSRF behavior, client-side storage, and security headers. Use HTTP tools only within listed policy limits.", "When available, use Burp Suite for authorized request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
+    } else {
+      lines.push("Web workflow: load the playwright skill and open the target in visible Chrome before web enumeration. Capture DOM, forms, client-side routes, console logs, network logs, and screenshots as evidence.", "Required browser checks: DOM XSS sinks and sources, authentication and session flows, CSRF protections and PoC behavior, SPA/API endpoint discovery, client-side storage, and security headers.", "Use browser GUI interaction for rendered or stateful behavior; use HTTP tools for broad discovery and feed browser findings back into the evidence chain.", "When available, use Burp Suite for HTTP request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
+    }
     if (browserStatus)
       lines.push(browserStatus);
   }
-  if (modeOnly || awaitingRedTeamTarget) {
-    lines.push(config.mode === "red-team" ? "Mode-only command: reply in one short line asking only for the target domain or IP, then wait. Do not ask whether to start, present a menu, or ask for authorization details yet." : "Mode-only command: acknowledge activation in one short line and wait for a target; do not ask the user for a scope questionnaire before a target is supplied.");
+  if (modeOnly || awaitingTarget) {
+    lines.push(config.mode === "red-team" ? "Mode-only command: reply in one short line asking only for the target domain or IP, then wait. Do not ask whether to start, present a menu, or ask for authorization details yet." : config.mode === "bug-bounty" ? "Bug-bounty start: use Playwright to verify the official program and policy before contacting any target. If no target asset domain/IP was supplied, ask only for that target and wait; do not start recon or show a workflow menu. If no official program is verifiable, ask whether the user has real authorization before any target traffic; a yes is not sufficient to begin testing until the exact asset, allowed methods, and time window are verified." : "Mode-only command: acknowledge activation in one short line and wait for a target; do not ask the user for a scope questionnaire before a target is supplied.");
   }
-  if (toolsLine && !awaitingRedTeamTarget)
+  if (toolsLine && !awaitingTarget)
     lines.push(toolsLine);
   lines.push(`</PENTEST_CONTEXT>`);
-  if (intel && !awaitingRedTeamTarget) {
+  if (intel && !awaitingTarget) {
     lines.push("");
     lines.push(intel);
   }
-  if (skillBlocks.length > 0 && !awaitingRedTeamTarget) {
+  if (skillBlocks.length > 0 && (!awaitingTarget || config.mode === "bug-bounty")) {
     lines.push("", "<MODE_SKILLS>", ...skillBlocks, "</MODE_SKILLS>");
   }
   return lines.join(`
@@ -110649,7 +110670,9 @@ function createPentestContextHook(skills = [], options = {}) {
         return;
       const webTarget = /https?:\/\//i.test(originalText);
       const webTargetUrl = webTarget ? extractWebTarget(originalText) : undefined;
-      const hasDomainOrIp = Boolean(webTargetUrl) || /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b|\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?\b/i.test(originalText);
+      const bugBountyProgramUrl = webTarget ? extractBugBountyProgramUrl(originalText) : undefined;
+      const targetText = bugBountyProgramUrl ? originalText.replace(/https?:\/\/[^\s<>"']+/gi, (value) => value.startsWith(bugBountyProgramUrl) ? " " : value) : originalText;
+      const hasDomainOrIp = Boolean(webTargetUrl && !bugBountyProgramUrl) || /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b|\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?\b/i.test(targetText);
       if (hasDomainOrIp)
         targetSuppliedSessions.add(input.sessionID);
       const previousMode = getPentestSessionMode(input.sessionID);
@@ -110660,7 +110683,7 @@ function createPentestContextHook(skills = [], options = {}) {
       if (modeOnly)
         explicitlySelectedModeSessions.add(input.sessionID);
       const continueExplicitMode = hasExplicitSessionMode && previousMode !== undefined && (targetIntent || workflowStartReply);
-      const shouldAutoOpenBrowser = Boolean(webTargetUrl && (targetIntent || previousMode && previousMode !== "auto" || explicitlySelectedModeSessions.has(input.sessionID)));
+      const shouldAutoOpenBrowser = Boolean(webTargetUrl && (bugBountyProgramUrl || targetIntent || previousMode && previousMode !== "auto" || explicitlySelectedModeSessions.has(input.sessionID)));
       const modeSwitchTarget = extractModeSwitch(originalText.trim());
       const isReinjection = modeSwitchTarget !== null;
       if (isReinjection) {
@@ -110687,12 +110710,15 @@ function createPentestContextHook(skills = [], options = {}) {
         reason = detected.reason;
       }
       const config = MODE_PRESETS[mode2] ?? MODE_PRESETS["auto"];
-      const awaitingRedTeamTarget = mode2 === "red-team" && !targetSuppliedSessions.has(input.sessionID);
+      const awaitingTarget = (mode2 === "red-team" || mode2 === "bug-bounty") && !targetSuppliedSessions.has(input.sessionID);
       setPentestSessionMode(input.sessionID, mode2);
       const catalog2 = await getToolsCatalog();
       const toolNames = catalog2 ? catalog2.tools.filter((t2) => t2.phase.some((p) => config.tool_priority.includes(p))).map((t2) => t2.tools_name) : [];
       const intel = buildIntelSnippet(config, mode2);
-      const autoLoadNames = getModeAutoLoadSkills(mode2);
+      const autoLoadNames = mode2 === "bug-bounty" && awaitingTarget ? ["bug-bounty-research", "playwright"] : Array.from(new Set([
+        ...getModeAutoLoadSkills(mode2),
+        ...mode2 === "bug-bounty" ? ["playwright"] : []
+      ]));
       const skillBlocks = await Promise.all(autoLoadNames.map(async (skillName) => {
         const skill = skills.find((candidate) => candidate.name.toLowerCase() === skillName.toLowerCase());
         if (!skill)
@@ -110702,18 +110728,19 @@ function createPentestContextHook(skills = [], options = {}) {
 ${content}` : "";
       }));
       let browserStatus;
-      if (shouldAutoOpenBrowser && webTargetUrl && options.manager && !webBrowserOpenedSessions.has(input.sessionID)) {
+      const browserUrl = mode2 === "bug-bounty" ? bugBountyProgramUrl : webTargetUrl;
+      if (shouldAutoOpenBrowser && browserUrl && options.manager && !webBrowserOpenedSessions.has(input.sessionID)) {
         try {
           const opened = await openWebTargetInPlaywright({
             manager: options.manager,
             skills,
             sessionID: input.sessionID,
             directory: options.directory ?? process.cwd(),
-            url: webTargetUrl
+            url: browserUrl
           });
           if (opened) {
             webBrowserOpenedSessions.add(input.sessionID);
-            browserStatus = "Playwright opened the supplied target in visible Chrome. Continue in that session; do not launch a duplicate browser.";
+            browserStatus = mode2 === "bug-bounty" ? "Playwright opened the supplied program page in visible Chrome. Verify its live status, exact asset scope, policy, and restrictions before navigating to the target." : "Playwright opened the supplied target in visible Chrome. Continue in that session; do not launch a duplicate browser.";
           } else {
             browserStatus = "Automatic Playwright navigation was unavailable. Load the playwright skill and open the supplied target before web enumeration.";
           }
@@ -110723,7 +110750,7 @@ ${content}` : "";
           log2("[pentest-context] Playwright auto-open failed", { sessionID: input.sessionID, reason: reason2 });
         }
       }
-      const contextBlock = buildContextBlock(config, toolNames, intel, skillBlocks.filter(Boolean), reason, isReinjection, webTarget, modeOnly || awaitingRedTeamTarget, awaitingRedTeamTarget, browserStatus);
+      const contextBlock = buildContextBlock(config, toolNames, intel, skillBlocks.filter(Boolean), reason, isReinjection, webTarget, modeOnly || awaitingTarget, awaitingTarget, browserStatus);
       const existingSystem = output.message.system?.trim();
       output.message.system = existingSystem ? `${existingSystem}
 
@@ -155817,9 +155844,97 @@ function createPluginModule(overrides2 = {}) {
   };
 }
 
+// packages/omop-opencode/src/opencode-v2-bridge.ts
+var modeCommand = /^(?:\/mode|--mode)\s+([\w-]+)\s*$/m;
+function parseMode(text) {
+  const name = modeCommand.exec(text)?.[1];
+  return isPentestMode(name) ? name : undefined;
+}
+function isPentestMode(name) {
+  return name !== undefined && Object.hasOwn(MODE_PRESETS, name);
+}
+function skillsForMode(mode2) {
+  if (mode2 === "bug-bounty")
+    return ["bug-bounty-research", "tool-browser-automation"];
+  return MODE_PRESETS[mode2].skill_chain.slice(0, 2);
+}
+function modeInstructions(state3) {
+  const config2 = MODE_PRESETS[state3.mode];
+  const modeOnly = modeCommand.test(state3.prompt);
+  const common = [
+    "<PENTEST_CONTEXT>",
+    `Mode: ${state3.mode} \u2014 ${config2.description}`,
+    "This mode is authoritative for the session. Do not ask the user to choose a mode again.",
+    `Skill chain: ${config2.skill_chain.join(" \u2192 ")}`,
+    `Tool priority: ${config2.tool_priority.join(" \u2192 ")}`,
+    `Scope: ${config2.scope_enforcement}; no_dos=${config2.safety_constraints.no_dos}; no_exfiltration=${config2.safety_constraints.no_exfiltration}.`
+  ];
+  if (state3.mode === "bug-bounty") {
+    common.push("Load bug-bounty-research and tool-browser-automation skills. Use Playwright in the browser to inspect the official active bug-bounty program before any target request, crawler, scanner, or target navigation; verify the exact asset, exclusions, policy, and allowed methods. If no official program can be verified, ask the user directly whether they have real authorization. A yes only allows collecting/verifying written authorization naming exact asset, allowed methods, and time window; do not send target traffic until verified. If no authorization, stop.", modeOnly ? "Ask only for the target domain/IP and wait." : "Do not contact the target until official program scope or written authorization has been verified.");
+  } else if (state3.mode === "red-team") {
+    common.push("Load red-team-workflow and red-recon skills. Start with passive OSINT only. Before active recon or testing, verify current written authorization and rules of engagement for the exact target, allowed methods, and time window.", modeOnly ? "Ask only for the target domain/IP and wait." : "Keep all active work inside the explicitly authorized boundary.");
+  } else {
+    common.push(`Load the first skill in the ${state3.mode} skill chain and begin the matching workflow.`);
+  }
+  common.push("</PENTEST_CONTEXT>");
+  return common.join(`
+`);
+}
+function createOpenCodeV2ModeHandlers() {
+  const sessionModes2 = new Map;
+  return {
+    onPrompt(event) {
+      const prompt = event.prompt.text.trim();
+      const selected = parseMode(prompt);
+      const previous = sessionModes2.get(event.sessionID);
+      const detected = selected ?? (previous?.explicit ? previous.mode : detectMode(prompt).mode);
+      event.prompt.skills = Array.from(new Set([
+        ...event.prompt.skills ?? [],
+        ...skillsForMode(detected)
+      ]));
+      sessionModes2.set(event.sessionID, {
+        mode: detected,
+        explicit: selected !== undefined || previous?.explicit === true,
+        prompt
+      });
+    },
+    onContext(event) {
+      const state3 = sessionModes2.get(event.sessionID);
+      if (!state3)
+        return;
+      const marker = `<PENTEST_CONTEXT>
+Mode: ${state3.mode} `;
+      if (event.system.some((part) => part.text.startsWith(marker)))
+        return;
+      event.system.push({ type: "text", text: modeInstructions(state3) });
+    }
+  };
+}
+async function setupOpenCodeV2(context) {
+  const handlers = createOpenCodeV2ModeHandlers();
+  await context.session.hook("prompt", handlers.onPrompt);
+  await context.session.hook("context", handlers.onContext);
+  await context.command.transform((editor) => {
+    editor.add({
+      name: "mode",
+      description: "Select a CryptHunter engagement mode",
+      execute: async ({ sessionID, prompt, delivery }) => {
+        const selected = parseMode(prompt.text) ?? (isPentestMode(prompt.text.trim()) ? prompt.text.trim() : undefined);
+        if (!selected)
+          return;
+        await context.session.prompt({ sessionID, text: `/mode ${selected}`, delivery });
+      }
+    });
+  });
+}
+
 // packages/omop-opencode/src/index.ts
 var pluginModule = createPluginModule();
-var src_default = pluginModule;
+var src_default = {
+  id: "crypthunter",
+  server: pluginModule.server,
+  setup: setupOpenCodeV2
+};
 export {
   src_default as default
 };
