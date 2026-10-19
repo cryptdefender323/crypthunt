@@ -69,22 +69,24 @@ Exploitation runs first. The agent identifies the challenge category (web, binar
 
 ## Bug Bounty
 
-**Use when:** Running on public bug bounty programs (HackerOne, Bugcrowd, Intigriti, YesWeHack). Scope-strict. Report quality matters.
+**Use when:** Testing an asset under a verified HackerOne, Bugcrowd, Intigriti, YesWeHack, or other official bug-bounty program. Scope-strict. Report quality matters.
 
-Recon-first. Every target is validated against program scope before active testing. DoS and out-of-scope techniques are blocked automatically.
+The workflow uses Playwright to inspect the official program page before any request to the target. It checks current program status, exact asset scope, exclusions, and policy limits. If scope cannot be confirmed, the workflow stops before target-directed requests and asks for an official program URL or written permission.
 
 | Property | Value |
 | :--- | :--- |
 | Scope enforcement | **Strict** — auto-stop on violation |
 | Tool priority | Recon → Enum → Exploit |
-| Skill chain | `pentest-recon` → `pentest-enum` → `pentest-exploit` → `pentest-report` |
+| Skill chain | `bug-bounty-research` (Playwright scope gate) → `pentest-recon` → `pentest-enum` → `pentest-exploit` → `pentest-report` |
 | Parallelism | 4x |
 | Stealth | Off |
 | DoS protection | **On** |
 | Exfiltration guard | **On** |
 | Report format | HackerOne (CVSS + PoC + impact + remediation) |
 
-Scope is parsed from the prompt or a scope file:
+The exact asset is matched against the verified official program policy. Prompt text or a local scope file alone is not proof of a program's current authorization.
+
+Scope details are recorded from the program page or written permission:
 
 ```
 Scope: *.example.com
@@ -104,9 +106,11 @@ Record the source and date; do not collect private contact details, inspect
 personal accounts, or contact employees. Continue with active recon and
 systematic validation of relevant in-scope vulnerability classes only after a
 current signed authorization letter/rules of engagement names the target,
-allowed methods, and time window. Record the test coverage and detection
-outcome; scanner hits remain candidates until manually verified. Stop when a
-control blocks or detects testing.
+allowed methods, and time window. Then map all lifecycle phases with benign
+test identities, inert markers, BAS/vendor events, synthetic telemetry, or
+isolated labs; record detection and cleanup. Reports distinguish simulated
+events from compromise. Scanner hits remain candidates until manually verified.
+Stop when a control blocks or detects testing.
 
 | Property | Value |
 | :--- | :--- |

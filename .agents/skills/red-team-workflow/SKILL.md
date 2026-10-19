@@ -112,7 +112,34 @@ not tested with a reason. A scanner finding is only a candidate; reproduce it
 and review the evidence before reporting it. Leave destructive, data-access,
 credential, persistence, and evasion actions out of the test plan.
 
-## 6. Foothold validation and later-stage boundaries
+## 6. Full-lifecycle adversary-emulation scenario
+
+After discovery and assessment, turn the written objective into an end-to-end
+scenario covering every phase below. Use ATT&CK tactics as coverage labels,
+not as permission to execute every technique. For each phase, define the
+approved target, expected control, safe simulation signal, telemetry source,
+success criterion, and cleanup. Report progress phase by phase and distinguish
+emulated behavior from an actual compromise.
+
+| Lifecycle phase | Safe emulation | Record |
+|---|---|---|
+| Initial access | Owner-created test account on the named service, or a BAS/vendor test event | Access-control result and alert outcome |
+| Execution | Signed benign test utility or inert marker approved in the rules of engagement | Process/command telemetry and alert outcome |
+| Persistence | BAS/vendor persistence simulation event; do not create autoruns, services, tasks, or implants | Prevention/detection result |
+| Privilege escalation | Preconfigured lab role transition or synthetic endpoint event | Policy result; no token theft or kernel exploit |
+| Defense evasion | Benign test artifact submitted to detection controls without disabling or bypassing them | Alert/prevention result; stop on block |
+| Credential access | Synthetic credentials or vendor-provided simulation events | Detection result; no reading or extracting real secrets |
+| Discovery | Approved inventory interface or synthetic discovery telemetry | Log coverage and analyst visibility |
+| Lateral movement | Owner-created canary identities and a second isolated lab endpoint; otherwise synthetic telemetry | Boundary and cross-host alert result; no captured-credential pivot |
+| Collection/exfiltration | Harmless canary file tested with approved DLP/BAS simulation; otherwise synthetic telemetry | DLP alert/block; never transmit real data |
+| Impact/recovery | Reversible owner-provided test object or synthetic impact event | Prevention, detection, and recovery result |
+
+Mark each phase `executed safely`, `synthetic telemetry only`, `blocked`,
+`not authorized`, or `not available`. Do not claim execution when the phase
+was represented only by synthetic events. If the rules do not authorize a
+benign live emulation, use synthetic telemetry or leave the phase untested.
+
+## 7. Foothold validation and later-stage boundaries
 
 The objective is to establish whether a control boundary can be crossed with a
 client-issued test identity and a harmless canary, not to compromise the
@@ -149,13 +176,14 @@ operator requests a pause, stop active actions immediately. Preserve the
 minimum evidence needed to explain what happened and hand control to the
 engagement contact.
 
-## 7. Evidence and handoff
+## 8. Evidence and handoff
 
 For every test, save the hypothesis, scope reference, exact action, timestamp,
 approved identity/profile/egress, sanitized request and response evidence,
-result, and whether a control detected it. Redact tokens, passwords, personal
-data, and unrelated response content. Update the attack model only with
-evidence-backed observations.
+result, whether the behavior was directly emulated or represented by synthetic
+telemetry, whether a control detected it, and cleanup status. Redact tokens,
+passwords, personal data, and unrelated response content. Update the attack
+model only with evidence-backed observations.
 
 Finish with an executive summary and a test ledger that distinguishes:
 
@@ -165,5 +193,6 @@ Finish with an executive summary and a test ledger that distinguishes:
 - Not attempted because the rules did not authorize it.
 - Inconclusive or requiring manual validation.
 - Reviewed from existing authorized telemetry, if applicable.
+- Represented by synthetic telemetry only.
 
 Never imply that a control was bypassed when the test was blocked or not run.

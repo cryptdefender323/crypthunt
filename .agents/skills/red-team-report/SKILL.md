@@ -22,6 +22,8 @@ path or an unverified hypothesis.
   control detection outcome.
 - Vulnerability coverage ledger showing tested, not applicable, blocked, and
   not tested categories for each in-scope asset.
+- Full-lifecycle emulation matrix showing which phases used benign tests,
+  synthetic telemetry, or were blocked/not authorized.
 - Evidence references and validation status for each reported result.
 - Cleanup and closeout status for any explicitly authorized activity.
 
@@ -57,6 +59,12 @@ and top remediation priorities in concise non-technical language.]
 | Asset | Vulnerability class | Status | Validation level | Detection outcome | Evidence |
 |---|---|---|---|---|---|
 [Include tested, not applicable, blocked, and not tested items.]
+
+## Adversary-Emulation Coverage
+| Lifecycle phase | Simulation type | Control/telemetry result | Cleanup | Evidence |
+|---|---|---|---|---|
+[Distinguish benign live emulation from synthetic telemetry. Never describe a
+simulated event as a successful intrusion.]
 
 ## Validated Access Paths and Findings
 [Only reproduced paths. Distinguish confirmed behavior from hypotheses and

@@ -189,7 +189,7 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | Mode | Use case | Output |
 |---|---|---|
 | `auto` | Unknown target | Standard |
-| `bug-bounty` | HackerOne, Bugcrowd, Intigriti | HackerOne format |
+| `bug-bounty` | Playwright verifies the active official program and exact asset scope before target traffic | HackerOne format |
 | `red-team` | Scoped recon, public professional people OSINT, and controlled access validation | Executive summary |
 | `ctf` | HackTheBox, TryHackMe, picoCTF | Flag |
 | `blue-team` | Detection, IR, defensive audit | IR report |
@@ -207,13 +207,16 @@ Engagement state (hypotheses, evidence ladder, confirmed findings) is persisted 
 | `ad-audit` | Active Directory audit | AD report |
 
 The default red-team workflow is `red-team-workflow` → `red-recon` →
-`red-assess` → `red-team-report`. It includes public professional OSINT about
-the target organization, passive and authorized active reconnaissance, and a
-coverage ledger for relevant vulnerability classes on explicitly in-scope
-assets. Public work details are source-dated; private contact details,
-personal accounts, and employee outreach are excluded. Scanner results remain
-candidates until manually verified. Active checks require defined scope and
-stop when a control blocks or detects them.
+`red-assess` → `red-team-report`. It covers public professional OSINT, passive
+recon, document-authorized active discovery, a vulnerability ledger, and
+full-lifecycle adversary-emulation coverage from initial access through
+impact/recovery. Emulation uses owner-provided test identities, inert markers,
+BAS/vendor test events, synthetic telemetry, and isolated labs. Reports
+distinguish benign tests from synthetic events and never label them an actual
+compromise. Private contact details, personal accounts, and employee outreach
+are excluded. Scanner hits remain candidates until manually verified; active
+checks require signed authorization and stop when a control blocks or detects
+them.
 
 ```
 /mode red-team

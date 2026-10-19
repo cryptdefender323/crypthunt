@@ -51,6 +51,20 @@ each observed technology and candidate. Keep the ledger as the source of truth
 for coverage and use `pentest_hypothesize` to register concrete, falsifiable
 hypotheses.
 
+## Full-lifecycle emulation matrix
+
+Coordinate with `red-team-workflow` to maintain one row for every lifecycle
+phase: initial access, execution, persistence, privilege escalation, defense
+evasion, credential access, discovery, lateral movement, collection/exfiltration,
+and impact/recovery. Record the authorized target, owner-provided simulation
+method, expected telemetry, detection/prevention result, and cleanup. Prefer
+BAS or vendor test events, inert markers, synthetic telemetry, test-owned
+accounts, and isolated lab endpoints. Never create persistence, collect real
+credentials, evade controls, pivot with captured material, or transmit real
+data. If a phase cannot be exercised safely under the rules, mark it `synthetic
+telemetry only`, `not authorized`, or `not available`; do not represent it as a
+completed compromise.
+
 ## Safe validation rules
 
 Before each active check, record the hypothesis, exact asset and endpoint,
