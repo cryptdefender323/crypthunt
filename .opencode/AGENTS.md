@@ -36,6 +36,11 @@ Each skill follows the standard layout (`SKILL.md` + optional `scripts/`, `refer
 - `bun.lock`, `package.json`, `node_modules/` — Skill dependencies (some skills install their own packages).
 - `.gitignore` — Local scope ignore patterns.
 
+## AGENTS
+
+- `agents/crypthunter.md` — V2 primary agent using the model selected in OpenCode.
+- `agent/crypthunter.md` — V1-compatible copy of the same agent profile.
+
 ## CONVENTIONS
 
 - **Skill YAML frontmatter is mandatory.** [`opencode-skill-loader`](../packages/omop-opencode/src/features/opencode-skill-loader/) rejects skills without `name` + `description`.
