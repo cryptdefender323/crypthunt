@@ -53,9 +53,13 @@ ownership, a public bug-bounty listing, or access to a related system.
 ## 2. Passive OSINT
 
 Start with public or client-provided information that does not send requests to
-the target: subdomain sources, DNS history, certificate transparency, public
-registries, public code and documentation, document metadata, job listings,
-and approved threat-intelligence data. For an organization target, include
+the target. Map historical and current DNS records (A/AAAA, MX, TXT, NS, and
+CAA where available), certificate transparency, public subdomain sources, and
+ASN/IP ownership from public registries. Use public search-engine queries to
+find exposed documents and metadata; record only links and minimal proof needed
+for owner review. Review public repositories for exposed secrets, but never
+validate, reuse, or copy any discovered credential. Include job listings and
+approved threat-intelligence data. For an organization target, include
 relevant professional information from public sources: names, current or past
 employer, job title or function, public professional biography, work email,
 and published office phone or office location. Suitable sources include
@@ -82,7 +86,12 @@ research is limited to public professional information described in the OSINT
 phase; no outreach, impersonation, or collection of private personal details
 or accounts. Retain a baseline and evidence for each
 distinct check. No denial-of-service, unbounded crawling, or bulk credential
-attempts.
+attempts. For each approved perimeter asset, inventory reachable ports and
+services, identify server/OS/framework signals at the least intrusive level
+allowed, and record indicators of a WAF, CDN, reverse proxy, or load balancer.
+Treat these as observations, not permission to bypass the control. Do not
+change request shape, source, identity, or browser profile to evade a block or
+detection.
 
 Use a proxy only when the client has named or approved that egress route. Do not
 rotate proxies or source addresses to evade a block, rate limit, alert, or
@@ -115,29 +124,30 @@ credential, persistence, and evasion actions out of the test plan.
 ## 6. Full-lifecycle adversary-emulation scenario
 
 After discovery and assessment, turn the written objective into an end-to-end
-scenario covering every phase below. Use ATT&CK tactics as coverage labels,
+scenario covering all eight phases below. Use ATT&CK tactics as coverage labels,
 not as permission to execute every technique. For each phase, define the
 approved target, expected control, safe simulation signal, telemetry source,
 success criterion, and cleanup. Report progress phase by phase and distinguish
 emulated behavior from an actual compromise.
 
-| Lifecycle phase | Safe emulation | Record |
+| Requested phase | Safe emulation | Record |
 |---|---|---|
-| Initial access | Owner-created test account on the named service, or a BAS/vendor test event | Access-control result and alert outcome |
-| Execution | Signed benign test utility or inert marker approved in the rules of engagement | Process/command telemetry and alert outcome |
-| Persistence | BAS/vendor persistence simulation event; do not create autoruns, services, tasks, or implants | Prevention/detection result |
-| Privilege escalation | Preconfigured lab role transition or synthetic endpoint event | Policy result; no token theft or kernel exploit |
-| Defense evasion | Benign test artifact submitted to detection controls without disabling or bypassing them | Alert/prevention result; stop on block |
-| Credential access | Synthetic credentials or vendor-provided simulation events | Detection result; no reading or extracting real secrets |
-| Discovery | Approved inventory interface or synthetic discovery telemetry | Log coverage and analyst visibility |
-| Lateral movement | Owner-created canary identities and a second isolated lab endpoint; otherwise synthetic telemetry | Boundary and cross-host alert result; no captured-credential pivot |
-| Collection/exfiltration | Harmless canary file tested with approved DLP/BAS simulation; otherwise synthetic telemetry | DLP alert/block; never transmit real data |
-| Impact/recovery | Reversible owner-provided test object or synthetic impact event | Prevention, detection, and recovery result |
+| 1. Recon: passive and active surface mapping | Public DNS history, ASN/IP, subdomain, document, and professional OSINT; scoped port/service and WAF/CDN fingerprinting only after the active gate | Source, collection time, scope status, exposed-asset owner, and detection outcome |
+| 2. Exploit: initial access and foothold | Validate a named external service boundary with a client-issued test account, harmless marker, or approved BAS event; no reverse shell or general-purpose code execution | Hypothesis, boundary tested, marker identity, control response, alert, and cleanup |
+| 3. Enum: post-breach investigation | Use approved inventory/EDR interfaces or an isolated lab host to inspect system, software, identity, configuration, and network visibility; use synthetic secrets only | Data source, test identity, fields observed, telemetry, and any untested host commands |
+| 4. Priv-esc | Audit sudo/SUID/service/role configuration or run a preconfigured lab role transition; do not exploit production kernel or steal tokens/hashes | Misconfiguration evidence, effective-role boundary, expected control, and cleanup |
+| 5. Lateral movement | Use separate owner-created canary identities across two isolated lab endpoints, or synthetic telemetry; do not pivot with captured credentials/tokens | Source/destination, test identity, boundary result, alert, and cleanup |
+| 6. Persistence | Use a BAS/vendor persistence simulation or synthetic endpoint event; do not add accounts, autoruns, services, tasks, implants, or timestomp files | Simulation ID, prevention/detection result, telemetry source, and cleanup status |
+| 7. Impact | Test a harmless canary file/object with approved DLP or recovery simulation; no real-data staging, exfiltration, service disruption, or critical-data modification | Canary identifier, DLP/alert outcome, recovery result, and evidence location |
+| 8. Purple teaming | Build a timestamped attack narrative from observed or simulated events, reconcile it with SOC/EDR/SIEM records, and propose detection and remediation changes | Event-to-alert mapping, gaps, rule recommendations, owner, and retest criterion |
 
-Mark each phase `executed safely`, `synthetic telemetry only`, `blocked`,
-`not authorized`, or `not available`. Do not claim execution when the phase
-was represented only by synthetic events. If the rules do not authorize a
-benign live emulation, use synthetic telemetry or leave the phase untested.
+For every row, set one status: `executed safely`, `synthetic telemetry only`,
+`blocked`, `not authorized`, or `not available`. Never report a simulated phase
+as a real foothold, compromise, privilege escalation, lateral movement,
+persistence, or exfiltration.
+
+If the rules do not authorize a benign live emulation, use synthetic telemetry
+or leave the phase untested.
 
 ## 7. Foothold validation and later-stage boundaries
 
