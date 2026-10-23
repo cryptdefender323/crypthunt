@@ -30,13 +30,38 @@ the Red Team assessment phase; report objective progress and detections with
 Mode selection, a target domain/IP, and a scanner finding do not establish
 authorization or prove a vulnerability.
 
+## Freshness gate
+
+Do not turn a historical OSINT item into a current vulnerability finding. For
+each candidate, record the original event/`last_seen` time, retrieval time,
+asset, and source. Archived defacement pages, old Shodan data, old CVE matches,
+and third-party claims without dates remain `HISTORICAL_LEAD` or
+`FRESHNESS_UNKNOWN`. Preserve them in the coverage ledger as leads, but exclude
+them from current finding counts until a new, in-scope observation supports a
+falsifiable hypothesis. Their age alone is not a reason to omit the underlying
+vulnerability class from assessment.
+
+Before loading a vulnerability playbook or proposing a validation test, require
+a current signal tied to the exact asset and behavior. For web parameters, a
+name like `id` or a URL from an old defacement record is not such a signal.
+Establish the current page/endpoint and normal response first, using Playwright
+or the least intrusive approved request after the ROE gate. Record its
+engagement timestamp and sanitized evidence. If the current behavior cannot be
+reproduced safely, report only the historical lead, not a live vulnerability.
+
 ## Build the coverage ledger
 
-Use the observed stack and exposed services to select applicable checks. Run
-independent, authorized checks in bounded waves. Mark every category `tested`,
-`not applicable` with its reason, `blocked`, or `not tested` with its reason;
-do not silently omit a relevant category or claim that a generic scanner
-covered it.
+Use the observed stack, exposed services, application behavior, historical
+leads, and in-scope architecture to select applicable checks. Cover relevant
+vulnerability classes whether they are longstanding or newly disclosed; rank
+them by current exposure, plausible impact, evidence, and ROE, not novelty or
+ease of testing. Keep historical leads attached to the relevant ledger rows
+until current evidence confirms or disproves them. Run independent, authorized
+checks in bounded waves. Mark every relevant category `tested`, `not
+applicable` with its reason, `blocked`, or `not tested` with its reason; do not
+silently omit a relevant category or claim that a generic scanner covered it.
+Do not run a check merely because a skill exists: require applicability,
+authorization, a falsifiable hypothesis, and a safe test method.
 
 | Surface | Relevant checks |
 |---|---|
@@ -50,6 +75,15 @@ Load the most specific `vuln-*`, `tech-*`, `proto-*`, or framework skill for
 each observed technology and candidate. Keep the ledger as the source of truth
 for coverage and use `pentest_hypothesize` to register concrete, falsifiable
 hypotheses.
+
+At minimum, consider all relevant classes across the observed surface:
+authentication and authorization, session/token handling, injection, XSS,
+CSRF/CORS, SSRF, path traversal and file handling, deserialization, business
+logic and race conditions, cache and request parsing, information exposure,
+known vulnerability and configuration checks, dependency/source/CI supply
+chain, cloud/container/identity, and network protocols. Add framework-specific
+classes when the stack warrants them. This is an applicability checklist, not
+a requirement to probe every class against every asset.
 
 ## Full-lifecycle emulation matrix
 
@@ -73,6 +107,8 @@ condition. Establish normal behavior first. Prefer a single controlled request
 or a client-provided test account and canary value.
 
 - Scanner/template output is a candidate (L1), never a confirmed finding.
+- Evidence from an archive or third-party index is historical context, never
+  the reproduction step for a current finding.
 - Reproduce candidates independently and record sanitized request/response
   evidence. Use the evidence ladder and adversarial false-positive review.
 - Prove access-control issues only with client-issued test accounts and

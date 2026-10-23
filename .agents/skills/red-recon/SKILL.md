@@ -151,6 +151,26 @@ harvesting limited to work addresses relevant to the in-scope organization.
 Never validate, reuse, or test leaked credentials; record the exposure source
 and notify the owner.
 
+### Evidence freshness and historical leads
+
+For every passive result, preserve the source URL/provider, the source event or
+`last_seen` timestamp when available, the retrieval timestamp, the exact asset,
+and whether it is historical or a direct observation from this engagement.
+Retrieving an old record today does not make the underlying observation current.
+
+Label archived defacements, old Shodan banners, historical DNS, old CVE
+references, and undated third-party findings `HISTORICAL_LEAD` or
+`FRESHNESS_UNKNOWN`. They may guide prioritization, but they are not evidence
+that the asset is vulnerable now and must not trigger exploitation or a current
+finding claim. An archived defacement demonstrates past tampering only. A URL
+parameter such as `?id=` by itself is not evidence of LFI or path traversal.
+
+To promote a lead into a current hypothesis, first confirm that the exact asset
+is in scope, then obtain a fresh signal during this engagement. If that needs
+target traffic, wait for the active-authorization gate. Record the new
+observation and timestamp separately from the historical source; never
+overwrite the old timestamp or describe the lead as newly found.
+
 ```bash
 # Email harvesting
 theHarvester -d $TARGET -b google,bing,linkedin,hunter -l 200 \
@@ -312,10 +332,11 @@ EOF
 | VPN/Citrix/OWA exposed | Remote access entry point | Credential stuffing, password spray |
 | Dev/staging subdomains live | Weaker security controls | Reused credentials, debug endpoints |
 | Employee work emails or credentials referenced in breach data | Potential exposure | Record source and notify the owner; do not test or reuse credentials |
-| API keys in public GitHub | Direct system access | Immediate credential use |
-| Jenkins/GitLab exposed | CI/CD pipeline attack | RCE via pipeline or credential theft |
-| S3/blob buckets misconfigured | Data access | Sensitive file retrieval |
-| Old CVE in Shodan banner | Known exploit available | Direct exploitation |
+| API keys or tokens referenced in public repositories | Possible secret exposure | Record source and freshness; notify owner; never test or reuse the secret |
+| Jenkins/GitLab appears in passive data | Potential public service | Confirm current exposure on an authorized asset before assessing its controls |
+| S3/blob service appears in passive data | Potential cloud asset | Verify ownership/scope and current configuration using approved read-only evidence |
+| Old CVE or banner in Shodan/archive data | Historical lead for that vulnerability class, regardless of age | Keep it in the coverage ledger; check source `last_seen` and current in-scope exposure before validation; never exploit from archive data alone |
+| Archived defacement report | Evidence of past tampering | Mark historical; do not infer a current LFI, path traversal, or other vulnerability |
 | Internal hostnames in certs | Internal network visibility | Internal pivot planning |
 | Login portal with weak lockout policy | Authentication control gap | Review published or client-provided policy; do not spray accounts |
 

@@ -70,6 +70,12 @@ simulated event as a successful intrusion.]
 [Only reproduced paths. Distinguish confirmed behavior from hypotheses and
 inconclusive tests. Describe impact only to the level demonstrated.]
 
+## Historical Intelligence (Not Current Findings)
+[List archived defacements, old banners, historical DNS, and undated reports
+separately with their original event/last-seen time and source. Do not count
+these as vulnerabilities found or tested in this engagement unless fresh,
+authorized evidence independently reproduces the behavior.]
+
 ## Detection and Response
 [Expected control, observed alert/response, timing, and evidence.]
 
