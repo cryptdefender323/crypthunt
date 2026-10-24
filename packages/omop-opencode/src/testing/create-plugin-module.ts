@@ -28,6 +28,7 @@ import {
 import { createFirstMessageVariantGate } from "../shared/first-message-variant"
 import { initI18n } from "../shared/i18n"
 import { log } from "../shared/logger"
+import { applyManagedToolEnvironment } from "../shared/managed-tool-environment"
 import { logLegacyPluginStartupWarning } from "../shared/log-legacy-plugin-startup-warning"
 import { migrateLegacyWorkspaceDirectory } from "../shared/legacy-workspace-migration"
 import { injectServerAuthIntoClient } from "../shared/opencode-server-auth"
@@ -106,6 +107,7 @@ const defaultPluginModuleDeps: PluginModuleDeps = {
 export function createPluginModule(overrides: Partial<PluginModuleDeps> = {}): PluginModule {
   const deps = { ...defaultPluginModuleDeps, ...overrides }
   const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
+    applyManagedToolEnvironment()
     deps.installAgentSortShim()
     deps.initConfigContext("opencode", null)
     deps.log("[crypthunter] ENTRY - plugin loading", {

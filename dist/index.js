@@ -155683,6 +155683,51 @@ function createFirstMessageVariantGate() {
 
 // packages/omop-opencode/src/testing/create-plugin-module.ts
 init_logger2();
+
+// packages/omop-opencode/src/shared/managed-tool-environment.ts
+import { existsSync as existsSync118, readFileSync as readFileSync80 } from "fs";
+import { delimiter as delimiter3, dirname as dirname45, join as join135, resolve as resolve42 } from "path";
+import { homedir as homedir37 } from "os";
+import { fileURLToPath as fileURLToPath8 } from "url";
+function managedToolsDir() {
+  const moduleDir = dirname45(fileURLToPath8(import.meta.url));
+  const inferred = [resolve42(moduleDir, ".."), resolve42(moduleDir, "../../../..")].find((candidate) => existsSync118(join135(candidate, "tools-catalog.json")));
+  const installRoot = process.env.CRYPTHUNTER_INSTALL_DIR ?? process.env.CRYPTHUNTER_PACKAGE_ROOT ?? inferred ?? join135(homedir37(), ".crypthunter");
+  return join135(resolve42(installRoot), "tools");
+}
+function addExistingPaths(paths3) {
+  const current = process.env.PATH ?? "";
+  const currentParts = current.split(delimiter3).filter(Boolean);
+  const compare = (value) => process.platform === "win32" ? value.toLowerCase() : value;
+  const known = new Set(currentParts.map(compare));
+  const additions = paths3.filter(existsSync118).map((value) => resolve42(value)).filter((value) => !known.has(compare(value)));
+  if (additions.length > 0)
+    process.env.PATH = [...additions, current].filter(Boolean).join(delimiter3);
+}
+function readTemplatesPath(stateFile) {
+  try {
+    const state3 = JSON.parse(readFileSync80(stateFile, "utf8"));
+    if (state3.templates !== "installed" && state3.templates !== "already-present")
+      return;
+    if (typeof state3.templatesDir !== "string" || !existsSync118(state3.templatesDir))
+      return;
+    return resolve42(state3.templatesDir);
+  } catch {
+    return;
+  }
+}
+function applyManagedToolEnvironment() {
+  const toolsDir = managedToolsDir();
+  const pythonBin = process.platform === "win32" ? join135(toolsDir, "python", "Scripts") : join135(toolsDir, "python", "bin");
+  addExistingPaths([join135(toolsDir, "bin"), pythonBin]);
+  if (process.env.NUCLEI_TEMPLATES_DIR)
+    return;
+  const templatesDir = readTemplatesPath(join135(toolsDir, ".bootstrap-state.json"));
+  if (templatesDir)
+    process.env.NUCLEI_TEMPLATES_DIR = templatesDir;
+}
+
+// packages/omop-opencode/src/testing/create-plugin-module.ts
 var defaultPluginModuleDeps = {
   initConfigContext,
   installAgentSortShim,
@@ -155715,6 +155760,7 @@ var defaultPluginModuleDeps = {
 function createPluginModule(overrides2 = {}) {
   const deps = { ...defaultPluginModuleDeps, ...overrides2 };
   const serverPlugin = async (input, _options) => {
+    applyManagedToolEnvironment();
     deps.installAgentSortShim();
     deps.initConfigContext("opencode", null);
     deps.log("[crypthunter] ENTRY - plugin loading", {
@@ -155911,6 +155957,7 @@ Mode: ${state3.mode} `;
   };
 }
 async function setupOpenCodeV2(context) {
+  applyManagedToolEnvironment();
   const handlers = createOpenCodeV2ModeHandlers();
   await context.session.hook("prompt", handlers.onPrompt);
   await context.session.hook("context", handlers.onContext);

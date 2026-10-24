@@ -5,6 +5,7 @@ import { codexUlwLoop } from "./codex-pentest-loop"
 import { refreshModelCapabilities } from "./refresh-model-capabilities"
 import { runSparkShell } from "./sparkshell"
 import { formatToolsInstallReport, runToolsInstall } from "./tools-install"
+import { bootstrapRecommendedTools, formatToolBootstrapSummary } from "./tool-bootstrap"
 import { PLUGIN_NAME } from "../shared"
 import packageJson from "../../../../package.json" with { type: "json" }
 
@@ -136,6 +137,31 @@ export function configureRuntimeCommands(program: Command): void {
         process.exit(exitCode)
       } catch (error) {
         console.error(error instanceof Error ? error.message : String(error))
+        process.exit(2)
+      }
+    })
+
+  toolsCmd
+    .command("bootstrap")
+    .description("Quietly install README-recommended tools and missing Nuclei templates")
+    .option("--root <path>", "CryptHunter plugin installation directory")
+    .option("--catalog <path>", "Path to tools-catalog.json")
+    .option("--dry-run", "Check recommended tools without installing them")
+    .option("--quiet", "Suppress the completion summary")
+    .option("--json", "Output a JSON summary")
+    .action(async (options: { readonly root?: string; readonly catalog?: string; readonly dryRun?: boolean; readonly quiet?: boolean; readonly json?: boolean }) => {
+      try {
+        const report = await bootstrapRecommendedTools({
+          installDir: options.root,
+          catalogPath: options.catalog,
+          dryRun: options.dryRun ?? false,
+        })
+        if (!options.quiet) {
+          console.log(options.json ? JSON.stringify(report, null, 2) : formatToolBootstrapSummary(report))
+        }
+        process.exit(report.failed.length > 0 || report.missing.length > 0 || report.templates === "deferred" ? 1 : 0)
+      } catch (error) {
+        if (!options.quiet) console.error(error instanceof Error ? error.message : String(error))
         process.exit(2)
       }
     })

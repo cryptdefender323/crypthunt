@@ -306,6 +306,12 @@ if [ ! -f "$INSTALL_DIR/dist/cli/index.js" ]; then
   success "CryptHunter build complete"
 fi
 
+if CRYPTHUNTER_INSTALL_DIR="$INSTALL_DIR" "$INSTALL_DIR/bin/crypthunter.js" tools bootstrap --quiet; then
+  success "Recommended tools and Nuclei templates checked in the background"
+else
+  warn "Some recommended tools were deferred. Retry with: crypthunter tools bootstrap"
+fi
+
 # ─── done ─────────────────────────────────────────────────────────────────────
 
 printf "\n"

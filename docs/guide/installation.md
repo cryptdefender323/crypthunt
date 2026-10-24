@@ -39,19 +39,10 @@ bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
 ```
 
-Security tools:
-
-```bash
-go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-go install github.com/projectdiscovery/httpx/cmd/httpx@latest
-go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
-go install github.com/projectdiscovery/katana/cmd/katana@latest
-go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
-go install github.com/tomnomnom/ffuf/v2@latest
-go install github.com/tomnomnom/anew@latest
-
-pip3 install pwntools pycryptodome impacket bloodhound crackmapexec certipy-ad
-```
+The plugin installer quietly checks and installs the README-listed Go/Python
+security tools and Nuclei templates. Existing tools and template directories
+are reused. Run `crypthunter tools bootstrap` to retry or
+`crypthunter tools bootstrap --dry-run` to preview missing dependencies.
 
 ---
 
@@ -79,15 +70,10 @@ bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
 ```
 
-Security tools:
-
-```bash
-go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-go install github.com/projectdiscovery/httpx/cmd/httpx@latest
-go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
-go install github.com/projectdiscovery/katana/cmd/katana@latest
-pip3 install pwntools pycryptodome certipy-ad impacket
-```
+The plugin installer quietly checks and installs the README-listed Go/Python
+security tools and Nuclei templates. Existing tools and template directories
+are reused. On distributions using apt, missing documented system packages
+are installed through apt when non-interactive elevation is available.
 
 ---
 
@@ -101,8 +87,6 @@ npm install -g opencode-ai --allow-scripts
 curl -fsSL https://bun.sh/install | bash
 source ~/.bashrc
 
-sudo apt install -y nmap sqlmap hashcat john binutils gdb
-pip3 install pwntools pycryptodome impacket certipy-ad
 
 git clone https://github.com/cryptdefender323/crypthunter.git
 cd crypthunter
@@ -113,6 +97,12 @@ bun run dist/cli/index.js doctor
 ```
 
 ---
+
+During installation, the Ubuntu/Debian bundle checks Nmap, SQLMap, Hashcat,
+John, GDB, and the documented Python packages. Missing Python tools and Nuclei
+templates are stored in the CryptHunter tools directory. System packages stay
+managed by apt. If non-interactive `sudo` is unavailable, missing system
+packages are recorded for later setup instead of prompting during bootstrap.
 
 ## Docker (Isolated / Air-Gapped)
 

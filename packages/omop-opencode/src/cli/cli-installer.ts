@@ -30,6 +30,7 @@ import { starGitHubRepositories } from "./star-request"
 import { getNoModelProvidersWarning, hasAnyConfiguredProvider } from "./provider-availability"
 import { ensureTuiPluginEntry } from "./config-manager/add-tui-plugin-to-tui-config"
 import * as astGrepInstall from "./install-ast-grep-sg"
+import { bootstrapRecommendedTools, formatToolBootstrapSummary } from "./tool-bootstrap"
 
 export async function runCliInstaller(args: InstallArgs, version: string): Promise<number> {
   const validation = validateNonTuiArgs(args)
@@ -132,6 +133,17 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
         `OpenClaw enabled. To let chat replies drive OpenCode sessions, set Discord/Telegram reply listener ` +
           `credentials manually under "openclaw.replyListener" in ${color.dim(omoResult.configPath)}.`,
       )
+    }
+  }
+
+  if (config.hasOpenCode) {
+    try {
+      const report = await bootstrapRecommendedTools({
+        installDir: process.env.CRYPTHUNTER_INSTALL_DIR ?? process.env.CRYPTHUNTER_PACKAGE_ROOT,
+      })
+      printInfo(formatToolBootstrapSummary(report))
+    } catch {
+      printWarning("Recommended tool setup was deferred. Run `crypthunter tools bootstrap` to retry.")
     }
   }
 

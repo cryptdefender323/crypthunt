@@ -76,6 +76,14 @@ opencode
 
 `crypthunter install` asks which AI provider you want to use. Choose only providers for which you have access or credentials.
 
+During plugin installation, CryptHunter quietly checks the README-recommended
+security tools and Nuclei templates. Existing tools/templates are reused. Go
+tools, Python packages, and newly downloaded Nuclei templates are stored under
+`<CryptHunter install>/tools`; OS packages managed by apt, Homebrew, or Winget
+remain under that package manager. Details are captured in
+`<CryptHunter install>/tools/.bootstrap.log`. Retry or preview with
+`crypthunter tools bootstrap` or `crypthunter tools bootstrap --dry-run`.
+
 ### Windows PowerShell
 
 The repository currently does not ship a native `install.ps1`. Use PowerShell with Git, Node.js 22+, and Bun already installed:

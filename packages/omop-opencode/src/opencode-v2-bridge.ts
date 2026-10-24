@@ -1,5 +1,6 @@
 import { detectMode, MODE_PRESETS } from "@omop/pentest-core"
 import type { PentestMode } from "@omop/pentest-core"
+import { applyManagedToolEnvironment } from "./shared/managed-tool-environment"
 
 export type OpenCodeV2PromptEvent = {
   readonly sessionID: string
@@ -126,6 +127,7 @@ export function createOpenCodeV2ModeHandlers(): {
 }
 
 export async function setupOpenCodeV2(context: OpenCodeV2Context): Promise<void> {
+  applyManagedToolEnvironment()
   const handlers = createOpenCodeV2ModeHandlers()
   await context.session.hook("prompt", handlers.onPrompt)
   await context.session.hook("context", handlers.onContext)

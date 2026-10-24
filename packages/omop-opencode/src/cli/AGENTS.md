@@ -23,6 +23,7 @@ Commander.js CLI with .. commands. Entry: `index.ts` → `runCli()` in `cli-prog
 | `pentest-loop` | Codex pentest-loop CLI | Run the Codex LazyCodex pentest-loop CLI |
 | `tools check` | Catalog tool availability | `checkToolInstalled` over `tools-catalog.json` |
 | `tools install` | Auto-install missing tools | `ensureToolsInstalled` (+ permission layer via `@omop/tools`) |
+| `tools bootstrap` | Quiet README-based install bootstrap | `tool-bootstrap.ts` (managed Go/Python paths + Nuclei templates) |
 
 `install` accepts `--platform=opencode|codex|both` (default `opencode`). `codex`/`both` route through `install-codex/` to install the Codex CLI Light edition (also `npx lazycodex-ai install`). See `packages/omop-codex/AGENTS.md`.
 
