@@ -104,6 +104,43 @@ templates are stored in the CryptHunter tools directory. System packages stay
 managed by apt. If non-interactive `sudo` is unavailable, missing system
 packages are recorded for later setup instead of prompting during bootstrap.
 
+---
+
+## iSH Shell on iPhone/iPad
+
+CryptHunter does not run natively inside iSH. iSH provides a 32-bit x86 Alpine
+environment; CryptHunter's OpenCode and Bun runtime requires a supported
+64-bit macOS/Linux host. Use iSH as an SSH terminal to a Mac or Linux computer
+that already has CryptHunter installed. The plugin, browser automation, and
+security tools execute on that host.
+
+Enable Remote Login on macOS (**System Settings → General → Sharing → Remote
+Login**) or enable an SSH server on Linux. In iSH, install the SSH client and
+connect to the host:
+
+```sh
+apk update
+apk add openssh-client
+ssh your-user@your-host
+```
+
+Then launch OpenCode from the remote CryptHunter checkout:
+
+```sh
+cd /path/to/crypthunt
+opencode
+```
+
+Keep provider credentials on the remote host. Use SSH only over a trusted
+network or private VPN, and verify the host key on first connection. Do not
+expose OpenCode or CryptHunter directly to the public internet for mobile
+access.
+
+For direct local installation on a computer, follow the macOS or Linux steps
+above instead.
+
+---
+
 ## Docker (Isolated / Air-Gapped)
 
 ```bash
