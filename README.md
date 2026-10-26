@@ -48,6 +48,7 @@ Choose the path for your environment. The installer detects the current OS and p
 |---|---|
 | macOS, Linux, WSL, or Git Bash | Automatic installer below |
 | Windows PowerShell | Source install below |
+| iPhone/iPad iSH Shell | Connect over SSH to a supported Mac/Linux host; local iSH install is not supported |
 | Development or troubleshooting | Clone and build locally |
 
 ### Automatic installer: macOS, Linux, WSL, and Git Bash
@@ -122,6 +123,46 @@ To use a custom source and OpenCode config directory on macOS/Linux/WSL:
 ```bash
 CRYPTHUNTER_INSTALL_DIR="$HOME/tools/crypthunter" OPENCODE_CONFIG_DIR="$HOME/.config/opencode-personal" bash install.sh
 ```
+
+### Use CryptHunter from iSH Shell on iPhone/iPad
+
+iSH is an i386 Alpine environment, while CryptHunter's OpenCode/Bun runtime
+expects a supported 64-bit host. Do not run `install.sh`, `bun install`, or
+`opencode` inside iSH; those binaries and the full plugin runtime are not
+supported there. Use iSH as an SSH terminal to a Mac or Linux computer where
+CryptHunter and OpenCode are installed. Commands, browser automation, and
+security tools then run on that computer.
+
+On the Mac, enable **System Settings → General → Sharing → Remote Login**. On a
+Linux host, enable its SSH server and make sure the host is reachable from the
+iPhone/iPad. In iSH, install the SSH client and connect:
+
+```sh
+apk update
+apk add openssh-client
+ssh your-user@your-host
+```
+
+After connecting, start CryptHunter from its installed project directory on
+the remote host:
+
+```sh
+cd /path/to/crypthunt
+opencode
+```
+
+For example, on the Mac:
+
+```sh
+cd /Users/your-user/Documents/crypthunt
+opencode
+```
+
+Keep provider credentials and target data on the remote host. Do not expose an
+OpenCode or CryptHunter service to the public internet just to connect iSH; use
+SSH on a trusted network or a private VPN, and verify the SSH host key on the
+first connection. The iSH terminal can display and control the remote session,
+but it does not make iSH a supported local execution platform.
 
 ### Check that it worked
 
