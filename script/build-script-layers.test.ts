@@ -59,6 +59,18 @@ describe("build script layers", () => {
     expect(cli).toContain("build:codex-install")
   })
 
+  test("build:install creates the OpenCode runtime without declaration generation", () => {
+    // given
+    const installBuild = script("build:install")
+
+    // when / then
+    expect(installBuild).toContain("packages/omop-opencode/src/index.ts")
+    expect(installBuild).toContain("packages/omop-opencode/src/tui.ts")
+    expect(installBuild).toContain("build:assets")
+    expect(installBuild).toContain("build:cli")
+    expect(installBuild).not.toContain("tsc --emitDeclarationOnly")
+  })
+
   test("build-vendored.ts runs leaf packages in parallel", () => {
     // given
     const source = readFileSync(`${repositoryRoot}/script/build-vendored.ts`, "utf8")

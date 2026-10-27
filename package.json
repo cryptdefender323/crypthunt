@@ -96,6 +96,7 @@
     "build:vendored": "bun run script/build-vendored.ts",
     "build:adapter": "bun build packages/omop-opencode/src/index.ts --outdir dist --target bun --format esm --external zod && bun build packages/omop-opencode/src/tui.ts --outdir dist --target bun --format esm --external @opentui/core --external @opentui/keymap --external @opentui/solid && bun run build:node-require-shim && tsc --emitDeclarationOnly",
     "build:assets": "bun run build:shared-skills-assets && bun run build:schema",
+    "build:install": "bun build packages/omop-opencode/src/index.ts --outdir dist --target bun --format esm --external zod && bun build packages/omop-opencode/src/tui.ts --outdir dist --target bun --format esm --external @opentui/core --external @opentui/keymap --external @opentui/solid && bun run build:node-require-shim && bun run build:assets && bun run build:cli",
     "build:cli": "bun build packages/omop-opencode/src/cli/index.ts --outdir dist/cli --target bun --format esm && bun run build:cli-node && bun run build:codex-install",
     "build:cli-node": "bun run script/build-cli-node.ts",
     "build:codex-install": "bun run script/build-codex-install.ts",
