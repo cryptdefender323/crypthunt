@@ -51,7 +51,7 @@ if (!existsSync(CLI)) {
   process.stdout.write("\n[crypthunter] Building from source (first run)...\n\n");
   const install = spawnSync(bun, ["install", "--silent"], { stdio: "inherit", cwd: ROOT });
   if (install.status !== 0) { process.stderr.write("crypthunter: bun install failed\n"); process.exit(1); }
-  const build = spawnSync(bun, ["run", "build"], { stdio: "inherit", cwd: ROOT });
+  const build = spawnSync(bun, ["run", "build:install"], { stdio: "inherit", cwd: ROOT });
   if (build.status !== 0) { process.stderr.write("crypthunter: build failed\n"); process.exit(1); }
   if (!existsSync(CLI)) { process.stderr.write("crypthunter: build done but dist/cli/index.js missing\n"); process.exit(1); }
   process.stdout.write("\n[crypthunter] Build complete\n\n");

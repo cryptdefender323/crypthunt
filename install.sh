@@ -36,16 +36,11 @@ check_command() { command -v "$1" >/dev/null 2>&1; }
 detect_os() {
   case "$(uname -s 2>/dev/null)" in
     Darwin)  echo "macos" ;;
-    Linux)   echo "linux" ;;
-    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
-    *)
-      # WSL
-      if grep -qi microsoft /proc/version 2>/dev/null; then
-        echo "wsl"
-      else
-        echo "linux"
-      fi
+    Linux)
+      if grep -qi microsoft /proc/version 2>/dev/null; then echo "wsl"; else echo "linux"; fi
       ;;
+    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
+    *) echo "linux" ;;
   esac
 }
 
@@ -295,19 +290,42 @@ register_plugin \
   && success "Plugin registered in ~/.config/opencode/opencode.jsonc" \
   || warn "Auto-registration failed — run: crypthunter install"
 
-if [ ! -f "$INSTALL_DIR/dist/cli/index.js" ]; then
-  info "Building CryptHunter before completing the install..."
+BUILD_STATE_DIR="$INSTALL_DIR/tools"
+BUILD_REVISION_FILE="$BUILD_STATE_DIR/.build-revision"
+BUILD_LOG="$BUILD_STATE_DIR/.build.log"
+mkdir -p "$BUILD_STATE_DIR"
+CURRENT_REVISION=$(git -C "$INSTALL_DIR" rev-parse HEAD 2>/dev/null || true)
+BUILT_REVISION=$(cat "$BUILD_REVISION_FILE" 2>/dev/null || true)
+if [ ! -f "$INSTALL_DIR/dist/index.js" ] \
+  || [ ! -f "$INSTALL_DIR/dist/tui.js" ] \
+  || [ ! -f "$INSTALL_DIR/dist/cli/index.js" ] \
+  || [ -z "$CURRENT_REVISION" ] \
+  || [ "$BUILT_REVISION" != "$CURRENT_REVISION" ]; then
+  info "Building CryptHunter for the installed revision..."
   [ -f "$INSTALL_DIR/package.json" ] || error "Installation is incomplete: $INSTALL_DIR/package.json is missing"
+  [ -n "$CURRENT_REVISION" ] || error "Could not identify the installed CryptHunter revision"
   cd "$INSTALL_DIR" || error "Cannot enter installation directory: $INSTALL_DIR"
-  bun install --silent || error "Dependency installation failed in $INSTALL_DIR"
-  bun run build || error "CryptHunter build failed in $INSTALL_DIR"
+  if ! bun install --silent --frozen-lockfile > "$BUILD_LOG" 2>&1; then
+    error "Dependency installation failed. Details: $BUILD_LOG"
+  fi
+  if ! bun run build:install >> "$BUILD_LOG" 2>&1; then
+    error "CryptHunter build failed. Details: $BUILD_LOG"
+  fi
+  [ -f "$INSTALL_DIR/dist/index.js" ] || error "Build completed without dist/index.js"
+  [ -f "$INSTALL_DIR/dist/tui.js" ] || error "Build completed without dist/tui.js"
   [ -f "$INSTALL_DIR/dist/cli/index.js" ] || error "Build completed without dist/cli/index.js"
-  touch "$INSTALL_DIR/.build-complete"
-  success "CryptHunter build complete"
+  printf '%s\n' "$CURRENT_REVISION" > "$BUILD_REVISION_FILE"
+  success "CryptHunter build ready"
 fi
 
-if CRYPTHUNTER_INSTALL_DIR="$INSTALL_DIR" "$INSTALL_DIR/bin/crypthunter.js" tools bootstrap --quiet; then
-  success "Recommended tools and Nuclei templates checked in the background"
+BOOTSTRAP_INSTALL_DIR="$INSTALL_DIR"
+if [ "$OS" = "windows" ]; then
+  check_command cygpath || error "Git Bash path conversion is required for Windows tool installation"
+  BOOTSTRAP_INSTALL_DIR=$(cygpath -m "$INSTALL_DIR")
+fi
+
+if CRYPTHUNTER_INSTALL_DIR="$BOOTSTRAP_INSTALL_DIR" "$INSTALL_DIR/bin/crypthunter.js" tools bootstrap --quiet; then
+  success "Recommended tools and Nuclei templates checked quietly"
 else
   warn "Some recommended tools were deferred. Retry with: crypthunter tools bootstrap"
 fi
