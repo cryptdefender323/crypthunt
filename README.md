@@ -84,13 +84,18 @@ browser on first use. If you already configured an MCP server named
 add `playwright` to `disabled_mcps` in `crypthunter.jsonc` (V1), or set
 `mcp.servers.playwright.disabled` to `true` in `opencode.json` (V2).
 
-During plugin installation, CryptHunter quietly checks the README-recommended
-security tools and Nuclei templates. Existing tools/templates are reused. Go
-tools, Python packages, and newly downloaded Nuclei templates are stored under
+The `curl | bash` installer quietly checks and installs missing README-recommended
+security tools and Nuclei templates for macOS, Linux (including WSL), and Git
+Bash. It reuses tools and non-empty template directories already available, and
+rebuilds CryptHunter when runtime files are missing or the downloaded source
+revision changes. Go tools, Python packages, and Nuclei templates are stored under
 `<CryptHunter install>/tools`; OS packages managed by apt, Homebrew, or Winget
-remain under that package manager. Details are captured in
-`<CryptHunter install>/tools/.bootstrap.log`. Retry or preview with
-`crypthunter tools bootstrap` or `crypthunter tools bootstrap --dry-run`.
+remain under that package manager. Bootstrap details are logged to
+`<CryptHunter install>/tools/.bootstrap.log`; build output is logged to
+`<CryptHunter install>/tools/.build.log`. Retry or preview the tool check with
+`crypthunter tools bootstrap` or `crypthunter tools bootstrap --dry-run`. The
+installer provisions the recommended baseline for that OS; optional catalog
+tools can be added with `crypthunter tools install --tool <name>`.
 
 ### Windows PowerShell
 
@@ -100,7 +105,7 @@ The repository currently does not ship a native `install.ps1`. Use PowerShell wi
 git clone https://github.com/cryptdefender323/crypthunt.git
 Set-Location crypthunt
 bun install --frozen-lockfile
-bun run build
+bun run build:install
 bun run dist/cli/index.js install --platform opencode
 bun run dist/cli/index.js doctor
 opencode
@@ -118,12 +123,12 @@ You need Git, [Node.js 22+](https://nodejs.org), and [Bun](https://bun.sh).
 git clone https://github.com/cryptdefender323/crypthunt.git
 cd crypthunt
 bun install --frozen-lockfile
-bun run build
+bun run build:install
 bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
 ```
 
-ZIP from GitHub: green **Code** button → **Download ZIP** → unzip → same `bun install` / `bun run build` / `bun run dist/cli/index.js install` steps inside the folder.
+ZIP from GitHub: green **Code** button → **Download ZIP** → unzip → same `bun install` / `bun run build:install` / `bun run dist/cli/index.js install` steps inside the folder.
 
 To use a custom source and OpenCode config directory on macOS/Linux/WSL:
 

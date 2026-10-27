@@ -32,7 +32,7 @@ npm install -g opencode-ai --allow-scripts
 git clone https://github.com/cryptdefender323/crypthunter.git
 cd crypthunter
 bun install
-bun run build
+bun run build:install
 
 # Jalankan installer
 bun run dist/cli/index.js install
@@ -70,7 +70,7 @@ npm install -g opencode-ai --allow-scripts
 git clone https://github.com/cryptdefender323/crypthunter.git
 cd crypthunter
 bun install
-bun run build
+bun run build:install
 
 # Jalankan installer
 bun run dist/cli/index.js install
@@ -98,7 +98,7 @@ source ~/.bashrc
 git clone https://github.com/cryptdefender323/crypthunter.git
 cd crypthunter
 bun install
-bun run build
+bun run build:install
 bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
 ```
@@ -166,7 +166,7 @@ Inside the container:
 
 ```bash
 bun install
-bun run build
+bun run build:install
 bun run dist/cli/index.js install
 bun run dist/cli/index.js doctor
 ```
