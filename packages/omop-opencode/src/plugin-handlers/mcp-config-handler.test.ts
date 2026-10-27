@@ -45,6 +45,40 @@ const EMPTY_PLUGIN_COMPONENTS = {
 const TEST_CTX = { directory: "/workspace/project" }
 
 describe("applyMcpConfig", () => {
+  test("registers headed Playwright MCP by default", async () => {
+    //#given
+    const config: Record<string, unknown> = { mcp: {} }
+    const pluginConfig = createPluginConfig()
+
+    //#when
+    const { applyMcpConfig } = await import("./mcp-config-handler")
+    await applyMcpConfig({ config, ctx: TEST_CTX, pluginConfig, pluginComponents: EMPTY_PLUGIN_COMPONENTS })
+
+    //#then
+    const mergedMcp = config.mcp as Record<string, Record<string, unknown>>
+    expect(mergedMcp.playwright).toEqual({
+      type: "local",
+      command: ["npx", "-y", "@playwright/mcp@latest"],
+      enabled: true,
+    })
+  })
+
+  test("keeps a user-defined Playwright MCP configuration", async () => {
+    //#given
+    const config: Record<string, unknown> = {
+      mcp: { playwright: { type: "local", command: ["bunx", "custom-playwright-mcp"], enabled: true } },
+    }
+    const pluginConfig = createPluginConfig()
+
+    //#when
+    const { applyMcpConfig } = await import("./mcp-config-handler")
+    await applyMcpConfig({ config, ctx: TEST_CTX, pluginConfig, pluginComponents: EMPTY_PLUGIN_COMPONENTS })
+
+    //#then
+    const mergedMcp = config.mcp as Record<string, Record<string, unknown>>
+    expect(mergedMcp.playwright.command).toEqual(["bunx", "custom-playwright-mcp"])
+  })
+
   test("preserves enabled:false from user config after merge with .mcp.json MCPs", async () => {
     //#given
     const userMcp = {

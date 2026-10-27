@@ -44,7 +44,8 @@ var __export = (target, all) => {
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
-var __require = import.meta.require;
+import { createRequire as __omoCreateRequire } from "node:module";
+var __require = typeof import.meta.require === "function" ? import.meta.require : __omoCreateRequire(import.meta.url);
 
 // packages/utils/src/deep-merge.ts
 function isUnsafeObjectKey(key) {
@@ -73389,6 +73390,23 @@ function resolveInheritedPromptTools(sessionID, fallbackTools) {
   }
   return normalizePromptTools(fallbackTools);
 }
+// packages/omop-opencode/src/shared/playwright-mcp-config.ts
+var PLAYWRIGHT_MCP_COMMAND = ["npx", "-y", "@playwright/mcp@latest"];
+function createOpenCodeV1PlaywrightMcpConfig() {
+  return {
+    type: "local",
+    command: [...PLAYWRIGHT_MCP_COMMAND],
+    enabled: true
+  };
+}
+function createOpenCodeV2PlaywrightMcpConfig() {
+  return {
+    type: "local",
+    command: [...PLAYWRIGHT_MCP_COMMAND],
+    disabled: false,
+    codemode: false
+  };
+}
 // packages/claude-code-compat-core/src/shared/logger.ts
 init_src();
 
@@ -83507,6 +83525,7 @@ var package_default = {
   },
   files: [
     "THIRD-PARTY-NOTICES.md",
+    "tools-catalog.json",
     "dist",
     "bin",
     "postinstall.mjs",
@@ -149044,6 +149063,7 @@ async function applyMcpConfig(params) {
     }
   }
   const merged = {
+    playwright: createOpenCodeV1PlaywrightMcpConfig(),
     ...createBuiltinMcps(disabledMcps, params.pluginConfig, { cwd: params.ctx.directory }),
     ...mcpResult.servers,
     ...userMcp ?? {},
@@ -155958,6 +155978,11 @@ Mode: ${state3.mode} `;
 }
 async function setupOpenCodeV2(context) {
   applyManagedToolEnvironment();
+  await context.mcp.transform((editor) => {
+    if (editor.get("playwright") !== undefined)
+      return;
+    editor.set("playwright", createOpenCodeV2PlaywrightMcpConfig());
+  });
   const handlers = createOpenCodeV2ModeHandlers();
   await context.session.hook("prompt", handlers.onPrompt);
   await context.session.hook("context", handlers.onContext);
@@ -155973,6 +155998,7 @@ async function setupOpenCodeV2(context) {
       }
     });
   });
+  await context.mcp.reload();
 }
 
 // packages/omop-opencode/src/index.ts

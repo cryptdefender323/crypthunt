@@ -61,6 +61,8 @@ describe("OpenCode V2 mode bridge", () => {
   it("registers a native mode command that admits a mode prompt", async () => {
     let registeredCommand: ModeCommandDefinition | undefined
     let submittedPrompt: { readonly sessionID: string; readonly text: string; readonly delivery: "steer" | "queue" } | undefined
+    let mcpReloaded = false
+    const mcpServers = new Map<string, Record<string, unknown>>()
     const context = {
       session: {
         hook: async () => undefined,
@@ -73,6 +75,18 @@ describe("OpenCode V2 mode bridge", () => {
           callback({ add: (definition) => { registeredCommand = definition } })
         },
       },
+      mcp: {
+        transform: async (callback: (editor: {
+          get(name: string): Record<string, unknown> | undefined
+          set(name: string, server: Record<string, unknown>): void
+        }) => void) => {
+          callback({
+            get: (name) => mcpServers.get(name),
+            set: (name, server) => { mcpServers.set(name, server) },
+          })
+        },
+        reload: async () => { mcpReloaded = true },
+      },
     }
 
     await setupOpenCodeV2(context)
@@ -84,6 +98,38 @@ describe("OpenCode V2 mode bridge", () => {
 
     expect(registeredCommand?.name).toBe("mode")
     expect(submittedPrompt).toEqual({ sessionID: "mode-command-v2", text: "/mode bug-bounty", delivery: "steer" })
+    expect(mcpServers.get("playwright")).toEqual({
+      type: "local",
+      command: ["npx", "-y", "@playwright/mcp@latest"],
+      disabled: false,
+      codemode: false,
+    })
+    expect(mcpReloaded).toBe(true)
+  })
+
+  it("preserves a user-configured Playwright MCP server in OpenCode V2", async () => {
+    const customServer = { type: "local", command: ["bunx", "custom-playwright-mcp"], disabled: false }
+    const mcpServers = new Map([["playwright", customServer]])
+    const context = {
+      session: { hook: async () => undefined, prompt: async () => undefined },
+      command: { transform: async () => undefined },
+      mcp: {
+        transform: async (callback: (editor: {
+          get(name: string): Record<string, unknown> | undefined
+          set(name: string, server: Record<string, unknown>): void
+        }) => void) => {
+          callback({
+            get: (name) => mcpServers.get(name),
+            set: (name, server) => { mcpServers.set(name, server) },
+          })
+        },
+        reload: async () => undefined,
+      },
+    }
+
+    await setupOpenCodeV2(context)
+
+    expect(mcpServers.get("playwright")).toBe(customServer)
   })
 })
 

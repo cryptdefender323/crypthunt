@@ -1,6 +1,7 @@
 import { detectMode, MODE_PRESETS } from "@omop/pentest-core"
 import type { PentestMode } from "@omop/pentest-core"
 import { applyManagedToolEnvironment } from "./shared/managed-tool-environment"
+import { createOpenCodeV2PlaywrightMcpConfig } from "./shared"
 
 export type OpenCodeV2PromptEvent = {
   readonly sessionID: string
@@ -34,9 +35,18 @@ type ModeCommandEditor = {
   }): void
 }
 
+type OpenCodeV2McpEditor = {
+  get(name: string): Record<string, unknown> | undefined
+  set(name: string, server: Record<string, unknown>): void
+}
+
 export type OpenCodeV2Context = {
   readonly session: SessionHookRegistry
   readonly command: { transform(callback: (editor: ModeCommandEditor) => void): Promise<unknown> }
+  readonly mcp: {
+    transform(callback: (editor: OpenCodeV2McpEditor) => void): Promise<unknown>
+    reload(): Promise<void>
+  }
 }
 
 type SessionModeState = {
@@ -128,6 +138,11 @@ export function createOpenCodeV2ModeHandlers(): {
 
 export async function setupOpenCodeV2(context: OpenCodeV2Context): Promise<void> {
   applyManagedToolEnvironment()
+  await context.mcp.transform((editor) => {
+    if (editor.get("playwright") !== undefined) return
+    editor.set("playwright", createOpenCodeV2PlaywrightMcpConfig())
+  })
+
   const handlers = createOpenCodeV2ModeHandlers()
   await context.session.hook("prompt", handlers.onPrompt)
   await context.session.hook("context", handlers.onContext)
@@ -142,4 +157,5 @@ export async function setupOpenCodeV2(context: OpenCodeV2Context): Promise<void>
       },
     })
   })
+  await context.mcp.reload()
 }

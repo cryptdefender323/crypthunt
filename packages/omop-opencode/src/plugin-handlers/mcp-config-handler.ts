@@ -2,7 +2,7 @@ import type { CryptHunterConfig } from "../config";
 import { loadMcpConfigs } from "../features/claude-code-mcp-loader";
 import { createBuiltinMcps } from "../mcp";
 import type { PluginComponents } from "./plugin-components-loader";
-import { log } from "../shared";
+import { createOpenCodeV1PlaywrightMcpConfig, log } from "../shared";
 
 type McpEntry = Record<string, unknown>;
 
@@ -48,6 +48,7 @@ export async function applyMcpConfig(params: {
   }
 
   const merged = {
+    playwright: createOpenCodeV1PlaywrightMcpConfig(),
     ...createBuiltinMcps(disabledMcps, params.pluginConfig, { cwd: params.ctx.directory }),
     ...mcpResult.servers,
     ...(userMcp ?? {}),
