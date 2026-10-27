@@ -44,6 +44,13 @@ security tools and Nuclei templates. Existing tools and template directories
 are reused. Run `crypthunter tools bootstrap` to retry or
 `crypthunter tools bootstrap --dry-run` to preview missing dependencies.
 
+OpenCode automatically registers the Playwright MCP server. Its browser opens
+visibly when a browser skill uses it, and Playwright downloads its browser on
+first use. To keep your own server settings, configure a server named
+`playwright` before starting OpenCode. To disable CryptHunter's default,
+configure `disabled_mcps: ["playwright"]` in `crypthunter.jsonc` for V1 or set
+`mcp.servers.playwright.disabled` to `true` in `opencode.json` for V2.
+
 ---
 
 ## Kali Linux / Parrot OS

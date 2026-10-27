@@ -77,6 +77,13 @@ opencode
 
 `crypthunter install` asks which AI provider you want to use. Choose only providers for which you have access or credentials.
 
+OpenCode installs the Playwright MCP connection automatically. The browser
+opens visibly when a browser skill first uses it; Playwright downloads its
+browser on first use. If you already configured an MCP server named
+`playwright`, CryptHunter keeps your configuration. To disable the default,
+add `playwright` to `disabled_mcps` in `crypthunter.jsonc` (V1), or set
+`mcp.servers.playwright.disabled` to `true` in `opencode.json` (V2).
+
 During plugin installation, CryptHunter quietly checks the README-recommended
 security tools and Nuclei templates. Existing tools/templates are reused. Go
 tools, Python packages, and newly downloaded Nuclei templates are stored under

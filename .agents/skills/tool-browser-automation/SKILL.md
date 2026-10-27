@@ -5,7 +5,21 @@ description: "Browser automation for pentesting — Playwright/Puppeteer for aut
 
 # Browser Automation for Pentesting
 
-Headless browser automation for SPAs, authenticated sessions, and DOM analysis.
+Browser automation for SPAs, authenticated sessions, and DOM analysis.
+
+## OpenCode Playwright MCP
+
+CryptHunter registers the Microsoft Playwright MCP server automatically for
+OpenCode V1 and V2. Use its visible browser tools (`playwright_browser_navigate`,
+`playwright_browser_snapshot`, and the other `playwright_browser_*` tools)
+directly; do not create a second browser process or install a separate MCP
+server. The headed browser opens when a browser tool is first used. The browser
+binary downloads on first use. If the server is unavailable, identify that
+failure before using a fallback and do not claim browser observation occurred.
+
+An existing user server named `playwright` takes precedence. Users can disable
+the default via `disabled_mcps: ["playwright"]` in CryptHunter config (V1) or
+`mcp.servers.playwright.disabled: true` in OpenCode config (V2).
 
 ---
 
