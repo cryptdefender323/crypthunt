@@ -84,11 +84,19 @@ browser on first use. If you already configured an MCP server named
 add `playwright` to `disabled_mcps` in `crypthunter.jsonc` (V1), or set
 `mcp.servers.playwright.disabled` to `true` in `opencode.json` (V2).
 
-The `curl | bash` installer quietly checks and installs missing README-recommended
+The `curl | bash` installer quietly checks and installs the recommended baseline
 security tools and Nuclei templates for macOS, Linux (including WSL), and Git
-Bash. It reuses tools and non-empty template directories already available, and
-rebuilds CryptHunter when runtime files are missing or the downloaded source
-revision changes. Go tools, Python packages, and Nuclei templates are stored under
+Bash. Other catalog tools used later for recon, enumeration, or exploitation
+are checked and installed automatically on first invocation by OpenCode when
+the current OS has a catalog install method. Existing tools are reused, so they
+are not installed twice. The original scan/exploit command is blocked if an
+install fails or the binary still cannot be verified; this prevents a missing
+tool from being reported as a clean test. Unsupported tools are reported with
+their install status and can be installed manually or run in a supported WSL/
+Linux environment. CryptHunter does not install every optional tool up front.
+
+It also rebuilds CryptHunter when runtime files are missing or the downloaded
+source revision changes. Go tools, Python packages, and Nuclei templates are stored under
 `<CryptHunter install>/tools`; OS packages managed by apt, Homebrew, or Winget
 remain under that package manager. Bootstrap details are logged to
 `<CryptHunter install>/tools/.bootstrap.log`; build output is logged to
@@ -163,7 +171,7 @@ cd /path/to/crypthunt
 opencode
 ```
 
-For example, on the Mac:
+For example, on the Mac used during development:
 
 ```sh
 cd /Users/your-user/Documents/crypthunt

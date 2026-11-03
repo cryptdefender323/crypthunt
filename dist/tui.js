@@ -22852,6 +22852,19 @@ class DeadlockDetector {
     this.lockWaitStart.clear();
   }
 }
+// packages/pentest-core/src/evidence-workflow/formats.ts
+var init_formats = () => {};
+
+// packages/pentest-core/src/evidence-workflow/storage.ts
+var init_storage = __esm(() => {
+  init_formats();
+});
+
+// packages/pentest-core/src/evidence-workflow/index.ts
+var init_evidence_workflow = __esm(() => {
+  init_formats();
+  init_storage();
+});
 
 // packages/pentest-core/src/data/index.ts
 var init_data = () => {};
@@ -22959,8 +22972,6 @@ var init_intelligence = __esm(() => {
 
 // packages/pentest-core/src/index.ts
 var init_src4 = __esm(() => {
-  init_decision_engine();
-  init_finding_verification();
   init_catalog();
   init_selector();
   init_command_builder();
@@ -22976,6 +22987,9 @@ var init_src4 = __esm(() => {
   init_installer();
   init_skill_bridge2();
   init_mode();
+  init_decision_engine();
+  init_finding_verification();
+  init_evidence_workflow();
 });
 
 // packages/omop-opencode/src/shared/tools-catalog-cache.ts
@@ -69010,6 +69024,9 @@ var init_session_tools_store = __esm(() => {
 var init_prompt_tools = __esm(() => {
   init_session_tools_store();
 });
+
+// packages/omop-opencode/src/shared/playwright-mcp-config.ts
+var init_playwright_mcp_config = () => {};
 // packages/claude-code-compat-core/src/shared/plugin-identity.ts
 var LOG_FILENAME2 = "oh-my-open-pentest.log";
 
@@ -69370,6 +69387,7 @@ var init_shared = __esm(() => {
   init_session_route();
   init_prompt_tools();
   init_prompt_failure_classifier();
+  init_playwright_mcp_config();
   init_compaction_marker();
   init_internal_initiator_marker2();
   init_plugin_command_discovery();

@@ -2,7 +2,7 @@ import { createTeamApproveShutdownTool, createTeamCreateTool, createTeamDeleteTo
 import { createTeamSendMessageTool } from "../features/team-mode/tools/messaging";
 import { createTeamListTool, createTeamStatusTool } from "../features/team-mode/tools/query";
 import { createTeamTaskCreateTool, createTeamTaskGetTool, createTeamTaskListTool, createTeamTaskUpdateTool } from "../features/team-mode/tools/tasks";
-import { createBackgroundTools, createCallOmoAgent, createDelegateTask, createGlobTools, createGrepTools, createHashlineEditTool, createLookAt, createMonitorTools, createSessionManagerTools, createSkillMcpTool, createSkillTool, createTaskCreateTool, createTaskGetTool, createTaskList, createTaskUpdateTool, discoverCommandsSync, interactive_bash, createPentestTargetModelUpdateTool, createPentestHypothesizeTool, createPentestValidateTool, createPentestConfidenceTool, createPentestPivotTool, createPentestHandoffTool } from "../tools";
+import { createBackgroundTools, createCallOmoAgent, createDelegateTask, createGlobTools, createGrepTools, createHashlineEditTool, createLookAt, createMonitorTools, createSessionManagerTools, createSkillMcpTool, createSkillTool, createTaskCreateTool, createTaskGetTool, createTaskList, createTaskUpdateTool, discoverCommandsSync, interactive_bash, createPentestTargetModelUpdateTool, createPentestHypothesizeTool, createPentestValidateTool, createPentestConfidenceTool, createPentestPivotTool, createPentestHandoffTool, createPentestOpenEvidenceTool } from "../tools";
 export type ToolRegistryFactories = {
     createBackgroundTools: typeof createBackgroundTools;
     createCallOmoAgent: typeof createCallOmoAgent;
@@ -39,5 +39,6 @@ export type ToolRegistryFactories = {
     createPentestConfidenceTool: typeof createPentestConfidenceTool;
     createPentestPivotTool: typeof createPentestPivotTool;
     createPentestHandoffTool: typeof createPentestHandoffTool;
+    createPentestOpenEvidenceTool: typeof createPentestOpenEvidenceTool;
 };
 export declare const defaultToolRegistryFactories: ToolRegistryFactories;
