@@ -143,9 +143,21 @@ export function createCatalogToolInstallerHook(options: CatalogToolInstallerOpti
 
             const result = await install(entry, platform)
             if (result.success) {
-              verifiedInstalled.add(key)
-              verifiedInstalled.add(token)
-              log("[catalog-tool-installer] install succeeded", { tool: key })
+              const verification = await checkInstalled(entry)
+              if (verification.installed) {
+                verifiedInstalled.add(key)
+                verifiedInstalled.add(token)
+                log("[catalog-tool-installer] install succeeded and verified", {
+                  tool: key,
+                  version: verification.version,
+                })
+              } else {
+                log("[catalog-tool-installer] install command succeeded but tool is still missing", {
+                  tool: key,
+                  platform,
+                  error: verification.error,
+                })
+              }
             } else {
               log("[catalog-tool-installer] install failed", { tool: key, message: result.message })
             }
@@ -163,7 +175,8 @@ export function createCatalogToolInstallerHook(options: CatalogToolInstallerOpti
 
       if (!verifiedInstalled.has(key)) {
         output.message =
-          `[omop] catalog tool "${key}" missing or install failed — retry after: crypthunter tools install -t ${key}`
+          `[omop] catalog tool "${key}" is unavailable on ${platform}; installation failed or could not be verified. Retry with: crypthunter tools install -t ${key}`
+        output.args.command = "printf '%s\\n' '[omop] catalog tool unavailable; original command was not run' >&2; exit 127"
       } else if (!output.message) {
         output.message = `[omop] ensured catalog tool "${key}" is installed`
       }
