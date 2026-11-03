@@ -5,7 +5,14 @@ import { createOpenCodeV2PlaywrightMcpConfig } from "./shared"
 
 export type OpenCodeV2PromptEvent = {
   readonly sessionID: string
-  prompt: { text: string; skills?: string[] }
+  prompt: { text: string; skills?: OpenCodeV2SkillAttachment[] }
+}
+
+export type OpenCodeV2SkillAttachment = {
+  readonly id: string
+  readonly name: string
+  readonly text?: string
+  readonly mention?: { readonly start: number; readonly end: number; readonly text: string }
 }
 
 type SystemPart = { readonly type: "text"; readonly text: string }
@@ -55,7 +62,8 @@ type SessionModeState = {
   readonly prompt: string
 }
 
-const modeCommand = /^(?:\/mode|--mode)\s+([\w-]+)\s*$/m
+const modeCommand = /^(?:\/mode|--mode)\s+([\w-]+)(?:\s+.+)?$/m
+const modeOnlyCommand = /^(?:\/mode|--mode)\s+[\w-]+\s*$/m
 
 function parseMode(text: string): PentestMode | undefined {
   const name = modeCommand.exec(text)?.[1]
@@ -66,14 +74,16 @@ function isPentestMode(name: string | undefined): name is PentestMode {
   return name !== undefined && Object.hasOwn(MODE_PRESETS, name)
 }
 
-function skillsForMode(mode: PentestMode): string[] {
-  if (mode === "bug-bounty") return ["bug-bounty-research", "tool-browser-automation"]
-  return MODE_PRESETS[mode].skill_chain.slice(0, 2)
+function skillsForMode(mode: PentestMode): OpenCodeV2SkillAttachment[] {
+  const ids = mode === "bug-bounty"
+    ? ["bug-bounty-research", "tool-browser-automation"]
+    : MODE_PRESETS[mode].skill_chain.slice(0, 2)
+  return ids.map((id) => ({ id, name: id }))
 }
 
 function modeInstructions(state: SessionModeState): string {
   const config = MODE_PRESETS[state.mode]
-  const modeOnly = modeCommand.test(state.prompt)
+  const modeOnly = modeOnlyCommand.test(state.prompt)
   const common = [
     "<PENTEST_CONTEXT>",
     `Mode: ${state.mode} — ${config.description}`,
@@ -85,10 +95,10 @@ function modeInstructions(state: SessionModeState): string {
 
   if (state.mode === "bug-bounty") {
     common.push(
-      "Load bug-bounty-research and tool-browser-automation skills. Use Playwright in the browser to inspect the official active bug-bounty program before any target request, crawler, scanner, or target navigation; verify the exact asset, exclusions, policy, and allowed methods. If no official program can be verified, ask the user directly whether they have real authorization. A yes only allows collecting/verifying written authorization naming exact asset, allowed methods, and time window; do not send target traffic until verified. If no authorization, stop.",
+      "Load bug-bounty-research and tool-browser-automation skills. Use playwright_browser_navigate and playwright_browser_snapshot from the connected headed Playwright MCP before asking about authorization: search HackerOne, Bugcrowd, Intigriti, YesWeHack, and other relevant official program directories discoverable through browser search for the exact hostname/owner, then inspect the exact owner's VDP/security.txt page. This applies to government agencies, presidential offices, public/private companies, and organizations of any size. Do not claim no program exists until official-source searches have been attempted; report MCP failure explicitly if browser tools cannot run. General web search/third-party aggregators are leads only; record official URLs and exact scope entries. Platform registration is optional only when authoritative written owner permission covers the exact asset and methods. When a target arrives, also gather passive information from external public sources; do not make the user answer questions before this lookup. Do not browse the target application or send test requests until the exact asset and permitted methods are verified. If no public policy or permission is found, finish passive research without probing, then ask once for the private program URL or owner authorization and exact scope/method/time window. Before READY_TO_REPORT, require verified scope/RoE, reproducible raw evidence, demonstrated eligible impact, authorized test data, and consistent evidence files; use only the defined final classifications. Do not submit or contact the program without explicit user instruction. Automated scanners such as sqlmap are allowed only if that verified policy or permission permits them; use narrow, low-rate tests and do not dump data, access files, invoke shells, or continue past a positive signal without explicit authorization.",
       modeOnly
         ? "Ask only for the target domain/IP and wait."
-        : "Do not contact the target until official program scope or written authorization has been verified.",
+        : "Start the engagement automatically. First use the visible Playwright MCP to search official program directories, including relevant platforms discoverable through browser search, and the owner's VDP/security.txt, while gathering external passive intelligence. This applies equally to government, presidential, public/private company, and other organizations. Do not ask whether to start or show a menu. Verify exact asset/method scope from official policy or owner authorization. Once verified, continue in this session without another start approval through the configured chain (pentest-recon → pentest-enum → pentest-exploit → pentest-report), with hypothesis → permitted test → evidence → control/negative → disproof → report-readiness audit. Load phase skills as needed; preserve CryptHunter's evidence ladder, false-positive review, and reasoning tools. Show concise progress instead of stopping for routine confirmation. Ask only if a required private program URL, account, or rule detail is inaccessible or ambiguous; otherwise continue. If scope cannot be established, finish passive work and ask once before active testing. Stop each test at minimum proof and stop the engagement if policy prohibits the next step. Produce a draft for human review, but never submit/contact the program without explicit user instruction.",
     )
   } else if (state.mode === "red-team") {
     common.push(
@@ -115,10 +125,11 @@ export function createOpenCodeV2ModeHandlers(): {
       const selected = parseMode(prompt)
       const previous = sessionModes.get(event.sessionID)
       const detected = selected ?? (previous?.explicit ? previous.mode : detectMode(prompt).mode)
-      event.prompt.skills = Array.from(new Set([
-        ...(event.prompt.skills ?? []),
-        ...skillsForMode(detected),
-      ]))
+      const selectedSkills = new Map((event.prompt.skills ?? []).map((skill) => [skill.id, skill]))
+      for (const skill of skillsForMode(detected)) {
+        if (!selectedSkills.has(skill.id)) selectedSkills.set(skill.id, skill)
+      }
+      event.prompt.skills = Array.from(selectedSkills.values())
       sessionModes.set(event.sessionID, {
         mode: detected,
         explicit: selected !== undefined || previous?.explicit === true,
@@ -151,9 +162,11 @@ export async function setupOpenCodeV2(context: OpenCodeV2Context): Promise<void>
       name: "mode",
       description: "Select a CryptHunter engagement mode",
       execute: async ({ sessionID, prompt, delivery }) => {
-        const selected = parseMode(prompt.text) ?? (isPentestMode(prompt.text.trim()) ? prompt.text.trim() : undefined)
+        const [modeName, ...targetParts] = prompt.text.trim().split(/\s+/)
+        const selected = parseMode(prompt.text) ?? (isPentestMode(modeName) ? modeName : undefined)
         if (!selected) return
-        await context.session.prompt({ sessionID, text: `/mode ${selected}`, delivery })
+        const target = targetParts.join(" ").trim()
+        await context.session.prompt({ sessionID, text: `--mode ${selected}${target ? ` ${target}` : ""}`, delivery })
       },
     })
   })
