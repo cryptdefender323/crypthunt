@@ -28,12 +28,14 @@ identity exposure, then assess every relevant vulnerability class on assets
 explicitly in scope.
 
 Before any active recon, test, or direct contact with the target, require and
-review a current signed authorization letter/rules-of-engagement document. The
-user must attach the document or provide its relevant excerpt and confirm it
-is signed and valid. It must identify the authorized party, exact target
-scope, allowed methods, date/time window, request limits, and stop
-contact/conditions. Record a reference to the document, not sensitive personal
-details.
+review current written authorization/rules of engagement. The user must
+attach the document or provide its relevant excerpt and confirm it is valid.
+It must identify the authorized party, exact target scope, and permitted
+methods. Enforce any date/time window, request limit, and stop condition the
+ROE states. Their absence is not by itself a reason to block the engagement:
+record omitted limits as `not specified`, use conservative mode defaults, and
+never invent a schedule. Record a reference to the document, not sensitive
+personal details.
 
 Verify and record:
 
@@ -41,14 +43,20 @@ Verify and record:
 - In-scope domains, IPs, applications, accounts, cloud tenants, and exclusions.
 - Objectives and the behaviors the blue team is expected to detect.
 - Allowed techniques, test identities, source networks/proxies, browser and
-  device profiles, time windows, request limits, and data-handling rules.
+  device profiles, any stated time windows or request limits, and
+  data-handling rules.
 - Stop signals, emergency contact, and the process for reporting an alert.
 
-If the document or a required boundary is missing when active discovery is
-next, ask once for the authorization document or missing excerpt and stop all
-active work while continuing only already-bounded passive OSINT. A verbal yes,
-mode selection, or start reply is not authorization. Never infer scope from DNS
-ownership, a public bug-bounty listing, or access to a related system.
+If the document, exact scope, or permitted methods are missing when active
+discovery is next, keep already completed passive work, identify only the
+missing required fields, ask once for those fields or the relevant document
+excerpt, and pause target-directed work. Do not block solely because the ROE
+does not state a schedule or request limit. Do not ask again for details
+already provided. If an attachment is referenced but is not actually
+available to inspect, say so and do not claim to have reviewed or verified it.
+A verbal yes, mode selection, or start reply is not authorization. Never infer
+scope from DNS ownership, a public bug-bounty listing, or access to a related
+system.
 
 ## 2. Passive OSINT
 
@@ -79,9 +87,12 @@ unverified leads; unverified leads are not targets.
 For each proposed active action, state the target, hypothesis, exact technique,
 expected request volume, approved origin, expected evidence, and stop condition.
 Check the asset and technique against the rules of engagement immediately
-before execution. Port discovery, service fingerprinting, and technology
-identification must be limited to confirmed in-scope assets, agreed ports,
-request rates, and the approved test window. People and social-engineering
+before execution. Run port discovery, service fingerprinting, and technology
+identification on exact in-scope assets whenever the ROE permits those tests;
+cover the stated port range, or all TCP ports when scanning is authorized but
+the ROE does not set a range, and record output/status in the evidence ledger.
+Honor any stated request rate or time window; if omitted, record it as
+unspecified and use conservative defaults. People and social-engineering
 research is limited to public professional information described in the OSINT
 phase; no outreach, impersonation, or collection of private personal details
 or accounts. Retain a baseline and evidence for each
@@ -93,10 +104,27 @@ Treat these as observations, not permission to bypass the control. Do not
 change request shape, source, identity, or browser profile to evade a block or
 detection.
 
+Run the authorized recon tools rather than only listing commands. At recon
+handoff, show a per-asset coverage summary with passive-source notes, active
+HTTP status, port-scan status and scanned range, service/version observations,
+and artifact paths. Explicitly mark checks that were blocked, failed, out of
+scope, or not available; never imply that an omitted check completed. When the
+primary target and method are authorized, actively assess that target even if
+passive OSINT found no subdomains or leads. Never present passive discovery as
+the completed recon phase or replace the authorized primary target with
+passive-only hosts.
+
 Use a proxy only when the client has named or approved that egress route. Do not
 rotate proxies or source addresses to evade a block, rate limit, alert, or
 attribution control. If a control blocks or detects the test, stop that test,
 record the signal, and notify the engagement contact.
+
+When the written ROE explicitly permits exploit validation, continue from a
+reproduced hypothesis to the minimum controlled, non-destructive proof needed
+to establish the vulnerability and impact. Then stop and prepare evidence for
+human retest. Do not treat a general authorization letter as permission for
+persistence, credential theft, lateral movement, control evasion, service
+disruption, or real-data exfiltration.
 
 ## 4. Identity, browser, and device validation
 
@@ -112,14 +140,53 @@ change profiles or egress after detection to continue the same activity.
 
 ## 5. Systematic vulnerability assessment
 
-After discovery, load `red-assess` and build a coverage ledger for every
-explicitly in-scope asset. Cover every relevant class indicated by its
-application, API, service, framework, cloud, identity, and deployment
-technologies. Route checks to the most specific `vuln-*`, `tech-*`, `proto-*`,
-or framework skill. Record each class as tested, not applicable, blocked, or
-not tested with a reason. A scanner finding is only a candidate; reproduce it
-and review the evidence before reporting it. Leave destructive, data-access,
-credential, persistence, and evasion actions out of the test plan.
+Do not stop after passive OSINT or surface fingerprinting. Once the active
+scope and permitted methods are established, load `red-assess` immediately and
+build a coverage ledger for every explicitly in-scope asset. Cover every
+relevant class indicated by its application, API, service, framework, cloud,
+identity, and deployment technologies. Route checks to the most specific
+`vuln-*`, `tech-*`, `proto-*`, or framework skill. Record each class as tested,
+not applicable, blocked, or not tested with a reason. A scanner finding is
+only a candidate; reproduce it and review the evidence before reporting it.
+Leave destructive, data-access, credential, persistence, and evasion actions
+out of the test plan.
+
+For web assets, use the visible Playwright browser for rendered pages, forms,
+client-side routes, and stateful behavior when the ROE permits browser testing.
+Use `curl` for a minimal HTTP baseline and a bounded, reproducible request or
+response check when that method is allowed. Choose the tool based on the
+hypothesis; do not claim either tool was used unless its actual output was
+observed and saved. If the browser MCP is unavailable, report that limitation
+and continue only with other explicitly permitted methods. A target URL or a
+generic phrase such as "remote pentest" does not add discovered subdomains,
+IP ranges, accounts, or methods to scope. Do not pass all passive subdomain
+results into `httpx`, a crawler, or a scanner unless the ROE explicitly
+includes them.
+
+## Requested seven-stage red-team plan
+
+Run this plan end-to-end when the user requests a full red-team assessment and
+the written authorization covers the exact assets and methods. A test window
+is optional: when the ROE states one, obey it; otherwise record `not
+specified` and use conservative request rates and stop conditions. Do not ask
+for a schedule solely because none was provided. A missing scope or permitted
+method still blocks that specific active test.
+
+| Stage | Work to perform | Safe execution boundary |
+|---|---|---|
+| 1. Planning and scope | Record objectives, exact assets, exclusions, allowed methods, any stated schedule/limits, pause contact, and evidence/reporting rules. | Do not infer assets or techniques from a general authorization statement. |
+| 2. Recon and intelligence | Combine passive DNS/CT/ASN/public professional OSINT and leak-exposure leads with authorized active mapping of listed assets. | Passive data is a lead. No private personal data, credential reuse, outreach, or active probing of discovered hosts outside scope. |
+| 3. Weaponization and initial access | Assess applicable external vulnerabilities and reproduce candidates with the least-impact permitted proof. | Use benign markers or owner-provided BAS/test identities. No malware creation/deployment, phishing, identity impersonation, or physical intrusion. |
+| 4. Foothold and C2 | Evaluate the relevant detection/control boundary using owner-provided telemetry, a BAS event, or an isolated lab. | No live implant, beacon, covert C2 channel, or persistence on production assets. |
+| 5. Internal movement and privilege | Review configuration and authorization boundaries; use separate owner-issued canary accounts or isolated lab endpoints if explicitly in scope. | No credential dumping, token theft, pivoting with captured credentials, or production privilege escalation. |
+| 6. Mission and data impact | Demonstrate approved business impact with a synthetic record/canary and verify DLP or recovery controls. | No real-data staging, modification, or exfiltration; no service disruption. |
+| 7. Cleanup, reporting, and purple-team review | Remove test canaries, verify cleanup, build a timestamped evidence timeline, reconcile alerts with the owner, and recommend remediation. | Preserve only sanitized evidence; do not claim unperformed or simulated actions as compromise. |
+
+Complete every applicable stage within the authorized boundary. For a stage
+whose active technique is not expressly allowed, use its safe telemetry/lab
+substitute or mark it `not authorized`; continue the remaining permitted
+stages. Never interpret a signed letter as blanket permission for every
+technique in this table.
 
 ## 6. Full-lifecycle adversary-emulation scenario
 
