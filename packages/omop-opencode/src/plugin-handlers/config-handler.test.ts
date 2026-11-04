@@ -542,7 +542,7 @@ describe("Plan agent demote behavior", () => {
     expect(agents.plan.prompt).toBe("original plan prompt")
   })
 
-  test("talos should have mode 'primary' like the other core agents", async () => {
+  test("talos remains selectable and callable for bounded delegated planning", async () => {
     // given
     const pluginConfig = createPluginConfig({
       cerberus_agent: {
@@ -569,7 +569,7 @@ describe("Plan agent demote behavior", () => {
     const agents = config.agent as Record<string, { mode?: string }>
     const talosKey = getAgentListDisplayName("talos")
     expect(agents[talosKey]).toBeDefined()
-    expect(agents[talosKey].mode).toBe("primary")
+    expect(agents[talosKey].mode).toBe("all")
   })
 })
 

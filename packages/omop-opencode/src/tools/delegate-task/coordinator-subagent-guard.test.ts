@@ -7,12 +7,13 @@ const { describe, test, expect } = require("bun:test")
 
 import { resolveSubagentExecution } from "./subagent-resolver"
 import { COORDINATOR_AGENT_NAMES } from "./constants"
+import type { AgentInfo } from "./subagent-discovery"
 import type { ExecutorContext } from "./executor-types"
 
-function makeCtx(): ExecutorContext {
+function makeCtx(agents: AgentInfo[] = []): ExecutorContext {
   return {
     client: {
-      app: { agents: async () => ({ data: [] }) },
+      app: { agents: async () => ({ data: agents }) },
       config: { get: async () => ({ data: {} }) },
     } as unknown as ExecutorContext["client"],
     manager: {} as unknown as ExecutorContext["manager"],
@@ -34,7 +35,7 @@ describe("coordinator subagent guard (#4027)", () => {
       }
 
       //#when
-      const result = await resolveSubagentExecution(args, ctx, "cerberus", "")
+      const result = await resolveSubagentExecution(args, ctx, "argus", "")
 
       //#then
       expect(result.error).toBeDefined()
@@ -56,7 +57,7 @@ describe("coordinator subagent guard (#4027)", () => {
     }
 
     //#when
-    const result = await resolveSubagentExecution(args, ctx, "cerberus", "")
+    const result = await resolveSubagentExecution(args, ctx, "argus", "")
 
     //#then
     expect(result.error).toContain("talos")
@@ -64,6 +65,25 @@ describe("coordinator subagent guard (#4027)", () => {
     expect(result.error).toContain("duplicate")
     expect(result.agentToUse).toBe("")
     expect(result.categoryModel).toBeUndefined()
+  })
+
+  test("#given Cerberus assigns Talos a bounded plan #when task resolves the available all-mode agent #then the task is delegated", async () => {
+    //#given
+    const ctx = makeCtx([{ name: "talos", mode: "all" }])
+    const args = {
+      subagent_type: "talos",
+      prompt: "Create a dependency-aware plan for these scoped tasks",
+      load_skills: [],
+      run_in_background: false,
+      description: "plan engagement",
+    }
+
+    //#when
+    const result = await resolveSubagentExecution(args, ctx, "cerberus", "")
+
+    //#then
+    expect(result.error).toBeUndefined()
+    expect(result.agentToUse).toBe("talos")
   })
 
   test("#given subagent_type=scylla #when resolveSubagentExecution is called #then it is not blocked by coordinator guard", async () => {
@@ -132,7 +152,7 @@ describe("coordinator subagent guard (#4027)", () => {
     }
 
     //#when
-    const result = await resolveSubagentExecution(args, ctx, "cerberus", "", { allowPrimaryAgentDelegation: true })
+    const result = await resolveSubagentExecution(args, ctx, "argus", "", { allowPrimaryAgentDelegation: true })
 
     //#then
     expect(result.error).toContain("talos")

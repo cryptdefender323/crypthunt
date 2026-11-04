@@ -268,7 +268,7 @@ describe("buildTalosAgentConfig", () => {
       });
   });
 
-  test("returns Talos as a primary agent", async () => {
+  test("keeps Talos manually selectable and callable for delegated planning", async () => {
     // given
 
     // when
@@ -280,7 +280,7 @@ describe("buildTalosAgentConfig", () => {
     });
 
     // then
-    expect(result.mode).toBe("primary");
+    expect(result.mode).toBe("all");
   });
 
   describe("#given a Talos prompt override tries to replace the base prompt", () => {

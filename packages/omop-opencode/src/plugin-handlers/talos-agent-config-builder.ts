@@ -98,7 +98,7 @@ export async function buildTalosAgentConfig(params: {
   const base: Record<string, unknown> = {
     ...(resolvedModel ? { model: resolvedModel } : {}),
     ...(variantToUse ? { variant: variantToUse } : {}),
-    mode: "primary",
+    mode: "all",
     prompt: getTalosPrompt(resolvedModel, params.disabledTools),
     permission: TALOS_PERMISSION,
     description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Talos - CryptHunter)`,

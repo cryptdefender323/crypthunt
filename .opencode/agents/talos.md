@@ -1,6 +1,6 @@
 ---
 description: Strategic planner that decomposes a goal into a dependency-aware plan.
-mode: primary
+mode: all
 permissions:
   - action: edit
     resource: "*"

@@ -110723,17 +110723,21 @@ function createPentestContextHook(skills = [], options = {}) {
       const hasDomainOrIp = Boolean(webTargetUrl && !bugBountyProgramUrl) || /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b|\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?\b/i.test(targetText);
       if (hasDomainOrIp)
         targetSuppliedSessions.add(input.sessionID);
+      const hasLocalPath = /(?:^|[\s"'=])(?:\.{1,2}\/|~\/|\/[A-Za-z0-9_.-]+\/|[A-Za-z]:[\\/])\S+/i.test(originalText);
+      const modeSwitchTarget = extractModeSwitch(originalText.trim());
       const previousMode = getPentestSessionMode(input.sessionID);
       const requestedMode = previousMode ?? detectMode(originalText).mode;
       const hasExplicitSessionMode = explicitlySelectedModeSessions.has(input.sessionID);
-      const targetIntent = /\b(?:pentest|penetration test|bug[\s-]?bounty|red[\s-]?team|blue[\s-]?team|grey[\s-]?hat|offensive|fullscan|scan|recon|audit|assess(?:ment)?|target|ctf|investigate)\b|cari\s+celah|uji\s+(?:keamanan|web)/i.test(originalText);
+      const securityTaskIntent = /\b(?:pentest|penetration test|bug[\s-]?bounty|red[\s-]?team|blue[\s-]?team|grey[\s-]?hat|offensive|fullscan|scan|recon|audit|assess(?:ment)?|target|ctf|investigate)\b|cari\s+celah|uji\s+(?:keamanan|web)/i.test(originalText);
+      const modeScopedTarget = (hasExplicitSessionMode || modeSwitchTarget !== null) && (webTarget || hasDomainOrIp || hasLocalPath);
+      const localPathEngagement = hasLocalPath && (modeScopedTarget || securityTaskIntent);
+      const targetIntent = securityTaskIntent || modeScopedTarget || localPathEngagement;
       const modeOnly = isModeOnlyCommand(originalText.trim());
       const workflowStartReply = /^(?:1|yes|y|start|mulai|gas|lanjut|lanjutkan)[.!\s]*$/i.test(originalText.trim());
       if (modeOnly)
         explicitlySelectedModeSessions.add(input.sessionID);
       const continueExplicitMode = hasExplicitSessionMode && previousMode !== undefined && (targetIntent || workflowStartReply);
       const shouldAutoOpenBrowser = Boolean(webTargetUrl && (bugBountyProgramUrl || requestedMode !== "red-team" && (targetIntent || previousMode && previousMode !== "auto" || explicitlySelectedModeSessions.has(input.sessionID))));
-      const modeSwitchTarget = extractModeSwitch(originalText.trim());
       const isReinjection = modeSwitchTarget !== null;
       if (isReinjection) {
         injectedSessions.delete(input.sessionID);
@@ -110766,6 +110770,7 @@ function createPentestContextHook(skills = [], options = {}) {
       const intel = buildIntelSnippet(config, mode2);
       const autoLoadNames = mode2 === "bug-bounty" && awaitingTarget ? ["bug-bounty-research", "tool-browser-automation", "playwright"] : Array.from(new Set([
         ...getModeAutoLoadSkills(mode2),
+        ...targetIntent && !modeOnly ? ["agent-routing"] : [],
         ...["auto", "bug-bounty", "red-team", "blue-team", "offensive", "grey-hat", "mobile-pentest"].includes(mode2) ? ["false-positive-engine"] : [],
         ...webTarget ? ["tool-browser-automation", "playwright"] : []
       ]));
@@ -119584,7 +119589,8 @@ Create the work plan directly - that's your job as the planning agent.`
       }
     };
   }
-  if (isCoordinatorAgent(agentName)) {
+  const cerberusPlanningTalos = agentConfigKey === "talos" && parentAgent !== undefined && getAgentConfigKey(parentAgent).toLowerCase().trim() === "cerberus";
+  if (isCoordinatorAgent(agentName) && !cerberusPlanningTalos) {
     return {
       kind: "invalid",
       result: {
@@ -144418,7 +144424,7 @@ ${agentRows.join(`
 }
 
 // packages/omop-opencode/src/agents/argus/agent.ts
-var MODE7 = "primary";
+var MODE7 = "all";
 
 class ArgusPromptVariantError extends Error {
   variant;
@@ -145654,7 +145660,7 @@ function buildGpt55ScyllaPrompt(availableAgents, _availableTools = [], available
 }
 
 // packages/omop-opencode/src/agents/scylla/agent.ts
-var MODE9 = "primary";
+var MODE9 = "all";
 var GPT_5_3_CODEX_RE = /^gpt-5[.-]3-codex(?:$|[.-])/i;
 var GPT_5_4_RE = /^gpt-5[.-]4(?:$|[.-])/i;
 var GPT_5_5_RE = /^gpt-5[.-]5(?:$|[.-])/i;
@@ -147999,7 +148005,7 @@ async function buildTalosAgentConfig(params) {
   const base = {
     ...resolvedModel ? { model: resolvedModel } : {},
     ...variantToUse ? { variant: variantToUse } : {},
-    mode: "primary",
+    mode: "all",
     prompt: getTalosPrompt(resolvedModel, params.disabledTools),
     permission: TALOS_PERMISSION,
     description: `${params.configAgentPlan?.description ?? "Plan agent"} (Talos - CryptHunter)`,
