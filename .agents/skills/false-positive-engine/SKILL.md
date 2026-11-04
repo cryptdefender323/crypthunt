@@ -197,6 +197,31 @@ PASS:   Attacker can demonstrably access data, perform unauthorized action,
         or affect availability/integrity/confidentiality.
 FAIL:   Impact cannot be demonstrated within safe authorized testing.
         Mark: NEEDS_VALIDATION with impact as open question.
+
+### Exposed database and service observations
+
+An identifiable database, database login page, open service port, product
+banner, health endpoint, schema name, or empty/public sample response is not
+by itself a reportable vulnerability. Do not spend requests trying to turn
+mere reachability into a compromise. First state the exact security property
+that should hold and the smallest safe test that could disprove the concern.
+
+Promote a database or storage candidate only when current, in-scope evidence
+demonstrates a security boundary failure and a meaningful consequence, such as
+unauthenticated or lower-privilege access to a specifically authorized
+canary/test record, or an unauthorized change to a test-owned record. Never
+enumerate, download, or alter real customer data to establish impact. If only
+service identity, metadata, or a login surface is visible, classify it as
+`OBSERVATION_ONLY` and omit it from the findings list. If sensitive access is
+suspected but cannot be proven without touching real data, classify it as
+`NEEDS_SAFE_VALIDATION`, keep it out of findings, and record the blocker.
+
+Apply the same distinction to every class: reachable is not accessible,
+accessible is not unauthorized, and unauthorized behavior is not automatically
+meaningful impact. Preserve low-severity findings when a real, reproducible
+security property is violated; do not inflate severity to make an observation
+appear actionable. Set severity only from demonstrated impact and applicable
+program criteria.
 ```
 
 ---
@@ -265,6 +290,17 @@ RECORD:
   - Full HTTP log of re-test
   - Session context
   - Timestamp
+
+For browser-visible behavior, use the configured visible Playwright session
+when available to capture the baseline, test action, control/negative case,
+final URL, and relevant request/response metadata under one candidate ID. A
+screenshot alone does not prove server-side impact. For API and service
+behavior, reproduce with the least-impact protocol-appropriate request and
+retain sanitized raw request/response evidence; use Playwright only when the
+browser is part of the behavior being tested. If either route is unavailable,
+record that limitation and do not imply it was validated. Do not send every
+candidate through every tool: choose tests from a falsifiable hypothesis,
+observed surface, authorization, and the smallest evidence gap.
 ```
 
 ---
