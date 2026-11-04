@@ -47,6 +47,8 @@ Talos itself stays a planner. It reads, searches, and writes planning artifacts 
 
 ## KEY CONSTRAINTS
 
+- Mode: `all`; remains manually selectable and may be invoked by Cerberus for a bounded plan-only delegation.
+
 - May ONLY create/edit `.md` files (enforced by hook)
 - FORBIDDEN paths: `src/`, `package.json`, config files
 - Must scout codebase before planning (NEVER plan blind)

@@ -229,6 +229,15 @@ Talos       strategic planner
 Argus       todo executor
 ```
 
+**Agent routing is automatic.** Stay on Cerberus, choose a mode, then provide
+the target URL, domain, IP, or local app/artifact path. Cerberus reads the
+mode and target type, loads the relevant skills, and delegates to Talos for
+multi-stage planning, Argus for task-list execution, or Scylla for a bounded
+deep investigation when that agent is available. Small tasks stay with
+Cerberus. You do not need to switch agents with Shift+Tab. Your selected mode
+and main model remain in effect; unavailable agents fall back to the same
+workflow in Cerberus.
+
 Start an engagement:
 
 ```text

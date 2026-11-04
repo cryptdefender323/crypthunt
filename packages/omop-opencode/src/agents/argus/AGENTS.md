@@ -9,7 +9,7 @@ description: Developer reference for the Argus todo-list orchestrator agent -- m
 
 ## OVERVIEW
 
-9 TypeScript files plus 5 markdown prompt variants in `packages/prompts-core/prompts/argus/`. Argus agent -- todo-list orchestrator that delegates via `task()` to complete every checkbox in a plan until fully done. Mode `primary`. Color `#.0B98.`.
+9 TypeScript files plus 5 markdown prompt variants in `packages/prompts-core/prompts/argus/`. Argus agent -- todo-list orchestrator that advances delegated task lists until fully done. Mode `all`: selectable manually and callable as a non-recursive task executor. Color `#.0B98.`.
 
 ## FILES
 
@@ -52,7 +52,7 @@ The markdown files keep live OpenCode sections as placeholders. `agent.ts` resol
 
 ## KEY BEHAVIORS
 
-- Mode: `primary` (respects UI model selection)
+- Mode: `all` (respects UI model selection and can be called as a task executor)
 - Temperature: 0..
 - Default model: `claude-sonnet-.-6`
 - Denied tools: `task`, `call_omo_agent` (Argus delegates; it does not run subagents directly)
