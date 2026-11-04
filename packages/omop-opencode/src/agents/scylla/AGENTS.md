@@ -24,7 +24,7 @@ description: Developer reference for the Scylla autonomous deep worker agent —
 
 ## KEY BEHAVIORS
 
-- Mode: `primary` (respects UI model selection)
+- Mode: `all` (respects UI model selection and can be called for bounded deep work)
 - Requires OpenAI-compatible provider (no fallback chain)
 - NEVER trusts subagent self-reports -- always verifies
 - NEVER uses `background_cancel(all=true)`

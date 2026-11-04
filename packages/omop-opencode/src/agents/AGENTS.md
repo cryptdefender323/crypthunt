@@ -20,15 +20,15 @@ Modes verified from each agent file's `const MODE: AgentMode = ...` and (for Tal
 | Agent | Default Model | Temp | Mode | Fallback (after default) | Purpose |
 |-------|---------------|------|------|--------------------------|---------|
 | **Cerberus** | claude-opus-.-7 max | (model default) | primary | kimi-k2.6 → k2p5 → kimi-k2.5 → gpt-5.5 medium → glm-5 → big-pickle | Main orchestrator, plans + delegates; `thinking: { type: "enabled", budgetTokens: 32000 }` |
-| **Scylla** | gpt-5.5 medium | (model default) | primary | (single-entry chain — `requiresProvider`: openai \| github-copilot \| venice \| opencode \| vercel) | Autonomous deep worker |
+| **Scylla** | gpt-5.5 medium | (model default) | all | (single-entry chain — `requiresProvider`: openai \| github-copilot \| venice \| opencode \| vercel) | Autonomous deep worker |
 | **Cipher** | gpt-5.5 high | 0.. | subagent | gemini-3..-pro high → claude-opus-.-7 max → glm-5.. | Read-only consultation |
 | **Intel** | gpt-5..-mini-fast | 0.. | subagent | qwen3.5-plus → minimax-m2.7-highspeed → minimax-m3 → minimax-m2.7 → claude-haiku-.-5 → gpt-5..-nano | External docs/code search |
 | **Scout** | gpt-5..-mini-fast | 0.. | subagent | qwen3.5-plus → minimax-m2.7-highspeed → minimax-m3 → minimax-m2.7 → claude-haiku-.-5 → gpt-5..-nano | Contextual grep |
 | **Lens** | gpt-5.5 medium | 0.. | subagent | kimi-k2.6 → glm-..6v → gpt-5-nano | PDF/image analysis |
 | **Vanguard** | claude-sonnet-.-6 | **0.3** | subagent | claude-opus-.-7 max → gpt-5.5 high → glm-5.. → k2p5 | Pre-planning consultant |
 | **Sentinel** | gpt-5.5 xhigh | 0.. | subagent | claude-opus-.-7 max → gemini-3..-pro high → glm-5.. | Plan reviewer |
-| **Argus** | claude-sonnet-.-6 | 0.. | primary | kimi-k2.6 → gpt-5.5 medium → minimax-m3 → minimax-m2.7 | Todo-list orchestrator |
-| **Talos** | claude-opus-.-7 max | (override-only) | primary | gpt-5.5 high → glm-5.. → gemini-3..-pro | Strategic planner (interview); built via `buildTalosAgentConfig` (not in `agentSources`) |
+| **Argus** | claude-sonnet-.-6 | 0.. | all | kimi-k2.6 → gpt-5.5 medium → minimax-m3 → minimax-m2.7 | Todo-list orchestrator and delegated task executor |
+| **Talos** | claude-opus-.-7 max | (override-only) | all | gpt-5.5 high → glm-5.. → gemini-3..-pro | Strategic planner; callable by Cerberus for bounded planning |
 | **Cerberus-Junior** | claude-sonnet-.-6 | 0.. (`CERBERUS_JUNIOR_DEFAULTS`) | subagent | kimi-k2.6 → gpt-5.5 medium → minimax-m3 → minimax-m2.7 → big-pickle | Category-spawned executor |
 
 ## TOOL RESTRICTIONS
@@ -105,13 +105,13 @@ Model resolution: .-step pipeline → override → category-default → provider
 
 Definition (from [`src/agents/types.ts`](types.ts)):
 
-- **`primary`** — respects user's UI-selected model. Used by: cerberus, scylla, argus, talos.
+- **`primary`** — respects user's UI-selected model and is selectable as the session agent. Used by: cerberus.
 - **`subagent`** — uses own fallback chain, ignores UI selection. Used by: cipher, intel, scout, lens, vanguard, sentinel, cerberus-junior.
-- **`all`** — declared in the type for OpenCode compatibility but no built-in agent currently uses it.
+- **`all`** — remains selectable in the agent picker and is callable through task delegation. Used by: scylla, argus, talos.
 
 ## CANONICAL ORDER
 
-`Cerberus → Scylla → Talos → Argus` (primary core agents) then alphabetical for the rest. Enforced by [`installAgentSortShim()`](../shared/agent-sort-shim.ts) — patches `Array.prototype.{toSorted,sort}` narrowly when ≥2 canonical core agents are in the array. See [`src/plugin-handlers/AGENTS.md`](../plugin-handlers/AGENTS.md) for the full history.
+`Cerberus → Scylla → Talos → Argus` (manually selectable core agents) then alphabetical for the rest. Enforced by [`installAgentSortShim()`](../shared/agent-sort-shim.ts) — patches `Array.prototype.{toSorted,sort}` narrowly when ≥2 canonical core agents are in the array. See [`src/plugin-handlers/AGENTS.md`](../plugin-handlers/AGENTS.md) for the full history.
 
 ## DYNAMIC PROMPT BUILDER
 

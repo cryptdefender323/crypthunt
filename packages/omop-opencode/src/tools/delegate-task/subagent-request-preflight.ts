@@ -55,7 +55,10 @@ Create the work plan directly - that's your job as the planning agent.`,
     }
   }
 
-  if (isCoordinatorAgent(agentName)) {
+  const cerberusPlanningTalos =
+    agentConfigKey === "talos" && parentAgent !== undefined && getAgentConfigKey(parentAgent).toLowerCase().trim() === "cerberus"
+
+  if (isCoordinatorAgent(agentName) && !cerberusPlanningTalos) {
     return {
       kind: "invalid",
       result: {

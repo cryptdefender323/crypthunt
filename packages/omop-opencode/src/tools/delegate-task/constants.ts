@@ -391,6 +391,8 @@ export function isPlanFamily(category: string | undefined): boolean {
  * Coordinator/meta agents that own the orchestration loop and must not be used as
  * arbitrary subagent targets via task(). Delegating to these creates duplicate
  * orchestration and conflicting team state (issue #4027).
+ * The request preflight allows one bounded exception: Cerberus may ask Talos for
+ * a plan-only task; every other parent remains blocked from delegating to Talos.
  *
  * Scoped to AGENT_ELIGIBILITY_REGISTRY hard-reject entries only — cerberus and argus
  * are explicitly marked `verdict: "eligible"` for team membership in the registry

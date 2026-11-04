@@ -34,7 +34,7 @@ import {
   buildDecisionMatrix,
 } from "./prompt-section-builder"
 
-const MODE: AgentMode = "primary"
+const MODE: AgentMode = "all"
 
 export type ArgusPromptSource = "default" | "gpt" | "gemini" | "kimi" | "kimi-k2-7" | "opus-4-7" | "glm"
 

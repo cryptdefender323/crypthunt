@@ -14,7 +14,7 @@ import { buildScyllaPrompt as buildGptPrompt } from "./gpt";
 import { buildScyllaPrompt as buildGpt54Prompt } from "./gpt-5-4";
 import { buildGpt55ScyllaPrompt as buildGpt55Prompt } from "./gpt-5-5";
 
-const MODE: AgentMode = "primary";
+const MODE: AgentMode = "all";
 const GPT_5_3_CODEX_RE = /^gpt-5[.-]3-codex(?:$|[.-])/i;
 const GPT_5_4_RE = /^gpt-5[.-]4(?:$|[.-])/i;
 const GPT_5_5_RE = /^gpt-5[.-]5(?:$|[.-])/i;
