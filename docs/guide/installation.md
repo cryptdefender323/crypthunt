@@ -44,6 +44,14 @@ security tools and Nuclei templates. Existing tools and template directories
 are reused. Run `crypthunter tools bootstrap` to retry or
 `crypthunter tools bootstrap --dry-run` to preview missing dependencies.
 
+Other recon, enumeration, and exploitation tools in `tools-catalog.json` are
+checked and installed when first invoked from OpenCode, using the install
+command for macOS. Existing tools are reused. If installation fails or the
+binary cannot be verified, CryptHunter blocks the scan/exploit command and
+reports the missing dependency rather than presenting an empty result as a
+successful test. Tools without a macOS install method must be installed
+manually or run in a supported Linux/WSL environment. Use
+`crypthunter tools install --tool <name>` to install one explicitly.
 OpenCode automatically registers the Playwright MCP server. Its browser opens
 visibly when a browser skill uses it, and Playwright downloads its browser on
 first use. To keep your own server settings, configure a server named
@@ -81,6 +89,14 @@ The plugin installer quietly checks and installs the README-listed Go/Python
 security tools and Nuclei templates. Existing tools and template directories
 are reused. On distributions using apt, missing documented system packages
 are installed through apt when non-interactive elevation is available.
+
+Other recon, enumeration, and exploitation tools in `tools-catalog.json` are
+checked and installed on first OpenCode use with the current distro's catalog
+command. Existing tools are reused. If install fails or verification cannot
+find the binary, CryptHunter blocks that scan/exploit command and reports the
+missing dependency. Tools marked unsupported or without a package recipe must
+be installed manually or used in a supported OS. Use
+`crypthunter tools install --tool <name>` to install one explicitly.
 
 ---
 
@@ -147,7 +163,6 @@ For direct local installation on a computer, follow the macOS or Linux steps
 above instead.
 
 ---
-
 ## Docker (Isolated / Air-Gapped)
 
 ```bash

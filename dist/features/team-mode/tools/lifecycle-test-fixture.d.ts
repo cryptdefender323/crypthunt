@@ -88,6 +88,7 @@ export declare const loadTeamSpecMock: import("bun:test").Mock<() => Promise<{
         cwd?: string | undefined;
         worktreePath?: string | undefined;
         subscriptions?: string[] | undefined;
+        loadSkills?: string[] | undefined;
         color?: string | undefined;
     } | {
         name: string;
@@ -98,6 +99,7 @@ export declare const loadTeamSpecMock: import("bun:test").Mock<() => Promise<{
         cwd?: string | undefined;
         worktreePath?: string | undefined;
         subscriptions?: string[] | undefined;
+        loadSkills?: string[] | undefined;
         color?: string | undefined;
         prompt?: string | undefined;
     })[];

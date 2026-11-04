@@ -24,8 +24,10 @@ the Red Team assessment phase; report objective progress and detections with
   each active asset, method, and test category. The user confirms it is valid.
   If missing, continue passive work and ask once for the document before the
   first active check.
-- Request limits, time window, client test identities, approved origin, and
-  stop conditions are known for the checks that need them.
+- Any stated request limits, time window, client test identities, approved
+  origin, and stop conditions are recorded. Missing schedules are recorded as
+  unspecified and do not block checks that are otherwise explicitly in scope
+  and permitted; apply conservative mode defaults where the ROE is silent.
 
 Mode selection, a target domain/IP, and a scanner finding do not establish
 authorization or prove a vulnerability.
@@ -48,6 +50,11 @@ Establish the current page/endpoint and normal response first, using Playwright
 or the least intrusive approved request after the ROE gate. Record its
 engagement timestamp and sanitized evidence. If the current behavior cannot be
 reproduced safely, report only the historical lead, not a live vulnerability.
+Passive recon narrows where to look but does not validate a vulnerability.
+Every externally observable candidate must also have a current, authorized
+active observation and the applicable control, negative, and disproof results
+before it can be shown as a finding. If those checks cannot be run, retain only
+an unresolved count and the reason; do not expose it as a confirmed result.
 
 ## Build the coverage ledger
 

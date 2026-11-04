@@ -4,6 +4,8 @@ import type { MonitorManager } from "../../features/monitor";
 import type { ModelFallbackControllerAccessor } from "../../hooks/model-fallback";
 import type { PluginContext } from "../types";
 import type { ModelCacheState } from "../../plugin-state";
+import type { LoadedSkill } from "../../features/opencode-skill-loader/types";
+import type { SkillMcpManager } from "../../features/skill-mcp-manager";
 export declare function createCoreHooks(args: {
     ctx: PluginContext;
     pluginConfig: CryptHunterConfig;
@@ -11,8 +13,10 @@ export declare function createCoreHooks(args: {
     backgroundManager: BackgroundManager;
     modelFallbackControllerAccessor?: ModelFallbackControllerAccessor;
     monitorManager?: MonitorManager;
+    skillMcpManager?: Pick<SkillMcpManager, "listTools" | "callTool">;
     isHookEnabled: (hookName: HookName) => boolean;
     safeHookEnabled: boolean;
+    mergedSkills: LoadedSkill[];
 }): {
     claudeCodeHooks: ReturnType<typeof import("../../hooks").createClaudeCodeHooksHook> | null;
     keywordDetector: ReturnType<typeof import("../../hooks").createKeywordDetectorHook> | null;

@@ -89,6 +89,75 @@ describe("createCatalogToolInstallerHook", () => {
     // then
     expect(installs).toEqual(["nmap"])
     expect(output.message).toContain("nmap")
+    expect(output.args.command).toBe("nmap -sV example.com")
+  })
+
+  it("#given install reports success but binary remains missing #when bash before #then blocks the original command", async () => {
+    // given
+    let checks = 0
+    const output: { args: Record<string, unknown>; message?: string } = {
+      args: { command: "nmap -sV example.com" },
+    }
+    const hook = createCatalogToolInstallerHook({
+      getCatalog: async () => catalog,
+      checkInstalled: async () => {
+        checks += 1
+        return { tools_name: "nmap", installed: false, error: "not found" }
+      },
+      install: async () => ({ success: true, message: "installer exited successfully" }),
+      platform: "linux",
+    })
+
+    // when
+    await hook["tool.execute.before"]?.(
+      { tool: "bash", sessionID: "ses-unverified-install", callID: "c-unverified" },
+      output,
+    )
+
+    // then
+    expect(checks).toBe(2)
+    expect(output.message).toContain("could not be verified")
+    expect(output.args.command).not.toBe("nmap -sV example.com")
+    expect(output.args.command).toContain("original command was not run")
+  })
+
+  it("#given missing exploitation tool on macOS #when first invoked #then installs and verifies it before execution", async () => {
+    // given
+    const sqlmapEntry = {
+      ...nmapEntry,
+      tools_name: "sqlmap",
+      command: { base: "sqlmap", flags: [], positional: [] },
+      installation: { darwin: { command: "python3 -m pip install sqlmap", manager: "pip" } },
+      check_installed: { command: "sqlmap --version", parse_version: "([\\d.]+)" },
+      phase: ["exploitation"],
+    } as unknown as ToolEntry
+    const sqlmapCatalog = { ...catalog, tools: [sqlmapEntry] }
+    let installed = false
+    const hook = createCatalogToolInstallerHook({
+      getCatalog: async () => sqlmapCatalog,
+      checkInstalled: async () => ({ tools_name: "sqlmap", installed, version: installed ? "1.8" : undefined }),
+      install: async (tool, platform) => {
+        expect(tool.tools_name).toBe("sqlmap")
+        expect(platform).toBe("darwin")
+        installed = true
+        return { success: true, message: "installed" }
+      },
+      platform: "darwin",
+    })
+    const output: { args: Record<string, unknown>; message?: string } = {
+      args: { command: "sqlmap --version" },
+    }
+
+    // when
+    await hook["tool.execute.before"]?.(
+      { tool: "bash", sessionID: "ses-sqlmap-macos", callID: "c-sqlmap" },
+      output,
+    )
+
+    // then
+    expect(installed).toBe(true)
+    expect(output.message).toContain("ensured")
+    expect(output.args.command).toBe("sqlmap --version")
   })
 
   it("#given already installed #when bash before #then does not install", async () => {

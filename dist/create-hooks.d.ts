@@ -6,6 +6,7 @@ import type { MonitorManager } from "./features/monitor";
 import type { ModelFallbackControllerAccessor } from "./hooks/model-fallback";
 import type { PluginContext } from "./plugin/types";
 import type { ModelCacheState } from "./plugin-state";
+import type { SkillMcpManager } from "./features/skill-mcp-manager";
 export type CreatedHooks = ReturnType<typeof createHooks>;
 type DisposableHook = {
     dispose?: () => void;
@@ -26,6 +27,7 @@ export declare function createHooks(args: {
     backgroundManager: BackgroundManager;
     modelFallbackControllerAccessor?: ModelFallbackControllerAccessor;
     monitorManager?: MonitorManager;
+    skillMcpManager?: Pick<SkillMcpManager, "listTools" | "callTool">;
     isHookEnabled: (hookName: HookName) => boolean;
     safeHookEnabled: boolean;
     mergedSkills: LoadedSkill[];

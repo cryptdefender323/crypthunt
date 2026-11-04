@@ -23,3 +23,4 @@ export { createPentestValidateTool } from "./pentest-validate";
 export { createPentestConfidenceTool } from "./pentest-confidence";
 export { createPentestPivotTool } from "./pentest-pivot";
 export { createPentestHandoffTool } from "./pentest-handoff";
+export { createPentestOpenEvidenceTool } from "./pentest-open-evidence";

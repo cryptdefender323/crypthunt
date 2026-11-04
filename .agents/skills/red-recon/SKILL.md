@@ -40,11 +40,14 @@ Passive OSINT can proceed from the supplied target without contacting it. Do not
 
 ```
 Phase 0: Confirm the target and evidence workspace
-Phase 1: Passive OSINT only (zero active traffic to target)
+Phase 1: Passive OSINT (zero active traffic to target)
   → Build initial intelligence model from public sources
   → Identify identity exposure (credentials, emails, social)
   → Map technology from passive signals
-Phase 2: Active discovery (only explicitly authorized assets/methods)
+Phase 2: Active discovery (required when explicitly authorized)
+  → Always actively check the user-supplied primary target when that exact
+    asset and the relevant method are in the written scope, even if passive
+    recon found no subdomains or useful leads
   → HTTP and application fingerprinting
   → Approved port and service discovery
   → Endpoint, API, and authentication-surface mapping
@@ -77,7 +80,7 @@ alert. Active discovery requires the explicit authorization gate.
 | `amass` (passive) | Multi-source passive DNS and certificate data | Phase 1 | None | DNS records, historical data |
 | `theHarvester` | Email, domain, host OSINT from public sources | Phase 1 | None | Emails, employee names, domains |
 | `shodan` | Internet-wide scan data without hitting target | Phase 1 | None | Ports, banners, vulnerabilities |
-| `httpx` (cautious) | HTTP probing with browser-like headers | Phase 2 — very limited | Low — browser-like | Status codes, server headers |
+| `httpx` (cautious) | HTTP probing on an explicitly listed asset | Phase 2 — only after scope review | Low — still target traffic | Status codes, server headers |
 | `gitleaks` | Credential exposure in public repos | Phase 1 | None | API keys, passwords, tokens |
 | `curl` | Single targeted requests, browser UA | Phase 2 | Low | Specific responses |
 
@@ -102,7 +105,14 @@ Before any action:
   signal. Do not switch source IPs to continue.
 
 Create the engagement evidence directory only after the target is supplied.
-Do not route traffic through unapproved infrastructure.
+Do not route traffic through unapproved infrastructure. A discovered hostname
+is a passive lead, not active scope. Never bulk-feed passive subdomain results
+to `httpx`, a crawler, or a scanner; test only exact assets enumerated in the
+written ROE and record which clause covers each asset. Do not let passive
+recon replace active recon: when the written ROE includes the user-supplied
+primary target and permits the relevant check, actively check that target even
+when passive sources return nothing. If it is not in scope, record why and do
+not silently substitute unrelated passive subdomains.
 
 ---
 
@@ -229,20 +239,44 @@ echo "site:$TARGET ext:env OR ext:config OR ext:bak OR ext:sql"
 
 ## PHASE 2: ACTIVE SERVICE DISCOVERY (AUTHORIZED)
 
-Only proceed after Phase 1 is complete and a current signed authorization
-letter/rules of engagement explicitly authorizes discovery on the exact assets
-and methods being tested. Browser-like headers
-must identify the approved test client; do not use them to disguise traffic.
+Only proceed after Phase 1 is complete and current written authorization
+covers active discovery on the exact assets. Any stated time window and request
+limits are binding. If no schedule or limit is stated, record it as
+`not specified` and use the conservative defaults; do not ask for a schedule
+solely because it is absent. Browser headers must identify the approved test
+client; do not use them to disguise traffic.
+
+Before running tools, create `authorized-assets.txt` from the exact assets in
+the authorization. Seed it with the user-supplied primary target whenever the
+ROE explicitly covers it and permits the planned HTTP check; this is the
+default active target and does not depend on passive discovery. Add passive
+subdomains only when the ROE explicitly includes the hostname or a matching
+wildcard. Passive subdomains are leads and must not be piped into active tools
+unless the authorization explicitly includes them. Record active coverage in
+`coverage.tsv` with columns `asset`, `check`, `status`, `scope reference`, and
+`evidence_file`. Every active category must receive a status:
+`completed`, `not authorized`, `blocked`, `failed`, or `not available`; never
+silently omit a port scan or imply it ran when it did not.
+
+Create `authorized-ips.txt` only from valid IP addresses named in the ROE or
+from the primary target's resolved service endpoints when the ROE explicitly
+covers testing that target via its resolved IPs. If no authorized IP is
+established, record the port scan as `not authorized` or `not available`; do
+not populate the file from passive DNS alone. Do not substitute an IP belonging
+to a passive-only subdomain.
 
 ```bash
-# HTTP probe — browser-like, minimal set of targets
-# Only probe domains confirmed from Phase 1
+APPROVED_RATE="${APPROVED_RATE:-2}"
+NMAP_MAX_RATE="${NMAP_MAX_RATE:-10}"
+
+# Active HTTP probe — run on authorized-assets.txt even when Phase 1 found no
+# passive subdomains. The file is scope-derived, not passive-results-derived.
 
 # Live host check with browser headers
-cat $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/subdomains.txt | \
+cat $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/authorized-assets.txt | \
   httpx -silent -sc -title -server \
     -H "User-Agent: $USERAGENT" \
-    -rate-limit 5 \
+    -rate-limit "$APPROVED_RATE" \
     -json -o $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/httpx.json 2>/dev/null
 
 # Extract interesting targets
@@ -255,6 +289,9 @@ cat $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/httpx.json | \
   jq -r 'select(.title | test("login|admin|portal|vpn|remote|citrix|owa|exchange|gitlab|jira|jenkins"; "i")) | "\(.url) — \(.title)"' | \
   tee $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/high-value.txt
 
+# Record every input asset as completed/blocked/failed/not available in
+# coverage.tsv. A missing httpx output is not a clean scan.
+
 # Single targeted request to confirm specific hypothesis
 # DO NOT automate broad requests — one at a time with human review
 curl -s -H "User-Agent: $USERAGENT" \
@@ -266,31 +303,56 @@ curl -s -H "User-Agent: $USERAGENT" \
 
 ## PHASE 3: PORT AND SERVICE DISCOVERY (AUTHORIZED)
 
-Only if a current signed authorization letter/rules of engagement explicitly
-authorizes active scanning.
+Execute a TCP port and service scan for each explicitly in-scope target IP
+when the authorization permits port scanning, even if passive sources found
+no interesting ports. Use the exact authorized port set/range
+when specified. If the ROE authorizes TCP port discovery but does not name a
+range, scan TCP ports `1-65535` and record the range. Honor any stated rate.
+With no rate or schedule, use at most 10 probes per second and record it. If port scanning
+is not permitted or the IP is not explicitly in scope, record `not authorized`
+in `coverage.tsv` and continue with other authorized recon. Never scan IPs
+inferred from DNS unless the written scope covers those IPs or explicitly
+covers the in-scope domain's resolved service endpoints.
 
 ```bash
-# Port scan — only an explicitly in-scope target, at the approved rate
-nmap -T1 -sV --max-parallelism 1 \
-  -p 21,22,23,25,53,80,110,143,443,445,993,995,1433,3306,3389,5432,5985,5986,6379,8080,8443,27017 \
-  --open \
-  -oX $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/nmap.xml \
-  TARGET_IP_ONLY 2>/dev/null
+# Use the exact port set from the ROE; if TCP port discovery is authorized but
+# no range is specified, cover the full TCP range and record it.
+AUTHORIZED_PORTS="${AUTHORIZED_PORTS:-1-65535}"
+while IFS= read -r AUTHORIZED_IP; do
+  [ -n "$AUTHORIZED_IP" ] || continue
+  output="$HOME/.omop/red-team/$ENGAGEMENT/infrastructure/nmap-$AUTHORIZED_IP.xml"
+  if ! nmap -T1 -sV --max-parallelism 1 --max-rate "${NMAP_MAX_RATE:-10}" \
+    -p "$AUTHORIZED_PORTS" --open \
+    -oX "$output" "$AUTHORIZED_IP" 2>/dev/null; then
+    printf '%s\t%s\t%s\t%s\t%s\n' \
+      "$AUTHORIZED_IP" "tcp-port-service-scan:$AUTHORIZED_PORTS" "failed" "$SCOPE_REFERENCE" "$output" \
+      >> "$HOME/.omop/red-team/$ENGAGEMENT/coverage.tsv"
+    continue
+  fi
 
-# Parse interesting ports
-cat $HOME/.omop/red-team/$ENGAGEMENT/infrastructure/nmap.xml | \
-  grep -E "portid|service|product|version" | head -50
+  # Parse findings and record the exact coverage; empty output is not a finding.
+  services="$HOME/.omop/red-team/$ENGAGEMENT/infrastructure/nmap-$AUTHORIZED_IP-services.txt"
+  grep -E "portid|service|product|version" "$output" > "$services" || : > "$services"
+  printf '%s\t%s\t%s\t%s\t%s\n' \
+    "$AUTHORIZED_IP" "tcp-port-service-scan:$AUTHORIZED_PORTS" "completed" "$SCOPE_REFERENCE" \
+    "infrastructure/nmap-$AUTHORIZED_IP.xml;infrastructure/nmap-$AUTHORIZED_IP-services.txt" \
+    >> "$HOME/.omop/red-team/$ENGAGEMENT/coverage.tsv"
+done < "$HOME/.omop/red-team/$ENGAGEMENT/infrastructure/authorized-ips.txt"
 
-# Service-specific probing — targeted, not broad
-# RDP accessible?
-nmap -T1 -p 3389 --script rdp-enum-encryption TARGET_IP 2>/dev/null
-# SMB accessible?
-nmap -T1 -p 445 --script smb2-security-mode TARGET_IP 2>/dev/null
+# Optional service-specific NSE checks — only when the ROE allows script-based
+# service enumeration. Otherwise use the -sV result and record the limitation.
 ```
 
 ---
 
 ## INTELLIGENCE MODEL ASSEMBLY
+
+At the end of recon, show a compact coverage summary. Include each authorized
+asset, passive sources used, active HTTP check status, TCP port/service scan
+status and exact range, discovered service evidence, and evidence-file path.
+If a check was skipped, show the reason instead of omitting the row. A no-open-
+ports result must state the scanned range and timestamp; never imply that an
+unscanned range was checked.
 
 After each phase, update the attack model:
 

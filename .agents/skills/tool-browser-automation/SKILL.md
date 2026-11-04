@@ -1,6 +1,6 @@
 ---
 name: tool-browser-automation
-description: "Browser automation for pentesting — Playwright/Puppeteer for authenticated crawling, form submission, SPA spider, JavaScript rendering, DOM XSS detection, screenshot proof collection. Triggers: 'browser automation', 'playwright pentest', 'puppeteer pentest', 'headless browser', 'spa crawl', 'authenticated crawl', 'javascript rendering', 'dom xss automation'."
+description: "Browser automation for pentesting and bug-bounty scope lookup. In OpenCode V2 use the connected headed Playwright MCP for visible navigation, snapshots, and evidence. Also covers Playwright/Puppeteer crawling, form submission, SPA discovery, and DOM analysis. Triggers: 'browser automation', 'playwright', 'playwright pentest', 'bug bounty scope lookup', 'headless browser', 'spa crawl', 'authenticated crawl', 'javascript rendering', 'dom xss automation'."
 ---
 
 # Browser Automation for Pentesting
@@ -20,6 +20,44 @@ failure before using a fallback and do not claim browser observation occurred.
 An existing user server named `playwright` takes precedence. Users can disable
 the default via `disabled_mcps: ["playwright"]` in CryptHunter config (V1) or
 `mcp.servers.playwright.disabled: true` in OpenCode config (V2).
+
+## OpenCode V2: Visible Playwright MCP
+
+In OpenCode V2, use the configured `playwright` MCP server for visible browser
+work. Its tools appear with the `playwright_` prefix, including
+`playwright_browser_navigate` and `playwright_browser_snapshot`. The project
+configuration starts Playwright MCP in headed mode so the researcher can watch
+the page. Do not silently switch to Python/headless Playwright when this MCP is
+available. If the server or browser fails to start, report that exact failure
+and do not claim that browser inspection happened.
+
+For Bug Bounty only, use this browser to look up the exact owner's public
+program or VDP scope before asking the user for an authorization basis. This
+platform lookup workflow applies only when the selected mode is `bug-bounty`;
+red-team scope comes from the reviewed rules of engagement, and other modes
+follow their own scope rules.
+
+1. Search official public program directories (HackerOne, Bugcrowd, Intigriti,
+   YesWeHack, and other relevant platforms discoverable through browser
+   search) for the exact hostname and owner name. This applies to government
+   agencies, presidential offices, public/private companies, and organizations
+   of any size. Open each plausible official program page and verify its
+   status, exact asset entry, exclusions, and allowed methods.
+2. If no platform listing appears, inspect the exact asset owner's published
+   VDP/security.txt policy page. General web search and third-party
+   aggregators may identify leads, but only the program/platform policy or
+   owner-controlled policy/authorization establishes scope. Read policy pages
+   only until scope is confirmed; do not browse the application or send test
+   payloads.
+3. Report which official sources were checked. If public lookup finds no exact
+   scope, continue external passive research and then ask once for a private
+   program URL or owner authorization. Never infer scope from a similar
+   hostname, government affiliation, public accessibility, or third-party
+   directory.
+
+Use visible snapshots and preserve the official URL and a minimal screenshot
+or other evidence for the scope decision. The browser establishes program
+scope; it does not itself validate a vulnerability.
 
 ---
 

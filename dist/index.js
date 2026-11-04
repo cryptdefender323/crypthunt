@@ -22966,13 +22966,13 @@ var MODE_PRESETS = {
   },
   "bug-bounty": {
     mode: "bug-bounty",
-    description: "Bug bounty mode. Verify the current official program and exact target scope in Playwright before target traffic. Then run evidence-led in-scope research and safe validation under program policy; no denial of service or data exfiltration. Human validation is required before report submission.",
+    description: "Bug bounty and vulnerability disclosure mode. Verify an official program/VDP scope or direct owner authorization for the exact target before traffic; platform registration is optional. Run evidence-led research and safe validation within permitted methods, with no denial of service or data exfiltration. Human validation is required before report submission.",
     scope_enforcement: "strict",
     tool_priority: ["recon", "enumeration", "exploitation", "reporting"],
     skill_chain: ["bug-bounty-research", "pentest-recon", "pentest-enum", "pentest-exploit", "pentest-report"],
     parallelism: 8,
     stealth: false,
-    report_format: "hackerone",
+    report_format: "standard",
     loop_config: { max_iterations: 200, iteration_timeout_ms: 480000, strategy: "adaptive", auto_continue: true, speed: "moderate" },
     safety_constraints: { scope_strict: true, no_dos: true, no_exfiltration: true, stealth_mode: false, auto_stop_on_scope_violation: true }
   },
@@ -83577,6 +83577,7 @@ var package_default = {
     "build:vendored": "bun run script/build-vendored.ts",
     "build:adapter": "bun build packages/omop-opencode/src/index.ts --outdir dist --target bun --format esm --external zod && bun build packages/omop-opencode/src/tui.ts --outdir dist --target bun --format esm --external @opentui/core --external @opentui/keymap --external @opentui/solid && bun run build:node-require-shim && tsc --emitDeclarationOnly",
     "build:assets": "bun run build:shared-skills-assets && bun run build:schema",
+    "build:install": "bun build packages/omop-opencode/src/index.ts --outdir dist --target bun --format esm --external zod && bun build packages/omop-opencode/src/tui.ts --outdir dist --target bun --format esm --external @opentui/core --external @opentui/keymap --external @opentui/solid && bun run build:node-require-shim && bun run build:assets && bun run build:cli",
     "build:cli": "bun build packages/omop-opencode/src/cli/index.ts --outdir dist/cli --target bun --format esm && bun run build:cli-node && bun run build:codex-install",
     "build:cli-node": "bun run script/build-cli-node.ts",
     "build:codex-install": "bun run script/build-codex-install.ts",
@@ -107524,9 +107525,21 @@ function createCatalogToolInstallerHook(options = {}) {
             });
             const result = await install(entry, platform2);
             if (result.success) {
-              verifiedInstalled.add(key);
-              verifiedInstalled.add(token);
-              log2("[catalog-tool-installer] install succeeded", { tool: key });
+              const verification = await checkInstalled(entry);
+              if (verification.installed) {
+                verifiedInstalled.add(key);
+                verifiedInstalled.add(token);
+                log2("[catalog-tool-installer] install succeeded and verified", {
+                  tool: key,
+                  version: verification.version
+                });
+              } else {
+                log2("[catalog-tool-installer] install command succeeded but tool is still missing", {
+                  tool: key,
+                  platform: platform2,
+                  error: verification.error
+                });
+              }
             } else {
               log2("[catalog-tool-installer] install failed", { tool: key, message: result.message });
             }
@@ -107540,7 +107553,8 @@ function createCatalogToolInstallerHook(options = {}) {
       }
       await job;
       if (!verifiedInstalled.has(key)) {
-        output.message = `[omop] catalog tool "${key}" missing or install failed \u2014 retry after: crypthunter tools install -t ${key}`;
+        output.message = `[omop] catalog tool "${key}" is unavailable on ${platform2}; installation failed or could not be verified. Retry with: crypthunter tools install -t ${key}`;
+        output.args.command = "printf '%s\\n' '[omop] catalog tool unavailable; original command was not run' >&2; exit 127";
       } else if (!output.message) {
         output.message = `[omop] ensured catalog tool "${key}" is installed`;
       }
@@ -110551,7 +110565,13 @@ function getModeAutoLoadSkills(mode2) {
   const primary = chain[0];
   if (mode2 === "bug-bounty")
     return [primary];
-  const specific = mode2 === "ctf" ? chain.find((skill) => skill === "ctf-exploit") : mode2 === "red-team" ? chain.find((skill) => skill === "red-recon") : chain.find((skill) => skill.startsWith(`${mode2}-`) && skill !== primary);
+  if (mode2 === "red-team") {
+    return [
+      primary,
+      ...chain.filter((skill) => skill === "red-recon" || skill === "red-assess")
+    ];
+  }
+  const specific = mode2 === "ctf" ? chain.find((skill) => skill === "ctf-exploit") : chain.find((skill) => skill.startsWith(`${mode2}-`) && skill !== primary);
   const fallback = chain.find((skill) => skill !== primary);
   return Array.from(new Set([primary, specific ?? fallback].filter((skill) => Boolean(skill))));
 }
@@ -110616,7 +110636,7 @@ var explicitlySelectedModeSessions = new Set;
 var targetSuppliedSessions = new Set;
 function extractModeSwitch(text) {
   const normalized = normalizeModeCommandText(text);
-  const match = normalized.match(/^\/mode\s+([\w-]+)\s*$/m);
+  const match = normalized.match(/^\/mode\s+([\w-]+)(?:\s+.+)?$/m);
   return match?.[1] ?? null;
 }
 function normalizeModeCommandText(text) {
@@ -110646,20 +110666,29 @@ function buildContextBlock(config, toolNames, intel, skillBlocks, modeReason, is
     `Tool priority: ${config.tool_priority.join(" \u2192 ")}`,
     `Parallelism: ${config.parallelism} | Stealth: ${config.stealth ? "ON" : "OFF"} | Report: ${config.report_format}`,
     `Scope: ${config.scope_enforcement} | no_dos=${config.safety_constraints.no_dos} | scope_strict=${config.safety_constraints.scope_strict}`,
-    config.mode === "red-team" ? "Red-team startup: after mode selection, ask only for the target domain or IP if it has not been supplied. Do not ask an upfront questionnaire, offer workflow choices, create engagement IDs/directories/todos, or invoke tools before receiving the target. Once supplied, treat exactly that domain or IP as the initial boundary, use the default objective of passive public-surface mapping, and begin passive OSINT without contacting the target. Do not expand discovered assets into active scope. Before active recon or any active test, require a current signed authorization letter/rules-of-engagement document that names the target scope, allowed methods, and time window, plus the user's confirmation that it is valid. If it is missing, ask once for the document and stop active work. A verbal yes, mode selection, or start reply is not authorization." : config.mode === "bug-bounty" ? "Bug-bounty authorization gate: verify the live program authorization and exact asset scope in Playwright before any recon request, crawler, scanner, or navigation to the target asset. Inspect the official HackerOne/Bugcrowd/other program page. Verify that the program is active, the exact requested asset is listed in scope, and read its restrictions, rate limits, exclusions, and safe-harbor terms. Search the platform's own program directory in the browser if only a domain was supplied; do not trust search snippets or third-party directories. Record the official page URL, asset row, policy, and verification date. If no official program can be verified, do not contact the target; ask the user directly whether they have real authorization to test it. A yes answer only permits collecting/verifying the authorization details; before any target traffic, require permission naming the exact asset, allowed methods, and time window. If they say no or cannot establish those details, stop target-directed activity." : `Engagement start: run passive preflight automatically; ask at most once for missing scope or authorization before active testing, and never repeat an already verified answer in this session.`,
+    "Universal result gate: never present a scanner hit or untested hypothesis as a finding. Pair passive intelligence with current active mapping of exact in-scope assets where active work is authorized; passive records, archives, fingerprints, and third-party scanner data are leads, not proof. For each externally observable security hypothesis, load false-positive-engine and independently reproduce it against the current asset with a baseline, control/negative test, disproof attempt, and traceable evidence using a method permitted by that mode and scope. If active validation is not authorized or safe, do not label it valid; keep it out of findings and summarize only the unresolved count and blocker. Suppress DISPROVEN/FALSE_POSITIVE items from findings and reports. Show reproducible, evidence-backed findings with sanitized reproduction steps so a human can retest. CTF challenge claims use category-specific reproduction and flag proof as the equivalent gate; forensic and reverse-engineering conclusions cite the source artifact and analysis chain.",
+    config.mode === "red-team" ? "Red-team startup: after mode selection, ask only for the target domain or IP if it has not been supplied. Do not ask an upfront questionnaire, offer workflow choices, create engagement IDs/directories/todos, or invoke tools before receiving the target. Once supplied, treat exactly that domain or IP as the initial boundary, use the default objective of passive public-surface mapping, and begin passive OSINT without contacting the target. Do not expand discovered assets into active scope. Before active recon or any active test, require current written authorization/ROE that names the target scope and permitted methods, plus the user's confirmation that it is valid. Honor any stated schedule, request limit, and stop condition; if no schedule or limit is stated, record it as unspecified and continue with conservative mode defaults. Ask once only for missing scope or methods, not for an unstated schedule. A verbal yes, mode selection, or start reply is not authorization." : config.mode === "bug-bounty" ? "Bug-bounty scope flow: a HackerOne/Bugcrowd/other platform listing is optional. When a target arrives, search HackerOne, Bugcrowd, Intigriti, YesWeHack, and other relevant official directories discoverable through browser search for the exact hostname/owner, then check the exact owner's program/VDP/security.txt. This applies to government agencies, presidential offices, public/private companies, and organizations of any size. General web search/third-party aggregators are leads only. Gather passive intelligence before asking questions. Do not browse the target application or send test requests until exact asset/method/time scope is verified. If no policy or permission is found, finish passive research without probing, then ask once for exact owner authorization/scope/method/time window. After scope verification, run recon \u2192 enum \u2192 hypothesis-driven permitted tests \u2192 reproduction/control/negative/disproof \u2192 report-readiness audit \u2192 report draft automatically; preserve CryptHunter's reasoning and evidence checks, ask only for specific missing inputs, and report concise milestones. Before READY_TO_REPORT, require verified scope/RoE, reproducible raw evidence, demonstrated eligible impact, authorized test data, and consistent evidence files; use only the defined final classifications. Do not submit or contact the program without explicit user instruction. Follow exclusions and rate limits. Automated scanners such as sqlmap are allowed only when the verified policy or permission permits them; keep tests narrow and low-rate, and do not dump data, access files, invoke shells, or continue past a positive signal without explicit authorization for that impact test." : `Engagement start: run passive preflight automatically; ask at most once for missing scope or authorization before active testing, and never repeat an already verified answer in this session.`,
     `Loop: max_iterations=${config.loop_config.max_iterations} | speed=${config.loop_config.speed} | auto_continue=${config.loop_config.auto_continue}`
   ];
   if (webTarget) {
     if (config.mode === "bug-bounty") {
-      lines.push("Bug bounty browser order: use Playwright on the official program page first. Do not navigate to the target asset until the program is active and that exact asset and method are confirmed in scope. After verification, use the same browser session for authorized target browsing and save scope-page evidence separately from target evidence.", "After the scope gate passes, inspect DOM, forms, client-side routes, console and network logs, authentication/session flows, CSRF behavior, client-side storage, and security headers. Use HTTP tools only within listed policy limits.", "When available, use Burp Suite for authorized request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
+      lines.push("Bug bounty browser order: use Playwright to inspect a supplied official program/VDP/security.txt policy. If none is supplied, search relevant official program directories and exact-owner policy pages, across government and corporate organizations, and perform passive public-source recon first. Do not browse the application or send test requests until the exact asset and planned method are verified. After verification, use the same visible browser session for authorized target browsing and keep authorization evidence separate from target evidence.", "Once scope is verified, inspect DOM, forms, client-side routes, console and network logs, authentication/session flows, CSRF behavior, client-side storage, and security headers. Use HTTP tools only within listed policy limits.", "When available, use Burp Suite for authorized request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
+    } else if (config.mode === "red-team") {
+      lines.push("Authorized red-team web workflow: do not navigate to the target or send target traffic until the written ROE has been reviewed and the exact asset plus method are in scope. Once verified, use the visible Playwright browser for rendered pages, forms, client-side routes, and stateful behavior; use curl for a minimal reproducible HTTP baseline and safe request/response validation. Load red-assess immediately after recon and build a per-asset coverage ledger of relevant vulnerability classes. Test only exact in-scope assets; discovered subdomains are leads until the ROE explicitly includes them. Save sanitized browser/HTTP evidence and detection outcome, stop at the first confirmed minimal proof, and never claim a test ran unless its raw result was observed.", "When available, use Burp Suite for authorized request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
     } else {
       lines.push("Web workflow: load the playwright skill and open the target in visible Chrome before web enumeration. Capture DOM, forms, client-side routes, console logs, network logs, and screenshots as evidence.", "Required browser checks: DOM XSS sinks and sources, authentication and session flows, CSRF protections and PoC behavior, SPA/API endpoint discovery, client-side storage, and security headers.", "Use browser GUI interaction for rendered or stateful behavior; use HTTP tools for broad discovery and feed browser findings back into the evidence chain.", "When available, use Burp Suite for HTTP request inspection and replay. Consult the tool-capability-registry skill when choosing among security tools.");
     }
     if (browserStatus)
       lines.push(browserStatus);
   }
+  if (config.mode === "bug-bounty" && !awaitingTarget) {
+    lines.push("Autonomous Bug Bounty execution: do not ask whether to start or present a workflow menu. Search official program directories, including relevant platforms discoverable through browser search, and owner policy with visible Playwright for government, presidential, corporate, and other organizations. Then continue automatically through the configured skill chain for each exact in-scope asset: recon \u2192 enum \u2192 hypothesis-driven permitted tests \u2192 reproduction/control/negative/disproof \u2192 report-readiness audit \u2192 report draft. Load each phase skill as it begins, preserve evidence-ladder and adversarial-review reasoning, and report concise progress. Ask only when a private policy, test account, or scope detail is inaccessible or ambiguous. If no exact scope is found, complete passive research then ask once before active tests. Stop after minimum proof, stop when policy forbids the next step, and never submit or contact the program without explicit user instruction.");
+  }
+  if (config.mode === "red-team" || config.mode === "grey-hat") {
+    lines.push("Authorized exploit-validation depth: complete every relevant vulnerability class on exact in-scope assets. A written authorization permits only the assets and methods it actually names; when it explicitly allows exploit validation, continue to the minimum controlled, non-destructive proof needed to demonstrate the vulnerability and its impact, then stop and preserve evidence for human retest. A general authorization letter is not permission for persistence, credential theft, lateral movement, security-control evasion, service disruption, or real-data exfiltration. Do not chain beyond the approved objective or claim broader compromise than the evidence proves.");
+  }
   if (modeOnly || awaitingTarget) {
-    lines.push(config.mode === "red-team" ? "Mode-only command: reply in one short line asking only for the target domain or IP, then wait. Do not ask whether to start, present a menu, or ask for authorization details yet." : config.mode === "bug-bounty" ? "Bug-bounty start: use Playwright to verify the official program and policy before contacting any target. If no target asset domain/IP was supplied, ask only for that target and wait; do not start recon or show a workflow menu. If no official program is verifiable, ask whether the user has real authorization before any target traffic; a yes is not sufficient to begin testing until the exact asset, allowed methods, and time window are verified." : "Mode-only command: acknowledge activation in one short line and wait for a target; do not ask the user for a scope questionnaire before a target is supplied.");
+    lines.push(config.mode === "red-team" ? "Mode-only command: reply in one short line asking only for the target domain or IP, then wait. Do not ask whether to start, present a menu, or ask for authorization details yet." : config.mode === "bug-bounty" ? "Bug-bounty start: a platform listing is optional. If no target domain/IP was supplied, ask only for it and wait. When a target is supplied, automatically look up official program/VDP/security.txt policy and begin passive public-source research without asking upfront questions. Do not browse the application or send test requests until scope and methods are verified. If lookup finds no policy, finish passive research and then ask once for owner authorization and exact scope." : "Mode-only command: acknowledge activation in one short line and wait for a target; do not ask the user for a scope questionnaire before a target is supplied.");
   }
   if (toolsLine && !awaitingTarget)
     lines.push(toolsLine);
@@ -110695,6 +110724,7 @@ function createPentestContextHook(skills = [], options = {}) {
       if (hasDomainOrIp)
         targetSuppliedSessions.add(input.sessionID);
       const previousMode = getPentestSessionMode(input.sessionID);
+      const requestedMode = previousMode ?? detectMode(originalText).mode;
       const hasExplicitSessionMode = explicitlySelectedModeSessions.has(input.sessionID);
       const targetIntent = /\b(?:pentest|penetration test|bug[\s-]?bounty|red[\s-]?team|blue[\s-]?team|grey[\s-]?hat|offensive|fullscan|scan|recon|audit|assess(?:ment)?|target|ctf|investigate)\b|cari\s+celah|uji\s+(?:keamanan|web)/i.test(originalText);
       const modeOnly = isModeOnlyCommand(originalText.trim());
@@ -110702,7 +110732,7 @@ function createPentestContextHook(skills = [], options = {}) {
       if (modeOnly)
         explicitlySelectedModeSessions.add(input.sessionID);
       const continueExplicitMode = hasExplicitSessionMode && previousMode !== undefined && (targetIntent || workflowStartReply);
-      const shouldAutoOpenBrowser = Boolean(webTargetUrl && (bugBountyProgramUrl || targetIntent || previousMode && previousMode !== "auto" || explicitlySelectedModeSessions.has(input.sessionID)));
+      const shouldAutoOpenBrowser = Boolean(webTargetUrl && (bugBountyProgramUrl || requestedMode !== "red-team" && (targetIntent || previousMode && previousMode !== "auto" || explicitlySelectedModeSessions.has(input.sessionID))));
       const modeSwitchTarget = extractModeSwitch(originalText.trim());
       const isReinjection = modeSwitchTarget !== null;
       if (isReinjection) {
@@ -110734,9 +110764,10 @@ function createPentestContextHook(skills = [], options = {}) {
       const catalog2 = await getToolsCatalog();
       const toolNames = catalog2 ? catalog2.tools.filter((t2) => t2.phase.some((p) => config.tool_priority.includes(p))).map((t2) => t2.tools_name) : [];
       const intel = buildIntelSnippet(config, mode2);
-      const autoLoadNames = mode2 === "bug-bounty" && awaitingTarget ? ["bug-bounty-research", "playwright"] : Array.from(new Set([
+      const autoLoadNames = mode2 === "bug-bounty" && awaitingTarget ? ["bug-bounty-research", "tool-browser-automation", "playwright"] : Array.from(new Set([
         ...getModeAutoLoadSkills(mode2),
-        ...mode2 === "bug-bounty" ? ["playwright"] : []
+        ...["auto", "bug-bounty", "red-team", "blue-team", "offensive", "grey-hat", "mobile-pentest"].includes(mode2) ? ["false-positive-engine"] : [],
+        ...webTarget ? ["tool-browser-automation", "playwright"] : []
       ]));
       const skillBlocks = await Promise.all(autoLoadNames.map(async (skillName) => {
         const skill = skills.find((candidate) => candidate.name.toLowerCase() === skillName.toLowerCase());
@@ -155911,7 +155942,8 @@ function createPluginModule(overrides2 = {}) {
 }
 
 // packages/omop-opencode/src/opencode-v2-bridge.ts
-var modeCommand = /^(?:\/mode|--mode)\s+([\w-]+)\s*$/m;
+var modeCommand = /^(?:\/mode|--mode)\s+([\w-]+)(?:\s+.+)?$/m;
+var modeOnlyCommand = /^(?:\/mode|--mode)\s+[\w-]+\s*$/m;
 function parseMode(text) {
   const name = modeCommand.exec(text)?.[1];
   return isPentestMode(name) ? name : undefined;
@@ -155920,13 +155952,12 @@ function isPentestMode(name) {
   return name !== undefined && Object.hasOwn(MODE_PRESETS, name);
 }
 function skillsForMode(mode2) {
-  if (mode2 === "bug-bounty")
-    return ["bug-bounty-research", "tool-browser-automation"];
-  return MODE_PRESETS[mode2].skill_chain.slice(0, 2);
+  const ids = mode2 === "bug-bounty" ? ["bug-bounty-research", "tool-browser-automation"] : MODE_PRESETS[mode2].skill_chain.slice(0, 2);
+  return ids.map((id) => ({ id, name: id }));
 }
 function modeInstructions(state3) {
   const config2 = MODE_PRESETS[state3.mode];
-  const modeOnly = modeCommand.test(state3.prompt);
+  const modeOnly = modeOnlyCommand.test(state3.prompt);
   const common = [
     "<PENTEST_CONTEXT>",
     `Mode: ${state3.mode} \u2014 ${config2.description}`,
@@ -155936,7 +155967,7 @@ function modeInstructions(state3) {
     `Scope: ${config2.scope_enforcement}; no_dos=${config2.safety_constraints.no_dos}; no_exfiltration=${config2.safety_constraints.no_exfiltration}.`
   ];
   if (state3.mode === "bug-bounty") {
-    common.push("Load bug-bounty-research and tool-browser-automation skills. Use Playwright in the browser to inspect the official active bug-bounty program before any target request, crawler, scanner, or target navigation; verify the exact asset, exclusions, policy, and allowed methods. If no official program can be verified, ask the user directly whether they have real authorization. A yes only allows collecting/verifying written authorization naming exact asset, allowed methods, and time window; do not send target traffic until verified. If no authorization, stop.", modeOnly ? "Ask only for the target domain/IP and wait." : "Do not contact the target until official program scope or written authorization has been verified.");
+    common.push("Load bug-bounty-research and tool-browser-automation skills. Use playwright_browser_navigate and playwright_browser_snapshot from the connected headed Playwright MCP before asking about authorization: search HackerOne, Bugcrowd, Intigriti, YesWeHack, and other relevant official program directories discoverable through browser search for the exact hostname/owner, then inspect the exact owner's VDP/security.txt page. This applies to government agencies, presidential offices, public/private companies, and organizations of any size. Do not claim no program exists until official-source searches have been attempted; report MCP failure explicitly if browser tools cannot run. General web search/third-party aggregators are leads only; record official URLs and exact scope entries. Platform registration is optional only when authoritative written owner permission covers the exact asset and methods. When a target arrives, also gather passive information from external public sources; do not make the user answer questions before this lookup. Do not browse the target application or send test requests until the exact asset and permitted methods are verified. If no public policy or permission is found, finish passive research without probing, then ask once for the private program URL or owner authorization and exact scope/method/time window. Before READY_TO_REPORT, require verified scope/RoE, reproducible raw evidence, demonstrated eligible impact, authorized test data, and consistent evidence files; use only the defined final classifications. Do not submit or contact the program without explicit user instruction. Automated scanners such as sqlmap are allowed only if that verified policy or permission permits them; use narrow, low-rate tests and do not dump data, access files, invoke shells, or continue past a positive signal without explicit authorization.", modeOnly ? "Ask only for the target domain/IP and wait." : "Start the engagement automatically. First use the visible Playwright MCP to search official program directories, including relevant platforms discoverable through browser search, and the owner's VDP/security.txt, while gathering external passive intelligence. This applies equally to government, presidential, public/private company, and other organizations. Do not ask whether to start or show a menu. Verify exact asset/method scope from official policy or owner authorization. Once verified, continue in this session without another start approval through the configured chain (pentest-recon \u2192 pentest-enum \u2192 pentest-exploit \u2192 pentest-report), with hypothesis \u2192 permitted test \u2192 evidence \u2192 control/negative \u2192 disproof \u2192 report-readiness audit. Load phase skills as needed; preserve CryptHunter's evidence ladder, false-positive review, and reasoning tools. Show concise progress instead of stopping for routine confirmation. Ask only if a required private program URL, account, or rule detail is inaccessible or ambiguous; otherwise continue. If scope cannot be established, finish passive work and ask once before active testing. Stop each test at minimum proof and stop the engagement if policy prohibits the next step. Produce a draft for human review, but never submit/contact the program without explicit user instruction.");
   } else if (state3.mode === "red-team") {
     common.push("Load red-team-workflow and red-recon skills. Start with passive OSINT only. Before active recon or testing, verify current written authorization and rules of engagement for the exact target, allowed methods, and time window.", modeOnly ? "Ask only for the target domain/IP and wait." : "Keep all active work inside the explicitly authorized boundary.");
   } else {
@@ -155954,10 +155985,12 @@ function createOpenCodeV2ModeHandlers() {
       const selected = parseMode(prompt);
       const previous = sessionModes2.get(event.sessionID);
       const detected = selected ?? (previous?.explicit ? previous.mode : detectMode(prompt).mode);
-      event.prompt.skills = Array.from(new Set([
-        ...event.prompt.skills ?? [],
-        ...skillsForMode(detected)
-      ]));
+      const selectedSkills = new Map((event.prompt.skills ?? []).map((skill2) => [skill2.id, skill2]));
+      for (const skill2 of skillsForMode(detected)) {
+        if (!selectedSkills.has(skill2.id))
+          selectedSkills.set(skill2.id, skill2);
+      }
+      event.prompt.skills = Array.from(selectedSkills.values());
       sessionModes2.set(event.sessionID, {
         mode: detected,
         explicit: selected !== undefined || previous?.explicit === true,
@@ -155991,10 +156024,12 @@ async function setupOpenCodeV2(context) {
       name: "mode",
       description: "Select a CryptHunter engagement mode",
       execute: async ({ sessionID, prompt, delivery }) => {
-        const selected = parseMode(prompt.text) ?? (isPentestMode(prompt.text.trim()) ? prompt.text.trim() : undefined);
+        const [modeName, ...targetParts] = prompt.text.trim().split(/\s+/);
+        const selected = parseMode(prompt.text) ?? (isPentestMode(modeName) ? modeName : undefined);
         if (!selected)
           return;
-        await context.session.prompt({ sessionID, text: `/mode ${selected}`, delivery });
+        const target = targetParts.join(" ").trim();
+        await context.session.prompt({ sessionID, text: `--mode ${selected}${target ? ` ${target}` : ""}`, delivery });
       }
     });
   });

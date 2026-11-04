@@ -1,6 +1,8 @@
 import type { CryptHunterConfig } from "../../config";
 import type { MonitorManager } from "../../features/monitor";
 import type { PluginContext } from "../types";
+import type { LoadedSkill } from "../../features/opencode-skill-loader/types";
+import type { SkillMcpManager } from "../../features/skill-mcp-manager";
 import type { RalphLoopHook } from "../../hooks/pentest-loop";
 import { createClaudeCodeHooksHook, createKeywordDetectorHook, createMonitorStatusInjectorHook, createPentestContextHook, createTeamMailboxInjector, createTeamModeStatusInjector, createToolPairValidatorHook } from "../../hooks";
 import { createContextInjectorMessagesTransformHook } from "../../features/context-injector";
@@ -21,4 +23,6 @@ export declare function createTransformHooks(args: {
     safeHookEnabled?: boolean;
     ralphLoop?: RalphLoopHook | null;
     monitorManager?: MonitorManager;
+    skillMcpManager?: Pick<SkillMcpManager, "listTools" | "callTool">;
+    mergedSkills: LoadedSkill[];
 }): TransformHooks;
